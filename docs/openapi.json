@@ -149,14 +149,48 @@
         ]
       }
     },
-    "/api/intake/counties?query=&zip=&state=&limit=20": {
+    "/api/intake/counties": {
       "get": {
         "description": "",
         "summary": "GET /api/intake/counties",
         "tags": [
           "Intake"
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "zip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "successful"
@@ -351,14 +385,25 @@
         ]
       }
     },
-    "/api/claims/by-email?email={{ _.fallback_email }}": {
+    "/api/claims/by-email": {
       "get": {
         "description": "",
         "summary": "GET /api/claims/by-email",
         "tags": [
           "Claims"
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "email",
+              "example": "customer@example.com"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "successful"
@@ -990,14 +1035,24 @@
         ]
       }
     },
-    "/api/admin/users/{{ _.internal_user_id }}/role": {
+    "/api/admin/users/{user_id}/role": {
       "patch": {
         "description": "",
         "summary": "PATCH /api/admin/users/:user_id/role",
         "tags": [
           "Admin/Users"
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "successful"
@@ -1061,14 +1116,24 @@
         ]
       }
     },
-    "/api/admin/users/{{ _.internal_user_id }}/remove": {
+    "/api/admin/users/{user_id}/remove": {
       "post": {
         "description": "",
         "summary": "POST /api/admin/users/:user_id/remove",
         "tags": [
           "Admin/Users"
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "successful"
@@ -1093,6 +1158,7 @@
   },
   "servers": [
     {
+      "url": "{base_url}",
       "description": "Base Environment",
       "variables": {
         "base_url": {
