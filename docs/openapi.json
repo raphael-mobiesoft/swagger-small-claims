@@ -1,4738 +1,15 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Booking Request API",
+    "title": "CaseDashboard API",
     "description": "",
     "version": "1.0.0"
   },
   "paths": {
-    "/api/users": {
+    "/api/auth/magic-link/signup": {
       "post": {
         "description": "",
-        "summary": "createUser",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "display_name": "Owen Whitman",
-                  "email": "democlient@bookingrequest.com",
-                  "turnstile_token": "0.9Eb6MzQPx3yJibXbbsV3Y7I85P3kIDcPF49PHBL22nfClHiA2EQOMX0fBNbTMqmMWGw9HOv4Wih4SrU1CtLp9ByZSk2LhP-KmYcfyszjeQ1ATeBw_0NWhmfrav-vCazmPWQyo4FD-LiHz0-B3isqT6zuYk3L8dVkKJrVkKTOkWtlQO1SoEE1i03BIJGVw-XPG7ywGQRSsNzy3OrkMfLTu_VIkkOs1NcH47KXnCpbH2CAVmRSBgdDZWdPMTTRq7R9iVziDyarzjZvRwFfHAdT8MY4Si54VsyPms7Bc31cPwW_XfrGGeUoBww6H3An2lk_3HLnxE-RhEgaFOU6Xl1MPUrr_D6_YmhrtrWEPiYK12vlucmaK81druS5X2kskPtkRrJOM8zvx2AMw26MyP5cjdi2dlpJMoQvynnHhwDj4taTMGFKhoUdZHrZhiTgLJew50NFBHWUpIWy3uBzSR2_dJsNvEvLYapjZYUqeTMlxMudqBl49ZKLEfhNfT-B8G8iCaOBOC7fnGG3dyPQIhGNGR6Sb9zypRPKDPJU1tzFOUBoZNvr0s0HwbaRSZ6W3iyUUzw3lv9iLSWMy2728J3HCzcq_fDDzZRPnH85OrdkflQ7ShM-YPKice6PQJRXhiMLx8Ux49YcSVTcGYmcQLrDIxkB0J_hxBHJP4x_ZMMYVPiju5oZCkEhfHce9dxVw5BnU0IoWoJecHpkL6ZysNhAdiguVVZL1TCVzGk47X4ceUKior6Abkl9aLK8kVboVAPIencgYZHruPp-G4Ddz1M4pBpLXR7QXlZM873Kbc-sBRuoHq-9SHRnWIznFJ6x7s_wAvTMoKnqxUj3VLbR5OpaGld88Lx7TnBiKEaLIaH2bC7aVnsDm_lTQzDxnw8oFaWP4Q-YqxU7YHH1obB9GWGD6Xy4GDgrPio8P4md5DK1lbo.MSSGCwbJPk3yiLbKId6naQ.2a6854a5fb2deb4e2fce1925030be6477d961ffb5a6e21a34d1e0a3b9408da83"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      },
-      "get": {
-        "description": "",
-        "summary": "getAllUsers",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/users/ee3d182f-1707-4f7f-9438-cda48843fc30": {
-      "get": {
-        "description": "",
-        "summary": "getUserById",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/users/d309ca5e-f086-4139-a81f-d4fe84c7771b/verify-phone-change-otp": {
-      "post": {
-        "description": "",
-        "summary": "verifyPhoneChangeOtp",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "token": "136619"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/users/by-phone/919510475846": {
-      "get": {
-        "description": "",
-        "summary": "getUserIdByPhone",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": []
-      }
-    },
-    "/api/users/27c77a33-8adc-4370-8def-00d6f0817cdb/username": {
-      "patch": {
-        "description": "",
-        "summary": "setUsername",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "username": "delete_user_test"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/users/d309ca5e-f086-4139-a81f-d4fe84c7771b/email": {
-      "patch": {
-        "description": "",
-        "summary": "setEmail",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "email": "t7aezow2g7@ruutukf.com"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/users/d309ca5e-f086-4139-a81f-d4fe84c7771b/phone": {
-      "patch": {
-        "description": "",
-        "summary": "setPhone",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "phone": "+15169298899"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/users/d309ca5e-f086-4139-a81f-d4fe84c7771b/avatar": {
-      "patch": {
-        "description": "",
-        "summary": "setAvatar",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "avatar": {
-                    "type": "string",
-                    "format": "binary",
-                    "description": ""
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/users/ef34a3fd-fcde-49f7-96b2-ea0f0f858d3e/role": {
-      "patch": {
-        "description": "",
-        "summary": "setRole",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "role": "client"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/users/cc9b1400-70e6-49ba-833b-ffaf9781f28f/firstname": {
-      "patch": {
-        "description": "",
-        "summary": "setFirstname",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "firstname": "TestD"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/users/ec520a24-1114-4221-ad31-0ca6bab6b932/lastname": {
-      "patch": {
-        "description": "",
-        "summary": "setLastname",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "lastname": "Tom"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/users/me/id": {
-      "get": {
-        "description": "",
-        "summary": "getUserId",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/users/d2851aed-48f1-4d9c-828c-4b1930cd4af2/display-name": {
-      "patch": {
-        "description": "",
-        "summary": "setDisplayName",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "display_name": "Luke Tom21"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/users/me/private-fields": {
-      "get": {
-        "description": "",
-        "summary": "getPrivateFields",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      },
-      "patch": {
-        "description": "",
-        "summary": "setPrivateFields",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "private_fields": [
-                    "phone",
-                    "email",
-                    "firstname"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      },
-      "post": {
-        "description": "",
-        "summary": "addPrivateFields",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "fields": [
-                    "lastname",
-                    "avatar"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      },
-      "delete": {
-        "description": "",
-        "summary": "removePrivateFields",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "fields": [
-                    "phone",
-                    "email"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/users/d309ca5e-f086-4139-a81f-d4fe84c7771b/address": {
-      "patch": {
-        "description": "",
-        "summary": "setAddress",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "city": "Sao Paulo",
-                  "state": "SP",
-                  "country": "Brazil"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/users/42755965-2f89-40ba-9a1b-10a9a0439b44/phone-and-email": {
-      "patch": {
-        "description": "",
-        "summary": "setPhoneAndEmail",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "email": "634gxfk202@osxofulk.com",
-                  "phone": "+12262411661"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/users/d309ca5e-f086-4139-a81f-d4fe84c7771b/verify-email-change-otp": {
-      "post": {
-        "description": "",
-        "summary": "verifyEmailChangeOtp",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "token": "569478"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/users/a11cc685-02de-4acd-beb1-5a84eda88fc2/delete-intent": {
-      "post": {
-        "description": "",
-        "summary": "createDeleteIntent",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/users/a11cc685-02de-4acd-beb1-5a84eda88fc2/delete-confirm": {
-      "post": {
-        "description": "",
-        "summary": "confirmDelete",
-        "tags": [
-          "Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "intent_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwdXJwb3NlIjoiZGVsZXRlX2ludGVudCIsImlhdCI6MTc2NjUzNjg2OCwiZXhwIjoxNzY2NTM3NzY4LCJhdWQiOiJkZWxldGUtaW50ZW50IiwiaXNzIjoieW91ci1hcGkiLCJzdWIiOiJhMTFjYzY4NS0wMmRlLTRhY2QtYmViMS01YTg0ZWRhODhmYzIiLCJqdGkiOiIwNDZlYTkyMS0zMTJjLTQwNDctYWViMC0xMzAzMDMyNGY5ODAifQ.ydCQHmY2wvH5Gzf1QavZrtS1Kvd_-_IsGXZdST9ZbtE",
-                  "idempotency_key": "cfd62f49-72cb-4fa2-acc6-45fe29f682ca",
-                  "otp": "652523"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/categories": {
-      "post": {
-        "description": "",
-        "summary": "createCategory",
-        "tags": [
-          "Categories"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "name": "Gig Services",
-                  "description": "",
-                  "display_order": 1
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      },
-      "get": {
-        "description": "",
-        "summary": "getAllCategories",
-        "tags": [
-          "Categories"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/categories/24": {
-      "get": {
-        "description": "",
-        "summary": "getCetegoryById",
-        "tags": [
-          "Categories"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/categories/31": {
-      "patch": {
-        "description": "",
-        "summary": "updateCategory",
-        "tags": [
-          "Categories"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "name": "TEST",
-                  "description": "Lorem ipsum dolor sit amet.",
-                  "display_order": 8
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/categories/37": {
-      "delete": {
-        "description": "",
-        "summary": "deleteCategory",
-        "tags": [
-          "Categories"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/categories/reorder": {
-      "patch": {
-        "description": "",
-        "summary": "reorderCategory",
-        "tags": [
-          "Categories"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "id": 35,
-                  "new_order": 11
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/notifications/user": {
-      "get": {
-        "description": "",
-        "summary": "getUserNotifications",
-        "tags": [
-          "Notifications"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      },
-      "post": {
-        "description": "",
-        "summary": "sendToUser",
-        "tags": [
-          "Notifications"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "user_id": "5e709b94-237e-4a7e-89da-38f758c1d558",
-                  "title": "Booking Approved",
-                  "body": "Your booking has been approved successfully!",
-                  "data": {
-                    "screen": "BookingDetails",
-                    "bookingId": "b789"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/notifications/8abbe9bc-15c9-4089-a912-51beea3360ae/read": {
-      "patch": {
-        "description": "",
-        "summary": "markAsRead",
-        "tags": [
-          "Notifications"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/notifications/system": {
-      "get": {
-        "description": "",
-        "summary": "getSystemNotifications",
-        "tags": [
-          "Notifications"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/notifications/fcm-token": {
-      "post": {
-        "description": "",
-        "summary": "saveFcmToken",
-        "tags": [
-          "Notifications"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "fcm_token": "cQiQsdiNpEtVQlePtOlFpn:APA91bE2Ue6tLNr3cTxDfXj2VY_GuUU_5syFT6CifpuKpj-6qj2VHLi2bzgdbaOAu95r6hmtngpJvWST4JuI6eBtjOQuB-xkB878N0e_YpWhmDq68r6nAhM",
-                  "device_id": "device-client"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/notifications/broadcast": {
-      "post": {
-        "description": "",
-        "summary": "sendBroadcast",
-        "tags": [
-          "Notifications"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "topic": "promotions",
-                  "title": "Special Offers for You",
-                  "body": "Enjoy exclusive discounts this week.",
-                  "data": {
-                    "coupon": "WEEK20"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      },
-      "get": {
-        "description": "",
-        "summary": "getAllBroadcasts",
-        "tags": [
-          "Notifications"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/notifications/read-all": {
-      "patch": {
-        "description": "",
-        "summary": "markAllAsRead",
-        "tags": [
-          "Notifications"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/services": {
-      "get": {
-        "description": "",
-        "summary": "getAllServices",
-        "tags": [
-          "Services"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      },
-      "post": {
-        "description": "",
-        "summary": "createService",
-        "tags": [
-          "Services"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "name": "Shopping & Errands",
-                  "description": "",
-                  "category_id": "38",
-                  "display_order": 3
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/services/88": {
-      "get": {
-        "description": "",
-        "summary": "getServiceById",
-        "tags": [
-          "Services"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/services/91": {
-      "patch": {
-        "description": "",
-        "summary": "updateService",
-        "tags": [
-          "Services"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "name": "TEST-SERVICE",
-                  "description": "Lorem ipsum dolor sit amet.",
-                  "category_id": "31",
-                  "display_order": 12
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      },
-      "delete": {
-        "description": "",
-        "summary": "deleteService",
-        "tags": [
-          "Services"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/services/search?query=therapy": {
-      "get": {
-        "description": "",
-        "summary": "searchServices",
-        "tags": [
-          "Services"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/services/category-grouped": {
-      "get": {
-        "description": "",
-        "summary": "getServicesGroupedByCategory",
-        "tags": [
-          "Services"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/services/by-category/23": {
-      "get": {
-        "description": "",
-        "summary": "getServicesByCategoryId",
-        "tags": [
-          "Services"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/services/search/category-grouped?query=therapy": {
-      "get": {
-        "description": "",
-        "summary": "searchServicesGroupedByCategory",
-        "tags": [
-          "Services"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/services/reorder": {
-      "patch": {
-        "description": "",
-        "summary": "reorderService",
-        "tags": [
-          "Services"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "id": 85,
-                  "new_order": 1
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/clients": {
-      "get": {
-        "description": "",
-        "summary": "getAllClients",
-        "tags": [
-          "Clients"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/clients/75": {
-      "get": {
-        "description": "",
-        "summary": "getClientById",
-        "tags": [
-          "Clients"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/clients/me/id": {
-      "get": {
-        "description": "",
-        "summary": "getClientId",
-        "tags": [
-          "Clients"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/clients/me/settings": {
-      "patch": {
-        "description": "",
-        "summary": "setFullClientSettings",
-        "tags": [
-          "Clients"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "fullname": {
-                    "type": "string",
-                    "description": "",
-                    "default": "Johna JoelyT"
-                  },
-                  "username": {
-                    "type": "string",
-                    "description": "",
-                    "default": "johnajoel"
-                  },
-                  "city": {
-                    "type": "string",
-                    "description": "",
-                    "default": "Sao Paulo"
-                  },
-                  "state": {
-                    "type": "string",
-                    "description": "",
-                    "default": "SP"
-                  },
-                  "country": {
-                    "type": "string",
-                    "description": "",
-                    "default": "Brazil"
-                  },
-                  "avatar": {
-                    "type": "string",
-                    "format": "binary",
-                    "description": ""
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      },
-      "get": {
-        "description": "",
-        "summary": "getMyClientSettings",
-        "tags": [
-          "Clients"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers": {
-      "get": {
-        "description": "",
-        "summary": "getAllProviders",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/66": {
-      "get": {
-        "description": "",
-        "summary": "getProviderById",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/description": {
-      "patch": {
-        "description": "",
-        "summary": "setProviderDescription",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "description": "Experienced graphic disgner with 10+ years in the industry."
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/services": {
-      "patch": {
-        "description": "",
-        "summary": "setProviderServices",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "service_ids": [
-                    42,
-                    43,
-                    44
-                  ]
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/me/id": {
-      "get": {
-        "description": "",
-        "summary": "getProviderId",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/by-username/harshit-yadav": {
-      "get": {
-        "description": "",
-        "summary": "getProviderByUsername",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/search?query=roshaine": {
-      "get": {
-        "description": "",
-        "summary": "searchProvidersByQuery",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/me/trusted": {
-      "get": {
-        "description": "",
-        "summary": "getTrustedProviderStatus",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      },
-      "patch": {
-        "description": "",
-        "summary": "setTrustedProviderStatus",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "provider_id": 16,
-                  "trusted_provider": true
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/invoice-prefix": {
-      "patch": {
-        "description": "",
-        "summary": "setInvoicePrefix",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "invoice_code_prefix": "IRE"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/invoice-defaults": {
-      "patch": {
-        "description": "",
-        "summary": "setInvoiceDefaults",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "collect_tax_by_default": true,
-                  "enable_tipping_by_default": true,
-                  "default_tax_rate": 12.75
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/me/invoice-prefix": {
-      "get": {
-        "description": "",
-        "summary": "getInvoicePrefix",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/search-by-services?service_ids=42,43&match=any": {
-      "get": {
-        "description": "",
-        "summary": "searchByServices",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/search-by-services?service_ids=27,28,29&match=any&city=Sao%20Paulo": {
-      "get": {
-        "description": "",
-        "summary": "searchByServicesWithCityFilter",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/search-by-services?service_ids=27,28,29&match=any&searchLocal=true": {
-      "get": {
-        "description": "",
-        "summary": "searchByServicesWithLocalFilter",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/search-by-address?city=Sao%20Paulo&state=SP&country=Brazil": {
-      "get": {
-        "description": "",
-        "summary": "searchProvidersByAddress",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/business-info": {
-      "patch": {
-        "description": "",
-        "summary": "setBusinessInfo",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "business_url": {
-                    "type": "string",
-                    "description": "",
-                    "default": "https://devtest.com"
-                  },
-                  "business_license": {
-                    "type": "string",
-                    "description": "",
-                    "default": "123-ABC-712"
-                  },
-                  "business_logo": {
-                    "type": "string",
-                    "format": "binary",
-                    "description": ""
-                  },
-                  "business_name": {
-                    "type": "string",
-                    "description": "",
-                    "default": "Dev & Test"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/visibility": {
-      "patch": {
-        "description": "",
-        "summary": "setVisibility",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "visibility": "paused"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/me/zelle": {
-      "patch": {
-        "description": "",
-        "summary": "setZelle",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "zelle_name": "Dev Test",
-                  "zelle_email": "m1kc1s28mn@daouse.com",
-                  "zelle_phone": "15551234567"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/me/profile": {
-      "get": {
-        "description": "",
-        "summary": "getMyProviderProfile",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/me/settings": {
-      "patch": {
-        "description": "",
-        "summary": "setFullProviderSettings",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "description": {
-                    "type": "string",
-                    "default": "Professional massage services in downtownProfessional massage services in downtown"
-                  },
-                  "service_ids": {
-                    "type": "string",
-                    "default": "42,43"
-                  },
-                  "trusted_provider": {
-                    "type": "string",
-                    "default": "true"
-                  },
-                  "invoice_code_prefix": {
-                    "type": "string",
-                    "default": "IRE"
-                  },
-                  "business_name": {
-                    "type": "string",
-                    "default": "Relax & Renewa"
-                  },
-                  "business_url": {
-                    "type": "string",
-                    "default": "https://relaxandrenew.com"
-                  },
-                  "business_license": {
-                    "type": "string",
-                    "default": "123-ABC-789"
-                  },
-                  "business_logo": {
-                    "type": "string",
-                    "format": "binary"
-                  },
-                  "collect_tax_by_default": {
-                    "type": "string",
-                    "default": "true"
-                  },
-                  "enable_tipping_by_default": {
-                    "type": "string",
-                    "default": "false"
-                  },
-                  "fullname": {
-                    "type": "string",
-                    "default": "John Doe Test"
-                  },
-                  "username": {
-                    "type": "string",
-                    "default": "John Doe Test"
-                  },
-                  "city": {
-                    "type": "string",
-                    "default": "Sao Paulo"
-                  },
-                  "state": {
-                    "type": "string",
-                    "default": "SP"
-                  },
-                  "country": {
-                    "type": "string",
-                    "default": "Brazil"
-                  },
-                  "avatar": {
-                    "type": "string",
-                    "format": "binary"
-                  },
-                  "default_tax_rate": {
-                    "type": "string",
-                    "default": "13.75"
-                  },
-                  "visibility": {
-                    "type": "string",
-                    "default": "public"
-                  },
-                  "zelle_name": {
-                    "type": "string",
-                    "default": "John Doe"
-                  },
-                  "zelle_email": {
-                    "type": "string",
-                    "description": "",
-                    "default": "shc40ju3l7@osxofulk.com"
-                  },
-                  "zelle_phone": {
-                    "type": "string",
-                    "description": "",
-                    "default": "+15551234562"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/providers/53/busy-slots?date=2026-02-16": {
-      "get": {
-        "description": "",
-        "summary": "getProviderBusySlotsByDate",
-        "tags": [
-          "Providers"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/availability/provider/53": {
-      "get": {
-        "description": "",
-        "summary": "getAvailabilityByProviderId",
-        "tags": [
-          "Availability"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/availability/473/time": {
-      "patch": {
-        "description": "",
-        "summary": "updateTime",
-        "tags": [
-          "Availability"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "start": "08:00",
-                  "end": "16:30",
-                  "mode": "business_hours"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/availability/473/break": {
-      "patch": {
-        "description": "",
-        "summary": "updateBreak",
-        "tags": [
-          "Availability"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "mode": "business_hours",
-                  "breaks": [
-                    {
-                      "break_start": "11:00",
-                      "break_end": "11:30"
-                    },
-                    {
-                      "break_start": "13:00",
-                      "break_end": "13:45"
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/availability/475/active": {
-      "patch": {
-        "description": "",
-        "summary": "updateActiveStatus",
-        "tags": [
-          "Availability"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "active": true
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/availability/search?provider_id=53&date=2026-03-27": {
-      "get": {
-        "description": "",
-        "summary": "getAvailabilityByDate",
-        "tags": [
-          "Availability"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/availability": {
-      "post": {
-        "description": "",
-        "summary": "setWeeklyAvailability",
-        "tags": [
-          "Availability"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "provider_id": 53,
-                  "week": [
-                    {
-                      "day": "monday",
-                      "active": true,
-                      "mode": "business_hours",
-                      "slots": [
-                        {
-                          "start": "08:30",
-                          "end": "17:30",
-                          "breaks": [
-                            {
-                              "break_start": "12:00",
-                              "break_end": "12:30"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "day": "tuesday",
-                      "active": true,
-                      "mode": "day_parts",
-                      "day_parts": [
-                        "morning",
-                        "afternoon"
-                      ]
-                    },
-                    {
-                      "day": "thursday",
-                      "active": true,
-                      "mode": "day_parts",
-                      "day_parts": [
-                        "evening"
-                      ]
-                    },
-                    {
-                      "day": "friday",
-                      "active": true,
-                      "mode": "business_hours",
-                      "slots": [
-                        {
-                          "start": "09:00",
-                          "end": "15:00",
-                          "breaks": [
-                            {
-                              "break_start": "12:00",
-                              "break_end": "12:30"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/availability/475/day-parts": {
-      "patch": {
-        "description": "",
-        "summary": "updateDayParts",
-        "tags": [
-          "Availability"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "day_parts": [
-                    "afternoon",
-                    "evening"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/availability/177": {
-      "get": {
-        "description": "",
-        "summary": "getAvailabilityById",
-        "tags": [
-          "Availability"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/bookings": {
-      "get": {
-        "description": "",
-        "summary": "getAllBookings",
-        "tags": [
-          "Bookings"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      },
-      "post": {
-        "description": "",
-        "summary": "createBooking",
-        "tags": [
-          "Bookings"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "contact_id": "66b9d603-8ace-4745-a20c-55a5810ec474",
-                  "client_id": 75,
-                  "service_id": 42,
-                  "date": "2026-02-09",
-                  "start_time": "08:30",
-                  "duration": 45,
-                  "notes": "Meeting will be online via Zoom",
-                  "title": "Initial Consultation with Therapist"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/410": {
-      "get": {
-        "description": "",
-        "summary": "getBookingById",
-        "tags": [
-          "Bookings"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/430": {
-      "patch": {
-        "description": "",
-        "summary": "updateBooking",
-        "tags": [
-          "Bookings"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "date": "2026-02-23",
-                  "start_time": "16:31",
-                  "end_time": "17:31",
-                  "notes": "Rescheduled due to conflict",
-                  "title": "Rescheduled session"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/status/cancelled": {
-      "get": {
-        "description": "",
-        "summary": "getBookingsByStatus",
-        "tags": [
-          "Bookings"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/date/2025-05-31": {
-      "get": {
-        "description": "",
-        "summary": "getBookingsByDate",
-        "tags": [
-          "Bookings"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/request": {
-      "post": {
-        "description": "",
-        "summary": "requestBooking",
-        "tags": [
-          "Bookings"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "provider_id": 53,
-                  "service_id": 43,
-                  "date": "2026-02-16",
-                  "start_time": "16:30",
-                  "duration": 60,
-                  "notes": "Prefer morning if possible",
-                  "title": "Initial Consultation with Therapist"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/430/request-change": {
-      "patch": {
-        "description": "",
-        "summary": "requestChange",
-        "tags": [
-          "Bookings"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "date": "2026-02-23",
-                  "start_time": "16:30",
-                  "end_time": "17:30",
-                  "notes": "Scheduling conflict with another event",
-                  "title": "Rescheduled session"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/417/client-cancel": {
-      "patch": {
-        "description": "",
-        "summary": "clientCancelBooking",
-        "tags": [
-          "Bookings"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "notes": "I won't be available that day"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/283/provider-cancel": {
-      "patch": {
-        "description": "",
-        "summary": "providerCancelBooking",
-        "tags": [
-          "Bookings"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "notes": "I won't be available that day"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/425/approve": {
-      "patch": {
-        "description": "",
-        "summary": "approveBooking",
-        "tags": [
-          "Bookings"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/424/decline": {
-      "patch": {
-        "description": "",
-        "summary": "declineBooking",
-        "tags": [
-          "Bookings"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/upcoming": {
-      "get": {
-        "description": "",
-        "summary": "getUpcomingBookings",
-        "tags": [
-          "Bookings"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/172/delete": {
-      "delete": {
-        "description": "",
-        "summary": "deleteBooking",
-        "tags": [
-          "Bookings"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/313/approve-request": {
-      "patch": {
-        "description": "",
-        "summary": "approveRequestChange",
-        "tags": [
-          "Bookings"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/301/clear-request": {
-      "patch": {
-        "description": "",
-        "summary": "clearRequestChange",
-        "tags": [
-          "Bookings"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/301/decline-request": {
-      "patch": {
-        "description": "",
-        "summary": "declineRequestChange",
-        "tags": [
-          "Bookings"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "notes": "I won't be available"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/service/43": {
-      "get": {
-        "description": "",
-        "summary": "getBookingsByService",
-        "tags": [
-          "Bookings"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/contacts": {
-      "get": {
-        "description": "",
-        "summary": "getContacts",
-        "tags": [
-          "Contacts"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      },
-      "post": {
-        "description": "",
-        "summary": "createContact",
-        "tags": [
-          "Contacts"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "name": "Alice Servas",
-                  "email": "aliceserv@example.com",
-                  "phone": "16574569693",
-                  "address": "Av. Brasil, 1234 - Belo Horizonte, MG",
-                  "notes": "Prior Client"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/contacts/66b9d603-8ace-4745-a20c-55a5810ec474": {
-      "get": {
-        "description": "",
-        "summary": "getContactById",
-        "tags": [
-          "Contacts"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/contacts/search?name=john": {
-      "get": {
-        "description": "",
-        "summary": "searchContacts",
-        "tags": [
-          "Contacts"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/contacts/106f4bb8-2790-4404-8d81-75ce1c602d78": {
-      "put": {
-        "description": "",
-        "summary": "updateContact",
-        "tags": [
-          "Contacts"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "name": "Alice J.",
-                  "email": "alice.j@example.com",
-                  "phone": "+32497348590",
-                  "address": "Av. Amazonas, 987 - BH",
-                  "notes": "New address"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/contacts/e6aded05-4fdd-4b4e-9da8-8f4365a75d99": {
-      "delete": {
-        "description": "",
-        "summary": "deleteContact",
-        "tags": [
-          "Contacts"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/contacts/add-provider": {
-      "post": {
-        "description": "",
-        "summary": "addProviderAsContact",
-        "tags": [
-          "Contacts"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "provider_id": 30
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/verified-contact-cards": {
-      "post": {
-        "description": "",
-        "summary": "createContactCard",
-        "tags": [
-          "Verified Contact Cards"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "trusted_providers_only": false
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/verified-contact-cards/YA4AVD8RNA": {
-      "get": {
-        "description": "",
-        "summary": "getContactCardById",
-        "tags": [
-          "Verified Contact Cards"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/verified-contact-cards/XFICTI6CY5": {
-      "patch": {
-        "description": "",
-        "summary": "updateContactCard",
-        "tags": [
-          "Verified Contact Cards"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "trusted_providers_only": true
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/verified-contact-cards/MC2EBKITC4": {
-      "delete": {
-        "description": "",
-        "summary": "deleteContactCard",
-        "tags": [
-          "Verified Contact Cards"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/verified-contact-cards/public/MC2EBKITC4": {
-      "get": {
-        "description": "",
-        "summary": "getVerifiedContactCardPublic",
-        "tags": [
-          "Verified Contact Cards"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/invoices": {
-      "get": {
-        "description": "",
-        "summary": "getInvoices",
-        "tags": [
-          "Invoices"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      },
-      "post": {
-        "description": "",
-        "summary": "createInvoice",
-        "tags": [
-          "Invoices"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "client_name": "Delete Client",
-                  "contact_id": "b7b406a8-46d3-4070-ab55-20f205223e18",
-                  "client_id": 51,
-                  "service_id": 42,
-                  "price": 112.27,
-                  "tax": 10.11,
-                  "allow_tip": true,
-                  "due_date": "2025-11-14",
-                  "date": "2025-10-17",
-                  "notes": "Date is today."
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/invoices/2290fbaf-fc4e-45b8-822c-06500919392a": {
-      "get": {
-        "description": "",
-        "summary": "getInvoiceById",
-        "tags": [
-          "Invoices"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/invoices/38724bbe-227f-4a8d-9cad-e0866db54581": {
-      "patch": {
-        "description": "",
-        "summary": "updateInvoice",
-        "tags": [
-          "Invoices"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "client_name": "Delete Client",
-                  "price": 2.75,
-                  "tax": 0.5,
-                  "allow_tip": false,
-                  "due_date": "2025-11-14",
-                  "date": "2025-10-16",
-                  "notes": "Payment expected next week"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/invoices/2290fbaf-fc4e-45b8-822c-06500919392a/resend": {
-      "post": {
-        "description": "",
-        "summary": "resendInvoice",
-        "tags": [
-          "Invoices"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/invoices/filter/by-date?start=2025-07-01&end=2025-07-30": {
-      "get": {
-        "description": "",
-        "summary": "getInvoicesByDate",
-        "tags": [
-          "Invoices"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/invoices/filter/by-status?status=refunded": {
-      "get": {
-        "description": "",
-        "summary": "getInvoicesByStatus",
-        "tags": [
-          "Invoices"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/invoices/received": {
-      "get": {
-        "description": "",
-        "summary": "getReceivedInvoices",
-        "tags": [
-          "Invoices"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/invoices/received/by-date?start=2025-07-01&end=2025-07-30": {
-      "get": {
-        "description": "",
-        "summary": "getReceivedInvoicesByDate",
-        "tags": [
-          "Invoices"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/invoices/received/by-status?status=paid": {
-      "get": {
-        "description": "",
-        "summary": "getReceivedInvoicesByStatus",
-        "tags": [
-          "Invoices"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/invoices/search?query=IRE-2507000006": {
-      "get": {
-        "description": "",
-        "summary": "searchInvoicesByInvNumber",
-        "tags": [
-          "Invoices"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/invoices/search?query=Carl": {
-      "get": {
-        "description": "",
-        "summary": "searchInvoicesByName",
-        "tags": [
-          "Invoices"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/invoices/4e266377-1745-457b-993d-2d532f6acef8/send": {
-      "post": {
-        "description": "",
-        "summary": "sendInvoice",
-        "tags": [
-          "Invoices"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/payments/143e940a-e63b-4d4f-8afd-85c01be4be60": {
-      "get": {
-        "description": "",
-        "summary": "getPaymentByInvoiceId",
-        "tags": [
-          "Payments"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/payments/da433f5c-8883-46aa-b8fe-0fd2ed7cceef/refund": {
-      "patch": {
-        "description": "",
-        "summary": "refundPayment",
-        "tags": [
-          "Payments"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "refunded_at": "2025-07-14T10:00:00.000Z"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/payments/da433f5c-8883-46aa-b8fe-0fd2ed7cceef/confirm": {
-      "patch": {
-        "description": "",
-        "summary": "confirmPayment",
-        "tags": [
-          "Payments"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "method": "cash",
-                  "amount": 120,
-                  "reference": "paid in person",
-                  "paid_at": "2025-07-13T13:50:00.000Z"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/auth/request-otp": {
-      "post": {
-        "description": "",
-        "summary": "requestOtp",
+        "summary": "POST /api/auth/magic-link/signup",
         "tags": [
           "Auth"
         ],
@@ -4758,24 +35,57 @@
               "schema": {
                 "type": "object",
                 "example": {
-                  "email": "t7aezow2g7@ruutukf.com",
-                  "turnstile_token": "0.fysO63Xp51TKk2AYmp9qLM1UnrR3zpw40T9GhW19L-FJhBer0_gBlUJ3x1XZa7n1zW9LPJfn_g-zbfa2pEBdaMHgiiHCkreHbENDlVmDxmGwjQL7s4SpV2lmYLpCVEXh7KfruPjHmD33sHzgKM7PHEAHYUmjNyPh3-AiuCwut0exrky2I6A9RLNb7A8DKmjYsPrloJCcXq4eD0hAcemLOuUWv4RMc45jIyGDJKuWG2kCyu3vsvRhefVd_5gkdIwHRnTQYCs3K_ZqSgNw0E6K5QMmZkSRrHlzzMCdw5g6Vt2ruky5o7aRM--U2IDPOsZPkD_xJLRtLTF-3poMiUOkTgmyx4AYq8pY7YNU1X5f5DnTpOrkesT6krF_KaQ4fN-c6KmUVLJD4-1o4fXpoHOxh6Wkb-BsW0GLTgXXrmdlfqOmQjgvyGDD-1TLMyS1uRv0Fo3uPe0RqvEaPW3DKbDompRIvrE9W_-kK1odzz7lmdMb0AYpLplKjNR4c_ZDjYAqf6nttLy91VlasKBbufNcr0d90xm-jjqkakPmflEOXz82R-SYifidfKqxT6wd0ecberrKyENWyfiTw865SYo81UrGvHU0dQXsdR5fkruAHnThOjHUOwkj2E1z3-9o5_0h8eHM_8RwW0WD0zKkXerBocn82L3VVIYC-njr_pDkh5F1eVrDBiWCxeGYfWshWG2VWhPBbK18D-gSjKtL9K5m2SXwaZ1ca20GHkzOkQGxPGDYphQ-2JgID66zwzZynC7QZL6i4X12qH3_sjg3wN0X4wXfzxjTFJReE7GePLlPHjVFyj4yq5rUBSVf5oNmBXJ_bifywbP-bAyI6ixeyK3aBTiy2I_aS2NrF1haJQZMyK2Spy8XGzMIoaQ2hdYf5fONraReCipE-Q2ZRLO9WbK7OVwqmkbyKkOyZ1rHtawkROI.2ZiMRYFN-SoFfh7eK48XYQ.17e52874e7a3de2a1af3afde012149bf757d5177876e7076ec7f3119df703c65"
+                  "email": "{{ _.customer_email }}"
                 }
               }
             }
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
+        "security": []
+      }
+    },
+    "/api/auth/magic-link/login": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/auth/magic-link/login",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
           }
-        ]
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "email": "{{ _.customer_email }}"
+                }
+              }
+            }
+          }
+        },
+        "security": []
       }
     },
     "/api/auth/refresh": {
       "post": {
         "description": "",
-        "summary": "refreshToken",
+        "summary": "POST /api/auth/refresh",
         "tags": [
           "Auth"
         ],
@@ -4801,7 +111,7 @@
               "schema": {
                 "type": "object",
                 "example": {
-                  "refresh_token": "xlxmcs367uns"
+                  "refresh_token": "{{ _.admin_refresh_token }}"
                 }
               }
             }
@@ -4810,10 +120,10 @@
         "security": []
       }
     },
-    "/api/auth/user-by-token": {
+    "/api/auth/me": {
       "get": {
         "description": "",
-        "summary": "getUserByToken",
+        "summary": "GET /api/auth/me",
         "tags": [
           "Auth"
         ],
@@ -4839,206 +149,12 @@
         ]
       }
     },
-    "/api/auth/validate-token": {
-      "post": {
-        "description": "",
-        "summary": "validateToken",
-        "tags": [
-          "Auth"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NDM5MGVjNi1mMjAzLTRhZmEtYjc1OC05NzMzNmFlMDI3ZWEiLCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImF1ZCI6ImF1dGhlbnRpY2F0ZWQiLCJlbWFpbCI6Im9wd3BqcTU1Z29AamtvdHlwYy5jb20iLCJpYXQiOjE3NjU2NTQyMTIsImV4cCI6MTc2NTY1NzgxMn0.WbwyL_ibfanX5Ind_YdLuz9STKg6s_DReyvg9HzCAC0"
-                }
-              }
-            }
-          }
-        },
-        "security": []
-      }
-    },
-    "/api/auth/request-recover": {
-      "post": {
-        "description": "",
-        "summary": "requestRecover",
-        "tags": [
-          "Auth"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "email": "634gxfk201@osxofulk.com",
-                  "turnstile_token": "0.xcBbbvkxUNGqtezcVZ5WtXh-fvw5EBralIaRvJnu4kwmoiMftXHQKj3k0ZY8ZRMSUg7vgN32G-eCnsauqNcz7Bxag6rjbkwVa2Eay7cflgksQn2LXPbyoTf19jO-U3qbowKRQYNnNsl2dpxQTyU7aBFD6HaWZFFDC22GwwTExsdTn-Yj6aw8lMMeJwCJF9dUcCN6f9wGr2IqRdW5xhxSjr3TQqLRKd2CgW0G-IpG34ehyNiFEOoq3grGZJmnHF5y7LpQOB1rEQ0Ff8WlYQaa7xF_UPCQCfB5Q_CRCxK338vuId8EY_xJC0lhqbP_gRtFUCuuO98GjkIWOLHNX662yQ6yYWinjmaVlrTHzTAIFjAX24z7krmTJbHgoUCwpGVOxPoYIx0JQ9227TGALgE8YmPZ8wpuQ3Zk_zHpF5uFDcnuT3KL5DtVSzINqhXL1qZev5P0mJazetyPftCUfzv9W40zuKJegPnkmkpc5-TUFWTwnePp42cDBXk7WKNqE2iCE_wmtS9E25n1lavcHJoVqJW8Xhp0oQDvo01ya1ffL7-p2vctxFALEXyWsmmYHNQ_baBZhya8PIXuWGsV8-1kUSwCAfEvgHQ_vku1OHa7A0FuadAY16xxZqIZ3LTRjZWUh9SD7EPjajZfdwZNCvM4sg2XIH1K_642fOFLQdgMYTIAL_x9FuDxfLFTKLx-GvHNvOlPMEG2fr14hs0Db0J9MT0hem3enKO_DWCqVymXxAye7GD5XlhPXs5oCdIEaMloUnHvB09PcN-MKOTTfk7BsPSUGSFNS59NEZPJKKgU9bYu7wZ8Coq8niiB2g7512awfQc9A4A-1OD6QS7zbCR3ImRl-d-JOG6NO2CbImn6oGg6japgOBBTvXErE9GZ7rJD-S1kpeFBlXnveUVoncfMAOz5C6mM-SRvxkKDi-qcOGw.mTxfuTgI304NiS6ETDsHCg.651edd7ae79b5d061e1cf9aec69e988d0ce76e85c5c7377d7f95780bafa46ed6"
-                }
-              }
-            }
-          }
-        },
-        "security": []
-      }
-    },
-    "/api/auth/recover-account": {
-      "post": {
-        "description": "",
-        "summary": "recoverAccount",
-        "tags": [
-          "Auth"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "phone": "34689257191",
-                  "token": "113866"
-                }
-              }
-            }
-          }
-        },
-        "security": []
-      }
-    },
-    "/api/auth/verify-otp": {
-      "post": {
-        "description": "",
-        "summary": "verifyOtp",
-        "tags": [
-          "Auth"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "email": "democlient@bookingrequest.com",
-                  "token": "605104"
-                }
-              }
-            }
-          }
-        },
-        "security": []
-      }
-    },
-    "/api/auth/login": {
-      "post": {
-        "description": "",
-        "summary": "login",
-        "tags": [
-          "Auth"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "email": "t7aezow2g7@ruutukf.com",
-                  "token": "065856"
-                }
-              }
-            }
-          }
-        },
-        "security": []
-      }
-    },
-    "/api/auth/captcha-mode": {
+    "/api/intake/counties?query=&zip=&state=&limit=20": {
       "get": {
         "description": "",
-        "summary": "getCaptchaMode",
+        "summary": "GET /api/intake/counties",
         "tags": [
-          "Auth"
+          "Intake"
         ],
         "parameters": [],
         "responses": {
@@ -5058,12 +174,12 @@
         "security": []
       }
     },
-    "/api/stripe/payment-methods": {
+    "/api/intake/business-defendants": {
       "get": {
         "description": "",
-        "summary": "listPaymentMethods",
+        "summary": "GET /api/intake/business-defendants",
         "tags": [
-          "Stripe"
+          "Intake"
         ],
         "parameters": [],
         "responses": {
@@ -5080,19 +196,15 @@
             "description": "unknown server error"
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
+        "security": []
       }
     },
-    "/api/stripe/payment-method/setup-intent": {
+    "/api/intake/assist": {
       "post": {
         "description": "",
-        "summary": "createSetupIntent",
+        "summary": "POST /api/intake/assist (business)",
         "tags": [
-          "Stripe"
+          "Intake"
         ],
         "parameters": [],
         "responses": {
@@ -5109,48 +221,253 @@
             "description": "unknown server error"
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/stripe/payment-method/pm_1SyVLPQ0KvGTrwVX8nAcs0lG": {
-      "delete": {
-        "description": "",
-        "summary": "detachPaymentMethod",
-        "tags": [
-          "Stripe"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "customer_address": {
+                    "address_line1": "1600 Amphitheatre Parkway",
+                    "city": "Mountain View",
+                    "state": "CA",
+                    "zip": "94043"
+                  },
+                  "defendant": {
+                    "type": "business",
+                    "existing_business_id": "{{ _.existing_business_id }}",
+                    "address": null
+                  }
+                }
+              }
+            }
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
+        "security": []
       }
     },
-    "/api/stripe/customer": {
+    "/api/intake/checkout-session": {
       "post": {
         "description": "",
-        "summary": "createStripeCustomer",
+        "summary": "POST /api/intake/checkout-session",
         "tags": [
-          "Stripe"
+          "Intake"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "customer": {
+                    "name": "Test Customer",
+                    "email": "{{ _.customer_email }}",
+                    "phone": "15551112222",
+                    "address": {
+                      "address_line1": "1600 Amphitheatre Parkway",
+                      "city": "Mountain View",
+                      "state": "CA",
+                      "zip": "94043"
+                    }
+                  },
+                  "defendant": {
+                    "type": "individual",
+                    "existing_business_id": null,
+                    "legal_name": "Defendant Name",
+                    "registered_agent": null,
+                    "email": "defendant@example.com",
+                    "phone": "15552223333",
+                    "address": {
+                      "address_line1": "1 Infinite Loop",
+                      "city": "Cupertino",
+                      "state": "CA",
+                      "zip": "95014"
+                    }
+                  },
+                  "claim": {
+                    "claim_type": "consumer_dispute",
+                    "incident_date": "2026-03-01",
+                    "amount_cents": 25000,
+                    "description": "word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12 word13 word14 word15 word16 word17 word18 word19 word20 word21 word22 word23 word24 word25 word26 word27 word28 word29 word30 word31 word32 word33 word34 word35 word36 word37 word38 word39 word40 word41 word42 word43 word44 word45 word46 word47 word48 word49 word50 word51 word52 word53 word54 word55 word56 word57 word58 word59 word60 word61 word62 word63 word64 word65 word66 word67 word68 word69 word70 word71 word72 word73 word74 word75 word76 word77 word78 word79 word80 word81 word82 word83 word84 word85 word86 word87 word88 word89 word90 word91 word92 word93 word94 word95 word96 word97 word98 word99 word100 word101 word102 word103 word104 word105",
+                    "filing_county_id": "{{ _.filing_county_id }}",
+                    "mailing_preference": "certified",
+                    "evidence_type": "receipts"
+                  },
+                  "customer_user_id": null,
+                  "coupon_code": "{{ _.coupon_code }}",
+                  "success_url": "{{ _.success_url }}",
+                  "cancel_url": "{{ _.cancel_url }}"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/claims/mine": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/claims/mine",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/by-email?email={{ _.fallback_email }}": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/claims/by-email",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/link-by-email": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/claims/link-by-email",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "email": "{{ _.fallback_email }}"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/link-my-email": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/claims/link-my-email",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/pricing": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/admin/pricing",
+        "tags": [
+          "Admin/Pricing"
         ],
         "parameters": [],
         "responses": {
@@ -5173,69 +490,11 @@
           }
         ]
       },
-      "delete": {
+      "put": {
         "description": "",
-        "summary": "deleteStripeCustomer",
+        "summary": "PUT /api/admin/pricing",
         "tags": [
-          "Stripe"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/stripe/payment-method/pm_1SyU4sQ0KvGTrwVXFhp1Wtzz/default": {
-      "post": {
-        "description": "",
-        "summary": "setDefaultPaymentMethod",
-        "tags": [
-          "Stripe"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/promo/redeem": {
-      "post": {
-        "description": "",
-        "summary": "redeemCode",
-        "tags": [
-          "Promo"
+          "Admin/Pricing"
         ],
         "parameters": [],
         "responses": {
@@ -5259,7 +518,10 @@
               "schema": {
                 "type": "object",
                 "example": {
-                  "code": "SUBFREETRIALTIER2"
+                  "demand_letter_price_cents": 14900,
+                  "certified_mail_upsell_cents": 3500,
+                  "certified_mail_label": "Certified Mail",
+                  "currency": "usd"
                 }
               }
             }
@@ -5272,12 +534,12 @@
         ]
       }
     },
-    "/api/promo/status": {
+    "/api/admin/coupons": {
       "get": {
         "description": "",
-        "summary": "getPromoStatus",
+        "summary": "GET /api/admin/coupons",
         "tags": [
-          "Promo"
+          "Admin/Coupons"
         ],
         "parameters": [],
         "responses": {
@@ -5299,14 +561,12 @@
             "bearerAuth": []
           }
         ]
-      }
-    },
-    "/api/promo/create-code": {
+      },
       "post": {
         "description": "",
-        "summary": "createCode",
+        "summary": "POST /api/admin/coupons",
         "tags": [
-          "Promo"
+          "Admin/Coupons"
         ],
         "parameters": [],
         "responses": {
@@ -5330,16 +590,14 @@
               "schema": {
                 "type": "object",
                 "example": {
-                  "code": "STACKBONUS5",
-                  "promotion_id": "cbaad98f-644d-4627-8181-b4585802a429",
-                  "promoter_id": null,
-                  "usage_limit": 1000,
+                  "code": "WELCOME20",
+                  "discount_percent": null,
+                  "discount_amount_cents": 2000,
+                  "starts_at": null,
+                  "ends_at": null,
                   "per_user_limit": 1,
-                  "eligible_plans": [
-                    "tier1",
-                    "tier2"
-                  ],
-                  "status": "active"
+                  "global_limit": 100,
+                  "is_active": true
                 }
               }
             }
@@ -5352,12 +610,54 @@
         ]
       }
     },
-    "/api/promo/promotions-list": {
+    "/api/admin/coupons/5af7c2be-54d5-4d67-bcde-859386f62179": {
+      "patch": {
+        "description": "",
+        "summary": "PATCH /api/admin/coupons/:id",
+        "tags": [
+          "Admin/Coupons"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "is_active": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/template-variables": {
       "get": {
         "description": "",
-        "summary": "getPromotionsWithCodes",
+        "summary": "GET /api/admin/template-variables",
         "tags": [
-          "Promo"
+          "Admin/Templates"
         ],
         "parameters": [],
         "responses": {
@@ -5381,12 +681,39 @@
         ]
       }
     },
-    "/api/promo/create-promo": {
+    "/api/admin/templates": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/admin/templates",
+        "tags": [
+          "Admin/Templates"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
       "post": {
         "description": "",
-        "summary": "createPromotion",
+        "summary": "POST /api/admin/templates",
         "tags": [
-          "Promo"
+          "Admin/Templates"
         ],
         "parameters": [],
         "responses": {
@@ -5410,16 +737,12 @@
               "schema": {
                 "type": "object",
                 "example": {
-                  "name": "Stackable Bonus - 5 Credits",
-                  "type": "bonus",
-                  "rc_entitlement_id": "promo_bonus",
-                  "credits_per_cycle": 5,
-                  "cycles": 2,
-                  "free_months": 0,
-                  "stacking_policy": "stack",
-                  "starts_at": "2025-08-31T00:00:00Z",
-                  "ends_at": "2026-12-31T23:59:59Z",
-                  "status": "active"
+                  "name": "Property Damage - Formal Demand Letter V1",
+                  "category": "demand_letter",
+                  "claim_type": "property_damage",
+                  "is_active": true,
+                  "response_deadline_default": "10 business days",
+                  "content_html": "<p>{{letter_date}}</p><p>{{defendant_name}}<br>{{defendant_address}}<br>{{defendant_city_state_zip}}</p><p><strong>Re: Formal Demand for Payment - Property Damage ({{claim_amount}})</strong></p><p>Dear {{defendant_name}},</p><p>This letter is a formal demand for payment in the amount of <strong>${{claim_amount}}</strong> for property damage caused by your actions, based on the incident that occurred on {{incident_date}}.</p><p>Incident summary: {{claim_description}}</p><p>Please remit full payment within <strong>{{response_deadline}}</strong> from the date of this letter. If payment is not received, I will proceed with filing in <strong>{{court_name}}</strong>, <strong>{{county_name}}</strong>, without further notice.</p><p>Sincerely,</p><p>{{claimant_name}}<br>{{claimant_address}}<br>{{claimant_city_state_zip}}</p>"
                 }
               }
             }
@@ -5432,12 +755,57 @@
         ]
       }
     },
-    "/api/promo/9ce8dd2c-ab31-4d97-93c6-fb7839110c32/status": {
+    "/api/admin/templates/d71487cf-95b5-4c0f-a402-0439603a04c6": {
+      "put": {
+        "description": "",
+        "summary": "PUT /api/admin/templates/:id",
+        "tags": [
+          "Admin/Templates"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "name": "Property Damage - Formal Demand Letter V1",
+                  "category": "demand_letter",
+                  "claim_type": "property_damage",
+                  "is_active": false,
+                  "response_deadline_default": "10 business days",
+                  "content_html": "<p>{{letter_date}}</p><p>{{defendant_name}}<br>{{defendant_address}}<br>{{defendant_city_state_zip}}</p><p><strong>Re: Formal Demand for Payment - Property Damage ({{claim_amount}})</strong></p><p>Dear {{defendant_name}},</p><p>This letter is a formal demand for payment in the amount of <strong>${{claim_amount}}</strong> for property damage caused by your actions, based on the incident that occurred on {{incident_date}}.</p><p>Incident summary: {{claim_description}}</p><p>Please remit full payment within <strong>{{response_deadline}}</strong> from the date of this letter. If payment is not received, I will proceed with filing in <strong>{{court_name}}</strong>, <strong>{{county_name}}</strong>, without further notice.</p><p>Sincerely,</p><p>{{claimant_name}}<br>{{claimant_address}}<br>{{claimant_city_state_zip}}</p>"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
       "patch": {
         "description": "",
-        "summary": "updatePromotionStatus",
+        "summary": "PATCH /api/admin/templates/:id",
         "tags": [
-          "Promo"
+          "Admin/Templates"
         ],
         "parameters": [],
         "responses": {
@@ -5461,7 +829,7 @@
               "schema": {
                 "type": "object",
                 "example": {
-                  "status": "active"
+                  "is_active": false
                 }
               }
             }
@@ -5474,12 +842,12 @@
         ]
       }
     },
-    "/api/promo/code/BEWELCOME20/status": {
-      "patch": {
+    "/api/admin/templates/10a691b6-66a7-4d6c-817b-b92960de8159": {
+      "delete": {
         "description": "",
-        "summary": "updateCodeStatus",
+        "summary": "DELETE /api/admin/templates/:id",
         "tags": [
-          "Promo"
+          "Admin/Templates"
         ],
         "parameters": [],
         "responses": {
@@ -5496,19 +864,6 @@
             "description": "unknown server error"
           }
         },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "status": "active"
-                }
-              }
-            }
-          }
-        },
         "security": [
           {
             "bearerAuth": []
@@ -5516,12 +871,12 @@
         ]
       }
     },
-    "/api/subscriptions/web": {
+    "/api/admin/templates/preview": {
       "post": {
         "description": "",
-        "summary": "createWebSubscription",
+        "summary": "POST /api/admin/templates/preview",
         "tags": [
-          "Subscriptions"
+          "Admin/Templates"
         ],
         "parameters": [],
         "responses": {
@@ -5545,7 +900,11 @@
               "schema": {
                 "type": "object",
                 "example": {
-                  "planId": "tier2_monthly"
+                  "content_html": "<h2>Demand Letter</h2><p>Hello {{claimant_name}}</p><p>Amount: ${{claim_amount}}</p>",
+                  "sample_data": {
+                    "claimant_name": "Jane Doe",
+                    "claim_amount": "250.00"
+                  }
                 }
               }
             }
@@ -5558,12 +917,85 @@
         ]
       }
     },
-    "/api/subscriptions/web/sub_1SyVLDQ0KvGTrwVXISLHogx1": {
+    "/api/admin/templates?group_by=claim_type": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/admin/templates/group_by=claim_type",
+        "tags": [
+          "Admin/Templates"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/invite": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/admin/users/invite",
+        "tags": [
+          "Admin/Users"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "email": "viletesete@gmail.com",
+                  "role": "cx_agent",
+                  "full_name": "CX Agent One"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/{{ _.internal_user_id }}/role": {
       "patch": {
         "description": "",
-        "summary": "updateWebSubscription",
+        "summary": "PATCH /api/admin/users/:user_id/role",
         "tags": [
-          "Subscriptions"
+          "Admin/Users"
         ],
         "parameters": [],
         "responses": {
@@ -5587,7 +1019,7 @@
               "schema": {
                 "type": "object",
                 "example": {
-                  "newPlanId": "tier1_monthly"
+                  "role": "paralegal"
                 }
               }
             }
@@ -5600,41 +1032,12 @@
         ]
       }
     },
-    "/api/subscriptions/web/sub_1SyV9zQ0KvGTrwVXy1OlRyib": {
-      "delete": {
-        "description": "",
-        "summary": "cancelWebSubscription",
-        "tags": [
-          "Subscriptions"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/subscriptions/web/me": {
+    "/api/admin/users": {
       "get": {
         "description": "",
-        "summary": "getCurrentWebSubscription",
+        "summary": "GET /api/admin/users",
         "tags": [
-          "Subscriptions"
+          "Admin/Users"
         ],
         "parameters": [],
         "responses": {
@@ -5658,70 +1061,12 @@
         ]
       }
     },
-    "/api/subscriptions/revenuecat/details": {
-      "get": {
+    "/api/admin/users/{{ _.internal_user_id }}/remove": {
+      "post": {
         "description": "",
-        "summary": "getRevenueCatSubscriptionDetails",
+        "summary": "POST /api/admin/users/:user_id/remove",
         "tags": [
-          "Subscriptions"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/webauthn/credentials": {
-      "get": {
-        "description": "",
-        "summary": "listCredentials",
-        "tags": [
-          "Webauthn"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/webauthn/credentials/YEvMhKge4p3CMtKKuoQJfQ": {
-      "delete": {
-        "description": "",
-        "summary": "deleteCredential",
-        "tags": [
-          "Webauthn"
+          "Admin/Users"
         ],
         "parameters": [],
         "responses": {
@@ -5748,78 +1093,84 @@
   },
   "servers": [
     {
-      "url": "https://api.bookingrequest.com",
       "description": "Base Environment",
-      "variables": {}
+      "variables": {
+        "base_url": {
+          "default": "https://api.smallclaims.app"
+        },
+        "admin_token": {
+          "default": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImJlZmI2MjZhLTZhNzQtNDQyZi04NjEyLWE4NGY3ZGI5ZmFlZCIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2VraWl2aXJvZXlxZGFwbmJoaWpsLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI2ZDlhM2VjYi1hOTJkLTRjNmYtOGMyOC01NzMzZjJiZmZkZjMiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzc1MTg4MjAzLCJpYXQiOjE3NzUxODQ2MDMsImVtYWlsIjoicmFwaGFlbEBtb2JpZXNvZnQuY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6eyJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZSI6ImFkbWluIn0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoib3RwIiwidGltZXN0YW1wIjoxNzc1MTI4NzkyfV0sInNlc3Npb25faWQiOiJjY2EzMzJmNC1kMWFlLTRlN2MtOWQwMy1iN2E3N2ZkMzUzOGUiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.8VOdGdhQESOnMUrykFsiz-qHiZNNTAd0quwPoFaShXp1wNszxOvk_KYemYnei8_SiBhPVvnYeg7nnL0SGkMTFQ"
+        },
+        "customer_token": {
+          "default": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImJlZmI2MjZhLTZhNzQtNDQyZi04NjEyLWE4NGY3ZGI5ZmFlZCIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2VraWl2aXJvZXlxZGFwbmJoaWpsLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI2MjlhMDFmYi1jOGYzLTRiZGQtYjYzZi1lMzg5YjE0NmFlZTgiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzc1MTMzMzk3LCJpYXQiOjE3NzUxMjk3OTcsImVtYWlsIjoicmFwaHZpbGV0ZUBnbWFpbC5jb20iLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsIjoicmFwaHZpbGV0ZUBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGhvbmVfdmVyaWZpZWQiOmZhbHNlLCJyb2xlIjoiY3VzdG9tZXIiLCJzdWIiOiI2MjlhMDFmYi1jOGYzLTRiZGQtYjYzZi1lMzg5YjE0NmFlZTgifSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJvdHAiLCJ0aW1lc3RhbXAiOjE3NzUxMjk3OTd9XSwic2Vzc2lvbl9pZCI6IjZlOGNhMTE3LWUzNjQtNGE0Yy04N2RkLWZmZDk1NzUyZDEwZiIsImlzX2Fub255bW91cyI6ZmFsc2V9.7UP8Nbh82oolRlr95J9JXX82hTv6x9pOw215SVIaLOESOmXqH6M2w9W8AxXkkEMw_S7MG6_2uxRy_Q35XYXF1w"
+        },
+        "admin_refresh_token": {
+          "default": "33f73cohija4"
+        },
+        "customer_refresh_token": {
+          "default": "2lti7aiwujkr"
+        },
+        "admin_email": {
+          "default": "raphael@mobiesoft.com"
+        },
+        "customer_email": {
+          "default": "raphvilete@gmail.com"
+        },
+        "fallback_email": {
+          "default": "customer@example.com"
+        },
+        "existing_business_id": {
+          "default": "00000000-0000-0000-0000-000000000000"
+        },
+        "filing_county_id": {
+          "default": "00000000-0000-0000-0000-000000000000"
+        },
+        "coupon_code": {
+          "default": ""
+        },
+        "internal_user_id": {
+          "default": "00000000-0000-0000-0000-000000000000"
+        },
+        "success_url": {
+          "default": "http://localhost:5173/payment/success"
+        },
+        "cancel_url": {
+          "default": "http://localhost:5173/payment/cancel"
+        }
+      }
     }
   ],
   "tags": [
-    {
-      "name": "Users",
-      "description": ""
-    },
-    {
-      "name": "Categories",
-      "description": ""
-    },
-    {
-      "name": "Notifications",
-      "description": ""
-    },
-    {
-      "name": "Services",
-      "description": ""
-    },
-    {
-      "name": "Clients",
-      "description": ""
-    },
-    {
-      "name": "Providers",
-      "description": ""
-    },
-    {
-      "name": "Availability",
-      "description": ""
-    },
-    {
-      "name": "Bookings",
-      "description": ""
-    },
-    {
-      "name": "Contacts",
-      "description": ""
-    },
-    {
-      "name": "Verified Contact Cards",
-      "description": ""
-    },
-    {
-      "name": "Invoices",
-      "description": ""
-    },
-    {
-      "name": "Payments",
-      "description": ""
-    },
     {
       "name": "Auth",
       "description": ""
     },
     {
-      "name": "Stripe",
+      "name": "Intake",
       "description": ""
     },
     {
-      "name": "Promo",
+      "name": "Claims",
       "description": ""
     },
     {
-      "name": "Subscriptions",
+      "name": "Admin/Pricing",
       "description": ""
     },
     {
-      "name": "Webauthn",
+      "name": "Admin",
+      "description": ""
+    },
+    {
+      "name": "Admin/Coupons",
+      "description": ""
+    },
+    {
+      "name": "Admin/Templates",
+      "description": ""
+    },
+    {
+      "name": "Admin/Users",
       "description": ""
     }
   ],
