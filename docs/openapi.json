@@ -149,6 +149,31 @@
         ]
       }
     },
+    "/api/intake/counties": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/intake/counties",
+        "tags": [
+          "Intake"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": []
+      }
+    },
     "/api/intake/business-defendants": {
       "get": {
         "description": "",
@@ -326,88 +351,6 @@
         ]
       }
     },
-    "/api/claims/link-by-email": {
-      "post": {
-        "description": "",
-        "summary": "POST /api/claims/link-by-email",
-        "tags": [
-          "Claims"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "email": "customer@example.com"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/claims/link-my-email": {
-      "post": {
-        "description": "",
-        "summary": "POST /api/claims/link-my-email",
-        "tags": [
-          "Claims"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {}
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
     "/api/admin/pricing": {
       "get": {
         "description": "",
@@ -465,7 +408,7 @@
                 "type": "object",
                 "example": {
                   "demand_letter_price_cents": 14900,
-                  "certified_mail_upsell_cents": 3500,
+                  "certified_mail_upsell_cents": 1200,
                   "certified_mail_label": "Certified Mail",
                   "currency": "usd"
                 }
@@ -920,134 +863,6 @@
         ]
       }
     },
-    "/api/admin/users": {
-      "get": {
-        "description": "",
-        "summary": "GET /api/admin/users",
-        "tags": [
-          "Admin/Users"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/intake/counties": {
-      "get": {
-        "description": "",
-        "summary": "GET /api/intake/counties",
-        "tags": [
-          "Intake"
-        ],
-        "parameters": [
-          {
-            "name": "query",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "zip",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "state",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "default": 20
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": []
-      }
-    },
-    "/api/claims/by-email": {
-      "get": {
-        "description": "",
-        "summary": "GET /api/claims/by-email",
-        "tags": [
-          "Claims"
-        ],
-        "parameters": [
-          {
-            "name": "email",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "email",
-              "example": "customer@example.com"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
     "/api/admin/users/{user_id}/role": {
       "patch": {
         "description": "",
@@ -1091,6 +906,35 @@
                 }
               }
             }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/admin/users",
+        "tags": [
+          "Admin/Users"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
           }
         },
         "security": [
