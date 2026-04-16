@@ -6,423 +6,6 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/api/auth/magic-link/signup": {
-      "post": {
-        "description": "",
-        "summary": "POST /api/auth/magic-link/signup",
-        "tags": [
-          "Auth"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "email": "customer@example.com"
-                }
-              }
-            }
-          }
-        },
-        "security": []
-      }
-    },
-    "/api/auth/magic-link/login": {
-      "post": {
-        "description": "",
-        "summary": "POST /api/auth/magic-link/login",
-        "tags": [
-          "Auth"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "email": "customer@example.com"
-                }
-              }
-            }
-          }
-        },
-        "security": []
-      }
-    },
-    "/api/auth/refresh": {
-      "post": {
-        "description": "",
-        "summary": "POST /api/auth/refresh",
-        "tags": [
-          "Auth"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "refresh_token": "refresh_token_here"
-                }
-              }
-            }
-          }
-        },
-        "security": []
-      }
-    },
-    "/api/auth/me": {
-      "get": {
-        "description": "",
-        "summary": "GET /api/auth/me",
-        "tags": [
-          "Auth"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/intake/counties": {
-      "get": {
-        "description": "",
-        "summary": "GET /api/intake/counties",
-        "tags": [
-          "Intake"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": []
-      }
-    },
-    "/api/intake/business-defendants": {
-      "get": {
-        "description": "",
-        "summary": "GET /api/intake/business-defendants",
-        "tags": [
-          "Intake"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": []
-      }
-    },
-    "/api/intake/assist": {
-      "post": {
-        "description": "",
-        "summary": "POST /api/intake/assist (business)",
-        "tags": [
-          "Intake"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "customer_address": {
-                    "address_line1": "1600 Amphitheatre Parkway",
-                    "city": "Mountain View",
-                    "state": "CA",
-                    "zip": "94043"
-                  },
-                  "defendant": {
-                    "type": "business",
-                    "existing_business_id": "00000000-0000-0000-0000-000000000000",
-                    "address": null
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": []
-      }
-    },
-    "/api/intake/checkout-session": {
-      "post": {
-        "description": "",
-        "summary": "POST /api/intake/checkout-session",
-        "tags": [
-          "Intake"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "customer": {
-                    "name": "Test Customer",
-                    "email": "customer@example.com",
-                    "phone": "15551112222",
-                    "address": {
-                      "address_line1": "1600 Amphitheatre Parkway",
-                      "city": "Mountain View",
-                      "state": "CA",
-                      "zip": "94043"
-                    }
-                  },
-                  "defendant": {
-                    "type": "individual",
-                    "existing_business_id": null,
-                    "legal_name": "Defendant Name",
-                    "registered_agent": null,
-                    "email": "defendant@example.com",
-                    "phone": "15552223333",
-                    "address": {
-                      "address_line1": "1 Infinite Loop",
-                      "city": "Cupertino",
-                      "state": "CA",
-                      "zip": "95014"
-                    }
-                  },
-                  "claim": {
-                    "claim_type": "consumer_dispute",
-                    "incident_date": "2026-03-01",
-                    "amount_cents": 25000,
-                    "description": "word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12 word13 word14 word15 word16 word17 word18 word19 word20 word21 word22 word23 word24 word25 word26 word27 word28 word29 word30 word31 word32 word33 word34 word35 word36 word37 word38 word39 word40 word41 word42 word43 word44 word45 word46 word47 word48 word49 word50 word51 word52 word53 word54 word55 word56 word57 word58 word59 word60 word61 word62 word63 word64 word65 word66 word67 word68 word69 word70 word71 word72 word73 word74 word75 word76 word77 word78 word79 word80 word81 word82 word83 word84 word85 word86 word87 word88 word89 word90 word91 word92 word93 word94 word95 word96 word97 word98 word99 word100 word101 word102 word103 word104 word105",
-                    "filing_county_id": "00000000-0000-0000-0000-000000000000",
-                    "mailing_preference": "certified",
-                    "evidence_type": "receipts"
-                  },
-                  "customer_user_id": null,
-                  "coupon_code": "WELCOME10",
-                  "success_url": "https://dev.smallclaims.app/payment/success",
-                  "cancel_url": "https://dev.smallclaims.app/payment/cancel"
-                }
-              }
-            }
-          }
-        },
-        "security": []
-      }
-    },
-    "/api/claims/mine": {
-      "get": {
-        "description": "",
-        "summary": "GET /api/claims/mine",
-        "tags": [
-          "Claims"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
-    "/api/admin/pricing": {
-      "get": {
-        "description": "",
-        "summary": "GET /api/admin/pricing",
-        "tags": [
-          "Admin/Pricing"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      },
-      "put": {
-        "description": "",
-        "summary": "PUT /api/admin/pricing",
-        "tags": [
-          "Admin/Pricing"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "example": {
-                  "demand_letter_price_cents": 14900,
-                  "certified_mail_upsell_cents": 1200,
-                  "certified_mail_label": "Certified Mail",
-                  "currency": "usd"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
     "/api/admin/coupons": {
       "get": {
         "description": "",
@@ -541,6 +124,122 @@
         ]
       }
     },
+    "/api/admin/dashboard/overview": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/admin/dashboard/overview",
+        "tags": [
+          "Admin/Dashboard"
+        ],
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "last_30_days",
+                "last_90_days",
+                "year_to_date",
+                "all_time"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/pricing": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/admin/pricing",
+        "tags": [
+          "Admin/Pricing"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "description": "",
+        "summary": "PUT /api/admin/pricing",
+        "tags": [
+          "Admin/Pricing"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "demand_letter_price_cents": 14900,
+                  "certified_mail_upsell_cents": 1200,
+                  "certified_mail_label": "Certified Mail",
+                  "currency": "usd"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/admin/template-variables": {
       "get": {
         "description": "",
@@ -573,7 +272,7 @@
     "/api/admin/templates": {
       "get": {
         "description": "",
-        "summary": "GET /api/admin/templates?group_by=claim_type",
+        "summary": "GET /api/admin/templates/group_by=claim_type",
         "tags": [
           "Admin/Templates"
         ],
@@ -587,8 +286,7 @@
               "enum": [
                 "claim_type"
               ]
-            },
-            "description": "Use claim_type to group templates in response."
+            }
           }
         ],
         "responses": {
@@ -648,6 +346,35 @@
                 }
               }
             }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/templates/10a691b6-66a7-4d6c-817b-b92960de8159": {
+      "delete": {
+        "description": "",
+        "summary": "DELETE /api/admin/templates/:id",
+        "tags": [
+          "Admin/Templates"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
           }
         },
         "security": [
@@ -744,35 +471,6 @@
         ]
       }
     },
-    "/api/admin/templates/10a691b6-66a7-4d6c-817b-b92960de8159": {
-      "delete": {
-        "description": "",
-        "summary": "DELETE /api/admin/templates/:id",
-        "tags": [
-          "Admin/Templates"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful"
-          },
-          "401": {
-            "description": "authorization failed"
-          },
-          "422": {
-            "description": "validation failed"
-          },
-          "500": {
-            "description": "unknown server error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
     "/api/admin/templates/preview": {
       "post": {
         "description": "",
@@ -819,6 +517,35 @@
         ]
       }
     },
+    "/api/admin/users": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/admin/users",
+        "tags": [
+          "Admin/Users"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/admin/users/invite": {
       "post": {
         "description": "",
@@ -848,12 +575,51 @@
               "schema": {
                 "type": "object",
                 "example": {
-                  "email": "viletesete@gmail.com",
-                  "role": "cx_agent",
-                  "full_name": "CX Agent One"
+                  "email": "harshit@mobiesoft.com",
+                  "role": "admin",
+                  "full_name": "Harshit Admin"
                 }
               }
             }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/{user_id}/remove": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/admin/users/:user_id/remove",
+        "tags": [
+          "Admin/Users"
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
           }
         },
         "security": [
@@ -902,7 +668,7 @@
               "schema": {
                 "type": "object",
                 "example": {
-                  "role": "paralegal"
+                  "role": "admin"
                 }
               }
             }
@@ -915,12 +681,88 @@
         ]
       }
     },
-    "/api/admin/users": {
+    "/api/auth/magic-link/login": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/auth/magic-link/login",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "email": "<customer_email>"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/auth/magic-link/signup": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/auth/magic-link/signup",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "email": "<customer_email>"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/auth/me": {
       "get": {
         "description": "",
-        "summary": "GET /api/admin/users",
+        "summary": "GET /api/auth/me",
         "tags": [
-          "Admin/Users"
+          "Auth"
         ],
         "parameters": [],
         "responses": {
@@ -944,16 +786,83 @@
         ]
       }
     },
-    "/api/admin/users/{user_id}/remove": {
+    "/api/auth/refresh": {
       "post": {
         "description": "",
-        "summary": "POST /api/admin/users/:user_id/remove",
+        "summary": "POST /api/auth/refresh",
         "tags": [
-          "Admin/Users"
+          "Auth"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "refresh_token": "<admin_refresh_token>"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/claims/mine": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/claims/mine",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/documents": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/claims/:id/documents",
+        "tags": [
+          "Claims"
         ],
         "parameters": [
           {
-            "name": "user_id",
+            "name": "id",
             "in": "path",
             "required": true,
             "schema": {
@@ -962,6 +871,1232 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/documents/{document_id}/download": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/claims/:id/documents/:document_id/download",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "download",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "response",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "expires_in",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/intake-summary.pdf": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/claims/:id/intake-summary.pdf",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "download",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "disposition",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/logs": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/claims/:id/logs",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/revisions": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/claims/:id/revisions",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "type": "content",
+                  "description": "Please update the amount paragraph and improve clarity."
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/send-mailing": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/claims/:id/send-mailing",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/versions": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/claims/:id/versions",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/intake/assist": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/intake/assist (business)",
+        "tags": [
+          "Intake"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "customer_address": {
+                    "address_line1": "1600 Amphitheatre Parkway",
+                    "city": "Mountain View",
+                    "state": "CA",
+                    "zip": "94043"
+                  },
+                  "defendant": {
+                    "type": "business",
+                    "existing_business_id": "<existing_business_id>",
+                    "address": null
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/intake/business-defendants": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/intake/business-defendants",
+        "tags": [
+          "Intake"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/intake/checkout-session": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/intake/checkout-session",
+        "tags": [
+          "Intake"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "customer": {
+                    "name": "Test Customer",
+                    "email": "<customer_email>",
+                    "phone": "15551112222",
+                    "address": {
+                      "address_line1": "1600 Amphitheatre Parkway",
+                      "city": "Mountain View",
+                      "state": "CA",
+                      "zip": "94043"
+                    }
+                  },
+                  "defendant": {
+                    "type": "individual",
+                    "existing_business_id": null,
+                    "legal_name": "Defendant Name",
+                    "registered_agent": null,
+                    "email": "defendant@example.com",
+                    "phone": "15552223333",
+                    "address": {
+                      "address_line1": "1 Infinite Loop",
+                      "city": "Cupertino",
+                      "state": "CA",
+                      "zip": "95014"
+                    }
+                  },
+                  "claim": {
+                    "claim_type": "consumer_dispute",
+                    "incident_date": "2026-03-01",
+                    "amount_cents": 25000,
+                    "description": "word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12 word13 word14 word15 word16 word17 word18 word19 word20 word21 word22 word23 word24 word25 word26 word27 word28 word29 word30 word31 word32 word33 word34 word35 word36 word37 word38 word39 word40 word41 word42 word43 word44 word45 word46 word47 word48 word49 word50 word51 word52 word53 word54 word55 word56 word57 word58 word59 word60 word61 word62 word63 word64 word65 word66 word67 word68 word69 word70 word71 word72 word73 word74 word75 word76 word77 word78 word79 word80 word81 word82 word83 word84 word85 word86 word87 word88 word89 word90 word91 word92 word93 word94 word95 word96 word97 word98 word99 word100 word101 word102 word103 word104 word105",
+                    "filing_county_id": "<filing_county_id>",
+                    "mailing_preference": "certified",
+                    "evidence_type": "receipts"
+                  },
+                  "customer_user_id": null,
+                  "coupon_code": "<coupon_code>",
+                  "success_url": "<success_url>",
+                  "cancel_url": "<cancel_url>"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/intake/counties": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/intake/counties",
+        "tags": [
+          "Intake"
+        ],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "zip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/internal/business-defendants": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/internal/business-defendants",
+        "tags": [
+          "Internal/Business Defendants"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "description": "",
+        "summary": "POST /api/internal/business-defendants",
+        "tags": [
+          "Internal/Business Defendants"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "legal_name": "TEST TEST ACME Services LLC",
+                  "registered_agent": "John Agent",
+                  "email": "billing@acme.com",
+                  "phone": "15558889999",
+                  "address": {
+                    "address_line1": "500 Terry A Francois Blvd",
+                    "city": "San Francisco",
+                    "state": "CA",
+                    "zip": "94158"
+                  },
+                  "is_active": true
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/internal/business-defendants/{id}": {
+      "patch": {
+        "description": "",
+        "summary": "PATCH /api/internal/business-defendants/:id",
+        "tags": [
+          "Internal/Business Defendants"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "registered_agent": "Jane Agent",
+                  "phone": "15550001111"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/internal/business-defendants/{id}/status": {
+      "patch": {
+        "description": "",
+        "summary": "PATCH /api/internal/business-defendants/:id/status",
+        "tags": [
+          "Internal/Business Defendants"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "is_active": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/internal/claims": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/internal/claims",
+        "tags": [
+          "Internal/Claims"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/internal/claims/queue": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/internal/claims/queue",
+        "tags": [
+          "Internal/Dashboard"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "paid_pending_letter_review",
+                "letter_in_revision",
+                "letter_ready_for_signature",
+                "letter_revision_requested",
+                "letter_signature_declined",
+                "letter_revision_declined"
+              ]
+            }
+          },
+          {
+            "name": "assigned_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "county_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "stale_hours",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/internal/claims/{id}": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/internal/claims/:id",
+        "tags": [
+          "Internal/Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/internal/claims/{id}/assign": {
+      "patch": {
+        "description": "",
+        "summary": "PATCH /api/internal/claims/:id/assign",
+        "tags": [
+          "Internal/Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "assigned_to": "<assignee_id>"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/internal/claims/{id}/letter": {
+      "patch": {
+        "description": "",
+        "summary": "PATCH /api/internal/claims/:id/letter",
+        "tags": [
+          "Internal/Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "letter_html": "<p>2026-04-16</p><p>Defendant Name<br />1 Infinite Loop<br />Cupertino, CA, 95014</p><p><strong>Re: Consumer Dispute Demand (250.00)</strong></p><p>Dear Defendant Name,</p><p>I demand payment of <strong>$250.00</strong> due to damages and losses from a consumer transaction issue that occurred on 2026-03-01T00:00:00.000Z.</p><p>Claim summary: word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12 word13 word14 word15 word16 word17 word18 word19 word20 word21 word22 word23 word24 word25 word26 word27 word28 word29 word30 word31 word32 word33 word34 word35 word36 word37 word38 word39 word40 word41 word42 word43 word44 word45 word46 word47 word48 word49 word50 word51 word52 word53 word54 word55 word56 word57 word58 word59 word60 word61 word62 word63 word64 word65 word66 word67 word68 word69 word70 word71 word72 word73 word74 word75 word76 word77 word78 word79 word80 word81 word82 word83 word84 word85 word86 word87 word88 word89 word90 word91 word92 word93 word94 word95 word96 word97 word98 word99 word100 word101 word102 word103 word104 word22 word23 word24 word25 word26 word27 word28 word29 word30 word31 word32 word33 word34 word35 word36 word37 word38 word39 word40 word41 word42 word43 word44 word45 word46 word47 word48 word49 word50 word51 word52 word53 word54 word55 word56 word57 word58 word59 word60 word61 word62 word63 word64 word65 word66 word67 word68 word69 word70 word71 word72 word73 word74 word75 word76 word77 word78 word79 word80 word81 word82 word83 word84 word85 word86 word87 word88 word89 word90 word91 word92 word93 word94 word95 word96 word97 word98 word99 word100 word101 word102 word103 word104word22 word23 word24 word25 word26 word27 word28 word29 word30 word31 word32 word33 word34 word35 word36 word37 word38 word39 word40 word41 word42 word43 word44 word45 word46 word47 word48 word49 word50 word51 word52 word53 word54 word55 word56 word57 word58 word59 word60 word61 word62 word63 word64 word65 word66 word67 word68 word69 word70 word71 word72 word73 word74 word75 word76 word77 word78 word79 word80 word81 word82 word83 word84 word85 word86 word87 word88 word89 word90 word91 word92 word93 word94 word95 word96 word97 word98 word99 word100 word101 word102 word103 word104 word105 word106 word107 word108 word109 word110</p><p>Please submit payment within <strong>10 business days</strong>. If you fail to resolve this matter, I will file in <strong>Santa Clara County Small Claims Court</strong>, <strong>Santa Clara County</strong>, and seek all available costs.</p><p>This letter is your final opportunity to resolve the dispute without court intervention.</p><p>Sincerely,</p><p>Test Customer<br />1600 Amphitheatre Parkway<br />Mountain View, CA, 94043</p>",
+                  "note": "Adjusted after review"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/internal/claims/{id}/notes": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/internal/claims/:id/notes",
+        "tags": [
+          "Internal/Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "message": "Needs follow-up before signature",
+                  "flags": [
+                    "needs_follow_up"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/internal/claims/{id}/revisions/{revision_id}/resolve": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/internal/claims/:id/revisions/:revision_id/resolve",
+        "tags": [
+          "Internal/Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "status": "accepted",
+                  "decline_reason": null
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/internal/claims/{id}/send-signature": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/internal/claims/:id/send-signature",
+        "tags": [
+          "Internal/Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "embedded_sign": true,
+                  "revoke_previous": true
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/internal/counties/summary": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/internal/counties/summary",
+        "tags": [
+          "Internal/Dashboard"
+        ],
+        "parameters": [
+          {
+            "name": "verified",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/internal/dashboard/cx-overview": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/internal/dashboard/cx-overview",
+        "tags": [
+          "Internal/Dashboard"
+        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "successful"
@@ -1004,10 +2139,6 @@
       "description": ""
     },
     {
-      "name": "Claims",
-      "description": ""
-    },
-    {
       "name": "Admin/Pricing",
       "description": ""
     },
@@ -1021,6 +2152,26 @@
     },
     {
       "name": "Admin/Users",
+      "description": ""
+    },
+    {
+      "name": "Internal/Claims",
+      "description": ""
+    },
+    {
+      "name": "Claims",
+      "description": ""
+    },
+    {
+      "name": "Internal/Dashboard",
+      "description": ""
+    },
+    {
+      "name": "Internal/Business Defendants",
+      "description": ""
+    },
+    {
+      "name": "Admin/Dashboard",
       "description": ""
     }
   ],
