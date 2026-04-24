@@ -2117,6 +2117,882 @@
           }
         ]
       }
+    },
+    "/api/internal/claims/{id}/tasks/{task_id}/review": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/internal/claims/:id/tasks/:task_id/review",
+        "tags": [
+          "Internal/Claims"
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "status": "approved",
+                  "notes": "Submission reviewed and approved.",
+                  "submission_id": "<submission_id>"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/response-flow": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/claims/:id/response-flow",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/response-flow/settled": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/claims/:id/response-flow/settled",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "resolution_type": "full_payment_received",
+                  "notes": "Settled directly with defendant."
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/response-flow/unlock-phase2": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/claims/:id/response-flow/unlock-phase2",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "unlock": true
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/tasks": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/claims/:id/tasks",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/tasks/{task_id}": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/claims/:id/tasks/:task_id",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/tasks/{task_id}/submissions": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/claims/:id/tasks/:task_id/submissions MULTIFORM",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": ""
+                  },
+                  "payload": {
+                    "type": "string",
+                    "description": "",
+                    "default": "{\n\t\"service_method\": \"certified_mail\",\n\t\"notes\": \"USPS receipt attached\"\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/close": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/claims/:id/close",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "reason": "Case resolved by settlement."
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/case-summary.pdf": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/claims/:id/case-summary.pdf",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/claims/:id",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/internal/counties": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/internal/counties",
+        "tags": [
+          "Internal/Counties"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/internal/counties/{county_id}": {
+      "get": {
+        "description": "",
+        "summary": "GET /api/internal/counties/:id",
+        "tags": [
+          "Internal/Counties"
+        ],
+        "parameters": [
+          {
+            "name": "county_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "description": "",
+        "summary": "PATCH /api/internal/counties/:id",
+        "tags": [
+          "Internal/Counties"
+        ],
+        "parameters": [
+          {
+            "name": "county_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "filing_fee_cents": 7500,
+                  "claim_limit_cents": 1000000,
+                  "court_website": "https://example-court.gov",
+                  "service_deadline_days": 21
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/internal/counties/{county_id}/verify": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/internal/counties/:id/verify",
+        "tags": [
+          "Internal/Counties"
+        ],
+        "parameters": [
+          {
+            "name": "county_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "notes": "Reviewed filing fee and court website on official county portal."
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/internal/counties/{county_id}/task-steps": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/internal/counties/:id/task-steps",
+        "tags": [
+          "Internal/Counties"
+        ],
+        "parameters": [
+          {
+            "name": "county_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "task_title": "Hearing Preparation",
+                  "task_type": "hearing",
+                  "unlock_after": "after_attend_hearing",
+                  "optional_url": "https://court.example/hearing-guide",
+                  "internal_note": "Informational step; customer confirms readiness.",
+                  "is_active": true
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/internal/counties/{county_id}/task-steps/{step_id}": {
+      "patch": {
+        "description": "",
+        "summary": "PATCH /api/internal/counties/:id/task-steps/:step_id",
+        "tags": [
+          "Internal/Counties"
+        ],
+        "parameters": [
+          {
+            "name": "step_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "county_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "task_title": "Submit form",
+                  "internal_note": "Updated by internal team"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "description": "",
+        "summary": "DELETE /api/internal/counties/:id/task-steps/:step_id",
+        "tags": [
+          "Internal/Counties"
+        ],
+        "parameters": [
+          {
+            "name": "step_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "county_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/internal/counties/{county_id}/task-steps/reorder": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/internal/counties/:id/task-steps/reorder",
+        "tags": [
+          "Internal/Counties"
+        ],
+        "parameters": [
+          {
+            "name": "county_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "step_ids": [
+                    "578597a2-6f93-4860-9f55-974ab45b6435",
+                    "1e633574-b095-4cfd-b3d3-55ff1b599604"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
     }
   },
   "servers": [
@@ -2172,6 +3048,10 @@
     },
     {
       "name": "Admin/Dashboard",
+      "description": ""
+    },
+    {
+      "name": "Internal/Counties",
       "description": ""
     }
   ],
