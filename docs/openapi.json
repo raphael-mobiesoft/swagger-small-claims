@@ -2043,6 +2043,80 @@
         ]
       }
     },
+    "/api/internal/claims/{id}/documents/certification-mailing-submission": {
+      "post": {
+        "description": "",
+        "summary": "POST /api/internal/claims/:id/documents/certification-mailing-submission",
+        "tags": [
+          "Internal/Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "replace",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "409": {
+            "description": "conflict"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Certification mailing submission PDF"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Optional internal notes"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/internal/counties/summary": {
       "get": {
         "description": "",
