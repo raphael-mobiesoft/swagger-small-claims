@@ -6,6 +6,7 @@ window.onload = function () {
     url: './openapi.json',
     dom_id: '#swagger-ui',
     deepLinking: true,
+    docExpansion: 'none',
     presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
     plugins: [SwaggerUIBundle.plugins.DownloadUrl],
     layout: 'StandaloneLayout',
