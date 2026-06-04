@@ -1285,6 +1285,519 @@
         ]
       }
     },
+    "/api/claims/evidence/dropbox/callback": {
+      "get": {
+        "description": "Dropbox OAuth callback configured in the Dropbox app. Usually reached by Dropbox redirect, not called manually.",
+        "summary": "GET /api/claims/evidence/dropbox/callback (Dropbox OAuth callback)",
+        "tags": [
+          "Claims/Evidence"
+        ],
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/claims/{id}/evidence/connect-dropbox": {
+      "post": {
+        "description": "Starts Dropbox OAuth for the customer claim evidence flow and returns authorization_url.",
+        "summary": "POST /api/claims/{id}/evidence/connect-dropbox",
+        "tags": [
+          "Claims/Evidence"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/evidence/dropbox": {
+      "delete": {
+        "description": "Disconnects the customer Dropbox connection. Existing evidence metadata/shared links are not deleted.",
+        "summary": "DELETE /api/claims/{id}/evidence/dropbox",
+        "tags": [
+          "Claims/Evidence"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/evidence/dropbox/status": {
+      "get": {
+        "description": "Returns Dropbox connection status, including dropbox_email_verified.",
+        "summary": "GET /api/claims/{id}/evidence/dropbox/status",
+        "tags": [
+          "Claims/Evidence"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/evidence/files/{file_id}": {
+      "delete": {
+        "description": "Deletes one evidence file from Dropbox and removes its metadata.",
+        "summary": "DELETE /api/claims/{id}/evidence/files/{file_id}",
+        "tags": [
+          "Claims/Evidence"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/evidence/items": {
+      "get": {
+        "description": "Lists evidence items and their files for the customer claim.",
+        "summary": "GET /api/claims/{id}/evidence/items",
+        "tags": [
+          "Claims/Evidence"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "description": "Creates an evidence item. Allowed types: receipt, photo, video, audio, screenshot, email_message, document, other.",
+        "summary": "POST /api/claims/{id}/evidence/items",
+        "tags": [
+          "Claims/Evidence"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "title": "Passenger complaint screenshot",
+                  "type": "screenshot",
+                  "notes": "Screenshot from the platform support conversation."
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/evidence/items/{item_id}": {
+      "patch": {
+        "description": "Updates title, type, and/or notes for an evidence item.",
+        "summary": "PATCH /api/claims/{id}/evidence/items/{item_id}",
+        "tags": [
+          "Claims/Evidence"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "title": "Updated passenger complaint screenshot",
+                  "notes": "Updated notes for this evidence item."
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "description": "Deletes an evidence item and all related Dropbox files.",
+        "summary": "DELETE /api/claims/{id}/evidence/items/{item_id}",
+        "tags": [
+          "Claims/Evidence"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/evidence/items/{item_id}/files": {
+      "post": {
+        "description": "Uploads one evidence file to the customer Dropbox account. Multipart field: file. Current limit: 100 MB.",
+        "summary": "POST /api/claims/{id}/evidence/items/{item_id}/files (multipart)",
+        "tags": [
+          "Claims/Evidence"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Evidence file to upload to Dropbox"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/evidence/suggestions": {
+      "post": {
+        "description": "Uses AI to suggest evidence upload items for the claim. Response includes ai_usage_log_id.",
+        "summary": "POST /api/claims/{id}/evidence/suggestions",
+        "tags": [
+          "Claims/Evidence"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/claims/{id}/documents/{document_id}/download": {
       "get": {
         "description": "",
@@ -3491,6 +4004,45 @@
         ]
       }
     },
+    "/api/internal/claims/{id}/evidence": {
+      "get": {
+        "description": "Internal read-only view of claim evidence with Dropbox shared links.",
+        "summary": "GET /api/internal/claims/{id}/evidence",
+        "tags": [
+          "Internal/Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/internal/claims/{id}/assign": {
       "patch": {
         "description": "",
@@ -4675,6 +5227,9 @@
     {
       "name": "Claims",
       "description": ""
+    },
+    {
+      "name": "Claims/Evidence"
     },
     {
       "name": "Internal/Dashboard",
