@@ -1356,6 +1356,108 @@
         ]
       }
     },
+    "/api/claims/{id}/dropbox/files": {
+      "get": {
+        "description": "Returns Dropbox-linked claim documents and evidence files for the authenticated customer claim.",
+        "summary": "GET /api/claims/{id}/dropbox/files",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "404": {
+            "description": "not found"
+          },
+          "409": {
+            "description": "conflict"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{id}/documents/letter/copy-to-dropbox": {
+      "post": {
+        "description": "Copies the stored claim letter PDF from Supabase Storage to the customer Dropbox account. Returns existing Dropbox metadata when already copied; use force=true to create a new copy.",
+        "summary": "POST /api/claims/{id}/documents/letter/copy-to-dropbox",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "force",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Create a new Dropbox copy even if the claim document already has Dropbox metadata."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "201": {
+            "description": "created"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "404": {
+            "description": "not found"
+          },
+          "409": {
+            "description": "conflict"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/claims/evidence/dropbox/callback": {
       "get": {
         "description": "Dropbox OAuth callback configured in the Dropbox app. Usually reached by Dropbox redirect, not called manually.",
