@@ -1004,7 +1004,8 @@
                     "address_line1": "1600 Amphitheatre Parkway",
                     "city": "Mountain View",
                     "state": "CA",
-                    "zip": "94043"
+                    "zip": "94043",
+                    "country": "US"
                   }
                 }
               }
@@ -2371,6 +2372,9 @@
           "401": {
             "description": "authorization failed"
           },
+          "409": {
+            "description": "mailing conflict or provider account cannot submit mailing (for example insufficient funds)"
+          },
           "422": {
             "description": "validation failed"
           },
@@ -2763,7 +2767,8 @@
                     "address_line1": "1600 Amphitheatre Parkway",
                     "city": "Mountain View",
                     "state": "CA",
-                    "zip": "94043"
+                    "zip": "94043",
+                    "country": "US"
                   },
                   "defendant": {
                     "type": "business",
@@ -2780,7 +2785,8 @@
                       "address_line1": "1600 Amphitheatre Parkway",
                       "city": "Mountain View",
                       "state": "CA",
-                      "zip": "94043"
+                      "zip": "94043",
+                      "country": "US"
                     },
                     "defendant": {
                       "type": "business",
@@ -2796,7 +2802,8 @@
                       "address_line1": "1600 Amphitheatre Parkway",
                       "city": "Mountain View",
                       "state": "CA",
-                      "zip": "94043"
+                      "zip": "94043",
+                      "country": "US"
                     },
                     "defendant": {
                       "type": "business",
@@ -2805,7 +2812,8 @@
                         "address_line1": "1 Infinite Loop",
                         "city": "Cupertino",
                         "state": "CA",
-                        "zip": "95014"
+                        "zip": "95014",
+                        "country": "US"
                       }
                     }
                   }
@@ -2817,7 +2825,8 @@
                       "address_line1": "1600 Amphitheatre Parkway",
                       "city": "Mountain View",
                       "state": "CA",
-                      "zip": "94043"
+                      "zip": "94043",
+                      "country": "US"
                     },
                     "defendant": {
                       "type": "individual",
@@ -2826,7 +2835,31 @@
                         "address_line1": "1 Infinite Loop",
                         "city": "Cupertino",
                         "state": "CA",
-                        "zip": "95014"
+                        "zip": "95014",
+                        "country": "US"
+                      }
+                    }
+                  }
+                },
+                "international": {
+                  "summary": "International customer and defendant addresses",
+                  "value": {
+                    "customer_address": {
+                      "address_line1": "Av. Paulista 1000",
+                      "city": "Sao Paulo",
+                      "state": "SP",
+                      "zip": "01310-100",
+                      "country": "BR"
+                    },
+                    "defendant": {
+                      "type": "individual",
+                      "existing_business_id": null,
+                      "address": {
+                        "address_line1": "111 Richmond St W",
+                        "city": "Toronto",
+                        "state": "ON",
+                        "zip": "M5H 2G4",
+                        "country": "CA"
                       }
                     }
                   }
@@ -2911,6 +2944,17 @@
               "minimum": 1,
               "maximum": 200,
               "default": 20
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "description": "Country code filter (example: US, BR, CA).",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2
             }
           }
         ],
@@ -3275,7 +3319,8 @@
                       "address_line1": "1600 Amphitheatre Parkway",
                       "city": "Mountain View",
                       "state": "CA",
-                      "zip": "94043"
+                      "zip": "94043",
+                      "country": "US"
                     }
                   }
                 }
@@ -3361,7 +3406,8 @@
                         "address_line1": "1 Infinite Loop",
                         "city": "Cupertino",
                         "state": "CA",
-                        "zip": "95014"
+                        "zip": "95014",
+                        "country": "US"
                       }
                     }
                   }
@@ -3388,7 +3434,26 @@
                         "address_line1": "500 Main St",
                         "city": "Los Angeles",
                         "state": "CA",
-                        "zip": "90012"
+                        "zip": "90012",
+                        "country": "US"
+                      }
+                    }
+                  }
+                },
+                "small_claims_individual_international": {
+                  "summary": "Small Claims individual international defendant payload",
+                  "value": {
+                    "defendant": {
+                      "type": "individual",
+                      "legal_name": "International Defendant Name",
+                      "email": "defendant@example.com.br",
+                      "phone": "5511999999999",
+                      "address": {
+                        "address_line1": "Av. Paulista, 1000",
+                        "city": "Sao Paulo",
+                        "state": "SP",
+                        "zip": "01310-100",
+                        "country": "BR"
                       }
                     }
                   }
@@ -3551,9 +3616,44 @@
                     "address_line1": "1 Main St",
                     "city": "San Francisco",
                     "state": "CA",
-                    "zip": "94105"
+                    "zip": "94105",
+                    "country": "US"
                   },
                   "is_active": true
+                }
+              },
+              "examples": {
+                "us_platform": {
+                  "summary": "US platform",
+                  "value": {
+                    "name": "New Platform Name",
+                    "website": "https://example.com",
+                    "support_email": "support@example.com",
+                    "address": {
+                      "address_line1": "1 Main St",
+                      "city": "San Francisco",
+                      "state": "CA",
+                      "zip": "94105",
+                      "country": "US"
+                    },
+                    "is_active": true
+                  }
+                },
+                "international_platform": {
+                  "summary": "International platform",
+                  "value": {
+                    "name": "International Platform",
+                    "website": "https://example.com",
+                    "support_email": "support@example.com.br",
+                    "address": {
+                      "address_line1": "Av. Paulista, 1000",
+                      "city": "Sao Paulo",
+                      "state": "SP",
+                      "zip": "01310-100",
+                      "country": "BR"
+                    },
+                    "is_active": true
+                  }
                 }
               }
             }
@@ -3780,9 +3880,46 @@
                     "address_line1": "500 Terry A Francois Blvd",
                     "city": "San Francisco",
                     "state": "CA",
-                    "zip": "94158"
+                    "zip": "94158",
+                    "country": "US"
                   },
                   "is_active": true
+                }
+              },
+              "examples": {
+                "us_business": {
+                  "summary": "US business defendant",
+                  "value": {
+                    "legal_name": "TEST TEST ACME Services LLC",
+                    "registered_agent": "John Agent",
+                    "email": "billing@acme.com",
+                    "phone": "15558889999",
+                    "address": {
+                      "address_line1": "500 Terry A Francois Blvd",
+                      "city": "San Francisco",
+                      "state": "CA",
+                      "zip": "94158",
+                      "country": "US"
+                    },
+                    "is_active": true
+                  }
+                },
+                "international_business": {
+                  "summary": "International business defendant",
+                  "value": {
+                    "legal_name": "International Services Ltd",
+                    "registered_agent": null,
+                    "email": "legal@example.com.br",
+                    "phone": "5511999999999",
+                    "address": {
+                      "address_line1": "Av. Paulista, 1000",
+                      "city": "Sao Paulo",
+                      "state": "SP",
+                      "zip": "01310-100",
+                      "country": "BR"
+                    },
+                    "is_active": true
+                  }
                 }
               }
             }
@@ -4737,11 +4874,10 @@
             "name": "state_code",
             "in": "query",
             "required": false,
-            "description": "Filter by state code.",
+            "description": "State/region code filter. US counties use 2-letter state codes; international/default jurisdictions may use longer administrative codes.",
             "schema": {
               "type": "string",
-              "minLength": 2,
-              "maxLength": 2
+              "maxLength": 32
             }
           },
           {
@@ -4774,6 +4910,31 @@
               "type": "integer",
               "minimum": 0,
               "default": 0
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "description": "Country code filter (example: US, BR, CA).",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2
+            }
+          },
+          {
+            "name": "jurisdiction_type",
+            "in": "query",
+            "required": false,
+            "description": "Jurisdiction type filter.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "us_county",
+                "international_region",
+                "country_default"
+              ]
             }
           }
         ],
