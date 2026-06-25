@@ -5573,7 +5573,7 @@
   },
   "servers": [
     {
-      "url": "https://api.smallclaims.app",
+      "url": "https://api.casedashboard.com",
       "description": "Production"
     },
     {
