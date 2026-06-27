@@ -1059,7 +1059,7 @@
     },
     "/api/claims/mine": {
       "get": {
-        "description": "",
+        "description": "Lists customer claims. Each claim includes has_evidence_to_upload, indicating whether the customer said they have evidence to upload later.",
         "summary": "GET /api/claims/mine",
         "tags": [
           "Claims"
@@ -1088,7 +1088,7 @@
     },
     "/api/claims/{id}": {
       "get": {
-        "description": "",
+        "description": "Returns the customer claim, including has_evidence_to_upload for the evidence upload CTA state.",
         "summary": "GET /api/claims/{id}",
         "tags": [
           "Claims"
@@ -3015,7 +3015,7 @@
         "security": []
       },
       "get": {
-        "description": "",
+        "description": "Loads an intake flow from its resume token. Cancelled flows cannot be resumed and return 409 INTAKE_FLOW_CANCELLED.",
         "summary": "GET /api/intake/flows",
         "tags": [
           "Intake"
@@ -3039,6 +3039,19 @@
           "401": {
             "description": "authorization failed"
           },
+          "409": {
+            "description": "The intake flow has been cancelled.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTAKE_FLOW_CANCELLED",
+                    "message": "Intake flow has been cancelled"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "validation failed"
           },
@@ -3051,7 +3064,7 @@
     },
     "/api/intake/flows/mine": {
       "get": {
-        "description": "",
+        "description": "Lists intake flows for the authenticated customer. Cancelled flows are excluded.",
         "summary": "GET /api/intake/flows/mine",
         "tags": [
           "Intake"
@@ -3136,6 +3149,9 @@
           "401": {
             "description": "authorization failed"
           },
+          "409": {
+            "description": "The intake is cancelled, paid, or not eligible for this operation."
+          },
           "422": {
             "description": "validation failed"
           },
@@ -3164,7 +3180,7 @@
     },
     "/api/intake/flows/{id}/claim-information": {
       "patch": {
-        "description": "",
+        "description": "Saves intake claim information. claim.has_evidence_to_upload is optional, defaults to false, and records whether the customer has evidence to upload later.",
         "summary": "PATCH /api/intake/flows/:id/claim-information (activation_hero|small_claims)",
         "tags": [
           "Intake"
@@ -3197,6 +3213,9 @@
           "401": {
             "description": "authorization failed"
           },
+          "409": {
+            "description": "The intake is cancelled, paid, or not eligible for this operation."
+          },
           "422": {
             "description": "validation failed"
           },
@@ -3220,7 +3239,8 @@
                       "{{ _.ah_category_id }}",
                       "{{ _.ah_category_id_2 }}"
                     ],
-                    "mailing_preference": "certified"
+                    "mailing_preference": "certified",
+                    "has_evidence_to_upload": true
                   }
                 }
               },
@@ -3237,7 +3257,8 @@
                         "{{ _.ah_category_id }}",
                         "{{ _.ah_category_id_2 }}"
                       ],
-                      "mailing_preference": "certified"
+                      "mailing_preference": "certified",
+                      "has_evidence_to_upload": true
                     }
                   }
                 },
@@ -3250,7 +3271,8 @@
                       "amount_cents": 25000,
                       "description": "The defendant charged me incorrectly and ignored multiple refund requests. I am requesting reimbursement of the amount charged plus related losses.",
                       "filing_county_id": "{{ _.filing_county_id }}",
-                      "mailing_preference": "certified"
+                      "mailing_preference": "certified",
+                      "has_evidence_to_upload": true
                     }
                   }
                 }
@@ -3295,6 +3317,9 @@
           },
           "401": {
             "description": "authorization failed"
+          },
+          "409": {
+            "description": "The intake is cancelled, paid, or not eligible for this operation."
           },
           "422": {
             "description": "validation failed"
@@ -3365,6 +3390,9 @@
           },
           "401": {
             "description": "authorization failed"
+          },
+          "409": {
+            "description": "The intake is cancelled, paid, or not eligible for this operation."
           },
           "422": {
             "description": "validation failed"
@@ -3499,6 +3527,9 @@
           },
           "401": {
             "description": "authorization failed"
+          },
+          "409": {
+            "description": "The intake is cancelled, paid, or not eligible for this operation."
           },
           "422": {
             "description": "validation failed"
@@ -4329,7 +4360,7 @@
     },
     "/api/internal/claims/{id}": {
       "get": {
-        "description": "",
+        "description": "Returns the internal claim detail, including has_evidence_to_upload.",
         "summary": "GET /api/internal/claims/{id}",
         "tags": [
           "Internal/Claims"
@@ -5568,6 +5599,245 @@
             "bearerAuth": []
           }
         ]
+      }
+    },
+    "/api/intake/counties/lookup-by-zip": {
+      "get": {
+        "description": "Looks up a filing county/jurisdiction through Google Geocoding using a postal code and country. The matched jurisdiction is inserted or updated in the counties table. Country is required because postal codes are not globally unique.",
+        "summary": "Find filing jurisdiction by postal code",
+        "tags": [
+          "Intake"
+        ],
+        "parameters": [
+          {
+            "name": "zip",
+            "in": "query",
+            "required": true,
+            "description": "ZIP or postal code.",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 32,
+              "example": "90037"
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": true,
+            "description": "Two-letter uppercase country code.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$",
+              "example": "US"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matched/upserted filing jurisdiction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "zip": {
+                      "type": "string",
+                      "example": "90037"
+                    },
+                    "country": {
+                      "type": "string",
+                      "example": "US"
+                    },
+                    "address_validation": {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    "counties": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    },
+                    "county_meta": {
+                      "type": "object",
+                      "properties": {
+                        "matched": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "reason": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "warning": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "extracted": {
+                          "type": "object",
+                          "nullable": true,
+                          "additionalProperties": true
+                        },
+                        "source": {
+                          "type": "string",
+                          "example": "google_geocode_zip"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No address or filing jurisdiction could be resolved.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "geocode_not_found": {
+                    "value": {
+                      "error": {
+                        "code": "ZIP_GEOCODE_NOT_FOUND",
+                        "message": "No filing jurisdiction was found for this ZIP/country"
+                      }
+                    }
+                  },
+                  "jurisdiction_not_extracted": {
+                    "value": {
+                      "error": {
+                        "code": "ZIP_JURISDICTION_NOT_EXTRACTED",
+                        "message": "Could not extract a filing jurisdiction from this ZIP/country"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "ZIP or country validation failed."
+          },
+          "500": {
+            "description": "Unknown server error."
+          },
+          "503": {
+            "description": "Google Maps API key is not configured.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "GOOGLE_MAPS_API_KEY_NOT_CONFIGURED",
+                    "message": "Google Maps API key is not configured"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "operationId": "lookupCountyByZip"
+      }
+    },
+    "/api/intake/flows/{id}": {
+      "delete": {
+        "description": "Soft-deletes/cancels an unfinished intake flow. Paid flows cannot be cancelled. Pending intake reminders are cancelled, linked checkout drafts are cancelled, and an existing Stripe Checkout session is expired when possible. Cancelled flows cannot be resumed, reviewed, edited, or sent to checkout.",
+        "summary": "Cancel an unfinished intake flow",
+        "tags": [
+          "Intake"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Intake flow ID.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "x-intake-resume-token",
+            "in": "header",
+            "required": true,
+            "description": "Resume token for intake flow access.",
+            "schema": {
+              "type": "string",
+              "minLength": 24
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Intake flow cancelled. Repeated cancellation is idempotent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "intake_flow": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "cancelled"
+                          ]
+                        },
+                        "cancelled_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "resume_token": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      },
+                      "additionalProperties": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Intake flow cancelled"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing intake resume token."
+          },
+          "404": {
+            "description": "Intake flow not found."
+          },
+          "409": {
+            "description": "The intake flow cannot be cancelled because it has already been paid.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INTAKE_FLOW_ALREADY_PAID",
+                    "message": "Intake flow is already paid and cannot be cancelled"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed."
+          },
+          "500": {
+            "description": "Unknown server error."
+          }
+        },
+        "security": [],
+        "operationId": "cancelIntakeFlow"
       }
     }
   },
