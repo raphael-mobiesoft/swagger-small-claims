@@ -5847,6 +5847,10 @@
       "description": "Production"
     },
     {
+      "url": "https://api-staging.casedashboard.com",
+      "description": "Staging"
+    },
+    {
       "url": "http://localhost:3000",
       "description": "Local"
     }
