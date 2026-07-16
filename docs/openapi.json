@@ -3114,10 +3114,10 @@
         ]
       }
     },
-    "/api/intake/flows/{id}/checkout-session": {
+    "/api/intake/flows/{id}/payment": {
       "post": {
-        "description": "",
-        "summary": "POST /api/intake/flows/{id}/checkout-session",
+        "description": "Creates a payment for a saved intake flow. Use provider=stripe to create an embedded Checkout Session, or provider=authorize_net to charge an Authorize.Net Accept.js opaqueData nonce. The API calculates pricing from the saved intake flow and finalizes the same claim/payment records after a successful payment.",
+        "summary": "POST /api/intake/flows/{id}/payment",
         "tags": [
           "Intake"
         ],
@@ -3165,11 +3165,83 @@
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "provider"
+                ],
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "authorize_net",
+                      "stripe"
+                    ]
+                  },
+                  "opaqueData": {
+                    "type": "object",
+                    "description": "Required when provider is authorize_net. Must come from Authorize.Net Accept.js.",
+                    "properties": {
+                      "dataDescriptor": {
+                        "type": "string",
+                        "example": "COMMON.ACCEPT.INAPP.PAYMENT"
+                      },
+                      "dataValue": {
+                        "type": "string",
+                        "example": "nonce_from_accept_js"
+                      }
+                    }
+                  },
+                  "success_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Required when provider is stripe."
+                  },
+                  "cancel_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Required when provider is stripe."
+                  },
+                  "coupon_code": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "customer_user_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "nullable": true
+                  }
+                },
                 "example": {
-                  "customer_user_id": null,
-                  "coupon_code": "{{ _.coupon_code }}",
-                  "success_url": "{{ _.success_url }}",
-                  "cancel_url": "{{ _.cancel_url }}"
+                  "provider": "authorize_net",
+                  "opaqueData": {
+                    "dataDescriptor": "COMMON.ACCEPT.INAPP.PAYMENT",
+                    "dataValue": "nonce_from_accept_js"
+                  },
+                  "coupon_code": null,
+                  "customer_user_id": null
+                }
+              },
+              "examples": {
+                "authorize_net": {
+                  "summary": "Authorize.Net Accept.js payment",
+                  "value": {
+                    "provider": "authorize_net",
+                    "opaqueData": {
+                      "dataDescriptor": "COMMON.ACCEPT.INAPP.PAYMENT",
+                      "dataValue": "nonce_from_accept_js"
+                    },
+                    "coupon_code": null,
+                    "customer_user_id": null
+                  }
+                },
+                "stripe": {
+                  "summary": "Stripe embedded checkout session",
+                  "value": {
+                    "provider": "stripe",
+                    "success_url": "https://example.com/payment/success",
+                    "cancel_url": "https://example.com/payment/cancel",
+                    "coupon_code": null,
+                    "customer_user_id": null
+                  }
                 }
               }
             }
