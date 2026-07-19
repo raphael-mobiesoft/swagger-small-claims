@@ -2736,8 +2736,8 @@
     },
     "/api/intake/assist": {
       "post": {
-        "description": "Address assist for customer + defendant. Supports business (existing_business_id or manual address) and individual (manual address).",
-        "summary": "POST /api/intake/assist (existing_business|individual)",
+        "description": "Address assist for customer + defendant. Supports Small Claims individual/business defendants and Activation Hero platform lookup by platform_id.",
+        "summary": "POST /api/intake/assist (existing_business|individual|ah_platform)",
         "tags": [
           "Intake"
         ],
@@ -2763,21 +2763,38 @@
               "schema": {
                 "type": "object",
                 "example": {
+                  "service": "activation_hero",
                   "customer_address": {
-                    "address_line1": "1600 Amphitheatre Parkway",
-                    "city": "Mountain View",
-                    "state": "CA",
-                    "zip": "94043",
+                    "address_line1": "401 S 2nd St",
+                    "address_line2": null,
+                    "city": "Springfield",
+                    "state": "IL",
+                    "zip": "62701",
                     "country": "US"
                   },
                   "defendant": {
-                    "type": "business",
-                    "existing_business_id": "{{ _.existing_business_id }}",
-                    "address": null
+                    "platform_id": "{{ _.ah_platform_id }}"
                   }
                 }
               },
               "examples": {
+                "activation_hero_platform": {
+                  "summary": "Activation Hero platform defendant using platform_id",
+                  "value": {
+                    "service": "activation_hero",
+                    "customer_address": {
+                      "address_line1": "401 S 2nd St",
+                      "address_line2": null,
+                      "city": "Springfield",
+                      "state": "IL",
+                      "zip": "62701",
+                      "country": "US"
+                    },
+                    "defendant": {
+                      "platform_id": "{{ _.ah_platform_id }}"
+                    }
+                  }
+                },
                 "existing_business": {
                   "summary": "Business defendant using existing_business_id",
                   "value": {
