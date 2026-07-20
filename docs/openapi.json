@@ -3584,7 +3584,7 @@
     },
     "/api/intake/flows/{id}/review": {
       "get": {
-        "description": "",
+        "description": "Returns consolidated customer/defendant/claim data and pricing preview for the review step. Optional coupon_code query previews the discount only; it does not save the coupon to the intake flow, so the selected coupon_code must still be sent in POST /api/intake/flows/{id}/payment.",
         "summary": "GET /api/intake/flows/{id}/review",
         "tags": [
           "Intake"
@@ -3597,6 +3597,17 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "coupon_code",
+            "in": "query",
+            "required": false,
+            "description": "Optional coupon code used only to preview the discounted pricing total. It is not persisted by this endpoint.",
+            "schema": {
+              "type": "string",
+              "maxLength": 50,
+              "example": "BOTEST"
             }
           },
           {
