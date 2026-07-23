@@ -3133,7 +3133,7 @@
     },
     "/api/intake/flows/{id}/payment": {
       "post": {
-        "description": "Creates a payment for a saved intake flow. Use provider=stripe to create an embedded Checkout Session, or provider=authorize_net to charge an Authorize.Net Accept.js opaqueData nonce. The API calculates pricing from the saved intake flow and finalizes the same claim/payment records after a successful payment.",
+        "description": "Creates a payment for a saved intake flow. Use provider=authorize_net to charge an Authorize.Net Accept.js opaqueData nonce, provider=stripe to create an embedded Checkout Session, or provider=zero_amount to complete a fully discounted checkout without calling an external payment provider. provider=zero_amount requires a valid coupon that applies a real discount and brings the backend-calculated total to 0. The API calculates pricing from the saved intake flow and finalizes the same claim/payment records after successful payment or zero amount completion.",
         "summary": "POST /api/intake/flows/{id}/payment",
         "tags": [
           "Intake"
@@ -3190,7 +3190,8 @@
                     "type": "string",
                     "enum": [
                       "authorize_net",
-                      "stripe"
+                      "stripe",
+                      "zero_amount"
                     ]
                   },
                   "opaqueData": {
@@ -3257,6 +3258,14 @@
                     "success_url": "https://example.com/payment/success",
                     "cancel_url": "https://example.com/payment/cancel",
                     "coupon_code": null,
+                    "customer_user_id": null
+                  }
+                },
+                "zero_amount": {
+                  "summary": "Zero amount checkout after full coupon discount",
+                  "value": {
+                    "provider": "zero_amount",
+                    "coupon_code": "FULL_DISCOUNT_CODE",
                     "customer_user_id": null
                   }
                 }
