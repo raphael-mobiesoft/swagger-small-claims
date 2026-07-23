@@ -3032,7 +3032,7 @@
         "security": []
       },
       "get": {
-        "description": "Loads an intake flow from its resume token. Cancelled flows cannot be resumed and return 409 INTAKE_FLOW_CANCELLED.",
+        "description": "Loads an intake flow from its resume token. Cancelled flows cannot be resumed and return 409 INTAKE_FLOW_CANCELLED. When claim_data.filing_county_id is present, the API enriches claim_data with filing_county_name, filing_county_state, filing_county_country, and filing_county_jurisdiction_type for frontend display.",
         "summary": "GET /api/intake/flows",
         "tags": [
           "Intake"
@@ -3081,7 +3081,7 @@
     },
     "/api/intake/flows/mine": {
       "get": {
-        "description": "Lists intake flows for the authenticated customer. Cancelled flows are excluded.",
+        "description": "Lists intake flows for the authenticated customer. Cancelled flows are excluded. When claim_data.filing_county_id is present, the API enriches claim_data with filing_county_name, filing_county_state, filing_county_country, and filing_county_jurisdiction_type for frontend display.",
         "summary": "GET /api/intake/flows/mine",
         "tags": [
           "Intake"
@@ -3584,7 +3584,7 @@
     },
     "/api/intake/flows/{id}/review": {
       "get": {
-        "description": "Returns consolidated customer/defendant/claim data and pricing preview for the review step. Optional coupon_code query previews the discount only; it does not save the coupon to the intake flow, so the selected coupon_code must still be sent in POST /api/intake/flows/{id}/payment.",
+        "description": "Returns consolidated customer/defendant/claim data and pricing preview for the review step. Optional coupon_code query previews the discount only; it does not save the coupon to the intake flow, so the selected coupon_code must still be sent in POST /api/intake/flows/{id}/payment. When claim_data.filing_county_id is present, the API enriches claim_data with filing_county_name, filing_county_state, filing_county_country, and filing_county_jurisdiction_type for frontend display.",
         "summary": "GET /api/intake/flows/{id}/review",
         "tags": [
           "Intake"
