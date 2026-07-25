@@ -283,12 +283,73 @@
     },
     "/api/admin/templates": {
       "get": {
-        "description": "",
+        "description": "List letter templates. Results include computed service, claim_type_description, and usage_count metadata. Supports filtering by service and searching by template/claim type text.",
         "summary": "GET /api/admin/templates",
         "tags": [
           "Admin/Templates"
         ],
         "parameters": [
+          {
+            "name": "service",
+            "in": "query",
+            "required": false,
+            "description": "Filter templates by service. Legacy templates without claim_type_id resolve to small_claims.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "small_claims",
+                "activation_hero"
+              ]
+            }
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "description": "Filter templates by active status.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Search over template name, category, claim type, claim type description, and service.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "description": "Sort templates. Defaults to usage_count.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "usage_count",
+                "name",
+                "updated_at",
+                "created_at"
+              ],
+              "default": "usage_count"
+            }
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "required": false,
+            "description": "Sort direction. Defaults to desc, except name defaults naturally to asc in the API.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
           {
             "name": "group_by",
             "in": "query",
@@ -304,7 +365,43 @@
         ],
         "responses": {
           "200": {
-            "description": "successful"
+            "description": "successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "templates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "templates": [
+                    {
+                      "id": "2a4b2f4e-1b77-4f3b-94ec-1783f7a3c931",
+                      "name": "Property Damage",
+                      "category": "demand_letter",
+                      "claim_type": "property_damage",
+                      "claim_type_id": "56d38fb0-d646-4ab6-81ec-3ad75d1a6344",
+                      "response_deadline_default": "10 business days",
+                      "content_html": "<p>{{letter_date}}</p><p>{{defendant_name}}</p>",
+                      "is_active": true,
+                      "created_by": null,
+                      "updated_by": null,
+                      "created_at": "2026-07-25T12:00:00.000Z",
+                      "updated_at": "2026-07-25T12:00:00.000Z",
+                      "service": "small_claims",
+                      "claim_type_description": "Property Damage",
+                      "usage_count": 12
+                    }
+                  ]
+                }
+              }
+            }
           },
           "401": {
             "description": "authorization failed"
@@ -562,16 +659,78 @@
     },
     "/api/admin/templates?group_by=claim_type": {
       "get": {
-        "description": "",
+        "description": "List letter templates. Results include computed service, claim_type_description, and usage_count metadata. Supports filtering by service and searching by template/claim type text.",
         "summary": "GET /api/admin/templates/group_by=claim_type",
         "tags": [
           "Admin/Templates"
         ],
         "parameters": [
           {
+            "name": "service",
+            "in": "query",
+            "required": false,
+            "description": "Filter templates by service. Legacy templates without claim_type_id resolve to small_claims.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "small_claims",
+                "activation_hero"
+              ]
+            }
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "description": "Filter templates by active status.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Search over template name, category, claim type, claim type description, and service.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "description": "Sort templates. Defaults to usage_count.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "usage_count",
+                "name",
+                "updated_at",
+                "created_at"
+              ],
+              "default": "usage_count"
+            }
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "required": false,
+            "description": "Sort direction. Defaults to desc, except name defaults naturally to asc in the API.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          {
             "name": "group_by",
             "in": "query",
             "required": false,
+            "description": "Optional grouping mode. Use claim_type to return grouped_templates.",
             "schema": {
               "type": "string",
               "enum": [
@@ -582,7 +741,53 @@
         ],
         "responses": {
           "200": {
-            "description": "successful"
+            "description": "successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "group_by": {
+                      "type": "string",
+                      "example": "claim_type"
+                    },
+                    "grouped_templates": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "group_by": "claim_type",
+                  "grouped_templates": {
+                    "property_damage": [
+                      {
+                        "id": "2a4b2f4e-1b77-4f3b-94ec-1783f7a3c931",
+                        "name": "Property Damage",
+                        "category": "demand_letter",
+                        "claim_type": "property_damage",
+                        "claim_type_id": "56d38fb0-d646-4ab6-81ec-3ad75d1a6344",
+                        "response_deadline_default": "10 business days",
+                        "content_html": "<p>{{letter_date}}</p><p>{{defendant_name}}</p>",
+                        "is_active": true,
+                        "created_by": null,
+                        "updated_by": null,
+                        "created_at": "2026-07-25T12:00:00.000Z",
+                        "updated_at": "2026-07-25T12:00:00.000Z",
+                        "service": "small_claims",
+                        "claim_type_description": "Property Damage",
+                        "usage_count": 12
+                      }
+                    ]
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "authorization failed"
