@@ -136,7 +136,7 @@
     },
     "/api/admin/dashboard/overview": {
       "get": {
-        "description": "",
+        "description": "Returns admin dashboard metrics. conversion_funnel uses intake_started from intake_flows, intake_completed for flows that reached review/payment or checkout draft, checkout_started from checkout_drafts, payment_made from succeeded payments, letter_signed from signed-or-beyond claims, letter_sent from mailing-or-beyond claims, and settled from closed claims.",
         "summary": "GET /api/admin/dashboard/overview",
         "tags": [
           "Admin/Dashboard"
@@ -2179,7 +2179,7 @@
     },
     "/api/claims/{id}/documents/{document_id}/download": {
       "get": {
-        "description": "",
+        "description": "Returns provider-aware claim document download data. For provider=firma, the API prefers Firma document-only signed PDF metadata when available, avoiding the signature certificate page, and can fall back to streaming the signed PDF. Use download=true to force attachment mode for streamed files. Use response=json for storage signed URL metadata.",
         "summary": "GET /api/claims/{id}/documents/{document_id}/download",
         "tags": [
           "Claims"
@@ -2202,6 +2202,27 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "download",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Force attachment mode when the API streams a binary PDF."
+          },
+          {
+            "name": "response",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json"
+              ]
+            },
+            "description": "For storage documents, return JSON metadata instead of streaming the file."
           }
         ],
         "responses": {
@@ -2223,6 +2244,95 @@
             "bearerAuth": []
           }
         ]
+      }
+    },
+    "/api/claims/{id}/signature-session": {
+      "get": {
+        "description": "Returns the pending Firma in-app signing session URL for the authenticated customer. The same signing request may also be completed or declined through the Firma email link. Final signed/declined state must be read after Firma webhook synchronization.",
+        "summary": "GET /api/claims/{id}/signature-session",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "provider": {
+                      "type": "string",
+                      "example": "firma"
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "sent"
+                    },
+                    "claim_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "document_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "provider_document_id": {
+                      "type": "string",
+                      "example": "firma_signing_request_id"
+                    },
+                    "signing_request_user_id": {
+                      "type": "string",
+                      "example": "firma_signer_user_id"
+                    },
+                    "embedded_sign_url": {
+                      "type": "string",
+                      "format": "uri",
+                      "example": "https://app.firma.dev/signing/firma_signer_user_id"
+                    }
+                  },
+                  "required": [
+                    "provider",
+                    "status",
+                    "claim_id",
+                    "document_id",
+                    "provider_document_id",
+                    "embedded_sign_url"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "404": {
+            "description": "signature session not found"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "getClaimSignatureSession"
       }
     },
     "/api/claims/{id}/intake-summary.pdf": {
@@ -2501,7 +2611,7 @@
     },
     "/api/claims/{id}/revisions": {
       "post": {
-        "description": "",
+        "description": "Customer requests edits while a Firma signing request is pending. The API cancels pending Firma documents, creates one customer_request revision, sets the claim to letter_revision_requested, and records source metadata. If the customer declines/refuses through the Firma in-app/email flow instead, the Firma webhook creates a signature_decline revision; Firma cancelled/revoked events do not create a duplicate revision when cancellation was initiated by this endpoint.",
         "summary": "POST /api/claims/{id}/revisions",
         "tags": [
           "Claims"
@@ -2523,6 +2633,9 @@
           },
           "401": {
             "description": "authorization failed"
+          },
+          "409": {
+            "description": "revision not allowed for current claim status or provider cancellation failed"
           },
           "422": {
             "description": "validation failed"
@@ -4857,7 +4970,7 @@
     },
     "/api/internal/claims/{id}/documents/certification-mailing-submission": {
       "post": {
-        "description": "",
+        "description": "Uploads the DocuPost Certification Mailing Submission PDF after mailing. This endpoint is DocuPost-only: it validates the uploaded PDF by OCR and requires the related DocuPost letter_id to appear before persisting the document. It does not support PostGrid artifacts.",
         "summary": "POST /api/internal/claims/{id}/documents/certification-mailing-submission",
         "tags": [
           "Internal/Claims"
@@ -4879,6 +4992,9 @@
           },
           "401": {
             "description": "authorization failed"
+          },
+          "409": {
+            "description": "certification upload not allowed for current status or active certification already exists"
           },
           "422": {
             "description": "validation failed"
@@ -5083,7 +5199,7 @@
     },
     "/api/internal/claims/{id}/send-signature": {
       "post": {
-        "description": "",
+        "description": "Sends the current internal letter snapshot to Firma for signature and tracks the provider document. Allowed only while the claim is in letter review/revision statuses and the letter has rendered content. Sends the Firma email invite by default and can also return an embedded signing URL with embedded_sign=true.",
         "summary": "POST /api/internal/claims/{id}/send-signature",
         "tags": [
           "Internal/Claims"
@@ -5101,10 +5217,43 @@
         ],
         "responses": {
           "200": {
-            "description": "successful"
+            "description": "successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "claim": {
+                      "type": "object"
+                    },
+                    "document": {
+                      "type": "object"
+                    },
+                    "provider_document_id": {
+                      "type": "string",
+                      "example": "firma_signing_request_id"
+                    },
+                    "embedded_sign_url": {
+                      "type": "string",
+                      "nullable": true,
+                      "example": "https://app.firma.dev/signing/firma_signer_user_id"
+                    },
+                    "signature_placement": {
+                      "type": "object"
+                    },
+                    "signature_field_bounds": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "authorization failed"
+          },
+          "409": {
+            "description": "signature send not allowed, missing letter content, or a pending Firma signature request already exists"
           },
           "422": {
             "description": "validation failed"
@@ -5114,14 +5263,51 @@
           }
         },
         "requestBody": {
-          "required": true,
+          "required": false,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
+                "properties": {
+                  "embedded_sign": {
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "send_signing_email": {
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "expiration_hours": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 8760,
+                    "default": 168
+                  },
+                  "signer_name": {
+                    "type": "string"
+                  },
+                  "signer_email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "firma_payload": {
+                    "type": "object",
+                    "nullable": true,
+                    "description": "Optional Firma payload override for manual testing only."
+                  }
+                },
                 "example": {
                   "embedded_sign": true,
-                  "revoke_previous": true
+                  "send_signing_email": true,
+                  "expiration_hours": 168,
+                  "title": "Demand Letter",
+                  "message": "Please review and sign your demand letter."
                 }
               }
             }
@@ -5131,7 +5317,8 @@
           {
             "bearerAuth": []
           }
-        ]
+        ],
+        "operationId": "sendClaimForFirmaSignature"
       }
     },
     "/api/internal/claims/{id}/tasks/{task_id}/review": {
@@ -6152,6 +6339,47 @@
         },
         "security": [],
         "operationId": "cancelIntakeFlow"
+      }
+    },
+    "/api/firma-webhook": {
+      "post": {
+        "description": "Firma webhook endpoint. Uses raw JSON body and X-Firma-Signature verification when FIRMA_WEBHOOK_SECRET is configured. Synchronizes Firma document and claim status, creates revision requests for decline/expiration events, stores Firma decline_reason when provided, and avoids duplicate revision requests for cancelled/revoked events initiated by the Case Dashboard revision endpoint.",
+        "summary": "POST /api/firma-webhook",
+        "tags": [
+          "Webhooks"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "type": "signing_request.completed",
+                  "data": {
+                    "signing_request": {
+                      "id": "firma_signing_request_id",
+                      "status": "completed"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "received"
+          },
+          "401": {
+            "description": "webhook signature failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [],
+        "operationId": "handleFirmaWebhook"
       }
     }
   },
