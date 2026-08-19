@@ -2709,7 +2709,7 @@
     },
     "/api/claims/{id}/tasks": {
       "get": {
-        "description": "",
+        "description": "Lists Phase 2 tasks. Each task includes derived task_requirements. print_prep returns its county checklist/instruction snapshot, required checklist options, self-print / print-shop methods, and active global print-shop email, mailto_subject, and mailto_body values. form_download_upload returns form_url and submit_instructions.",
         "summary": "GET /api/claims/{id}/tasks",
         "tags": [
           "Claims"
@@ -2748,7 +2748,7 @@
     },
     "/api/claims/{id}/tasks/{task_id}": {
       "get": {
-        "description": "",
+        "description": "Returns one Phase 2 task and submission history. print_prep keeps an immutable county checklist/instruction snapshot created when the claim entered Phase 2; its print_shop_options come from the active global catalog.",
         "summary": "GET /api/claims/{id}/tasks/{task_id}",
         "tags": [
           "Claims"
@@ -2796,7 +2796,7 @@
     },
     "/api/claims/{id}/tasks/{task_id}/submissions": {
       "post": {
-        "description": "Accepts multipart/form-data (file + payload JSON string) or application/json (payload object + optional attachment_url / attachment_storage_path).",
+        "description": "Accepts multipart/form-data (file + payload JSON string) or application/json (payload object + optional attachment_url / attachment_storage_path). The task type is determined by task_id. court_date requires reminders_enabled. print_prep requires print_method and all returned checklist categories; print_shop is required only for send_to_print_shop.",
         "summary": "POST /api/claims/:id/tasks/:task_id/submissions (multiform|json)",
         "tags": [
           "Claims"
@@ -2884,15 +2884,122 @@
                 }
               },
               "examples": {
-                "json": {
-                  "summary": "JSON body without file upload",
+                "form_download_upload": {
+                  "summary": "form_download_upload: attachment required",
+                  "value": {
+                    "payload": {
+                      "notes": "Completed county form attached"
+                    },
+                    "attachment_url": "https://files.example.com/completed-form.pdf",
+                    "attachment_storage_path": null
+                  }
+                },
+                "form_online": {
+                  "summary": "form_online: confirmation",
+                  "value": {
+                    "payload": {
+                      "confirmed": true
+                    }
+                  }
+                },
+                "form_print_mail": {
+                  "summary": "form_print_mail: confirmation",
+                  "value": {
+                    "payload": {
+                      "confirmed": true
+                    }
+                  }
+                },
+                "fee_online": {
+                  "summary": "fee_online: confirmation",
+                  "value": {
+                    "payload": {
+                      "confirmed": true
+                    }
+                  }
+                },
+                "fee_inperson": {
+                  "summary": "fee_inperson: receipt attachment required",
+                  "value": {
+                    "payload": {
+                      "notes": "Court receipt attached"
+                    },
+                    "attachment_url": "https://files.example.com/filing-fee-receipt.pdf"
+                  }
+                },
+                "serve_mail": {
+                  "summary": "serve_mail: certified-mail proof",
                   "value": {
                     "payload": {
                       "service_method": "certified_mail",
                       "notes": "USPS receipt attached"
                     },
-                    "attachment_url": null,
-                    "attachment_storage_path": null
+                    "attachment_url": "https://files.example.com/service-proof.pdf"
+                  }
+                },
+                "serve_sheriff": {
+                  "summary": "serve_sheriff: sheriff-service proof",
+                  "value": {
+                    "payload": {
+                      "service_method": "sheriff_service",
+                      "notes": "Sheriff return attached"
+                    },
+                    "attachment_url": "https://files.example.com/sheriff-return.pdf"
+                  }
+                },
+                "court_date_with_reminders": {
+                  "summary": "court_date: email reminders enabled",
+                  "value": {
+                    "payload": {
+                      "court_date": "2026-10-15T14:00:00.000Z",
+                      "reminders_enabled": true
+                    }
+                  }
+                },
+                "court_date_without_reminders": {
+                  "summary": "court_date: email reminders disabled",
+                  "value": {
+                    "payload": {
+                      "court_date": "2026-10-15T14:00:00.000Z",
+                      "reminders_enabled": false
+                    }
+                  }
+                },
+                "print_prep_self_print": {
+                  "summary": "print_prep: customer prints directly",
+                  "value": {
+                    "payload": {
+                      "confirmed": true,
+                      "print_method": "self_print",
+                      "checklist_selected": [
+                        "small_claims_petition_3_copies",
+                        "demand_letter_signed_copy_3_copies"
+                      ],
+                      "notes": "All required documents printed"
+                    }
+                  }
+                },
+                "print_prep_print_shop": {
+                  "summary": "print_prep: send to a configured print shop",
+                  "value": {
+                    "payload": {
+                      "confirmed": true,
+                      "print_method": "send_to_print_shop",
+                      "print_shop": "staples",
+                      "checklist_selected": [
+                        "small_claims_petition_3_copies",
+                        "demand_letter_signed_copy_3_copies"
+                      ],
+                      "notes": "Email sent to selected print shop"
+                    }
+                  }
+                },
+                "hearing": {
+                  "summary": "hearing: confirmation after an approved court date",
+                  "value": {
+                    "payload": {
+                      "confirmed": true
+                    }
                   }
                 }
               }
@@ -5546,9 +5653,53 @@
         ]
       }
     },
+    "/api/internal/print-checklist-items": {
+      "get": {
+        "description": "Lists the active global print-checklist catalog for internal county configuration. Use each returned value in task_requirements.checklist_item_values for print_prep; unknown or inactive values are rejected.",
+        "summary": "GET /api/internal/print-checklist-items",
+        "tags": [
+          "Internal/Counties"
+        ],
+        "responses": {
+          "200": {
+            "description": "successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "items": [
+                      {
+                        "value": "small_claims_petition_3_copies",
+                        "label": "Small claims petition (3 copies)"
+                      },
+                      {
+                        "value": "demand_letter_signed_copy_3_copies",
+                        "label": "Demand letter - signed copy (3 copies)"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/internal/counties/{county_id}": {
       "get": {
-        "description": "",
+        "description": "Returns the county and ordered task steps. A print_prep step exposes task_requirements.checklist_item_values and instructions, ready to reuse in its PATCH request; labels are obtained from GET /api/internal/print-checklist-items.",
         "summary": "GET /api/internal/counties/{county_id}",
         "tags": [
           "Internal/Counties"
@@ -5640,7 +5791,7 @@
     },
     "/api/internal/counties/{county_id}/task-steps": {
       "post": {
-        "description": "",
+        "description": "Creates a county Phase 2 task step. print_prep requires task_requirements.checklist_item_values from GET /api/internal/print-checklist-items and customer-facing instructions explaining how to prepare, print, or send those selected items. Required documents belong in checklist_item_values, not only in instructions. Print shops are global and are not accepted in this request. Sending checklist_options or print_shop_options inside task_requirements returns 400 VALIDATION_ERROR. form_download_upload uses form_url and submit_instructions; optional_url and internal_note are not accepted for that task type.",
         "summary": "POST /api/internal/counties/{county_id}/task-steps",
         "tags": [
           "Internal/Counties"
@@ -5659,6 +5810,9 @@
         "responses": {
           "200": {
             "description": "successful"
+          },
+          "400": {
+            "description": "validation failed"
           },
           "401": {
             "description": "authorization failed"
@@ -5683,6 +5837,119 @@
                   "optional_url": "https://example-court.gov/forms",
                   "internal_note": "Customer must submit online and confirm.",
                   "is_active": true
+                },
+                "examples": {
+                  "form_download_upload": {
+                    "summary": "form_download_upload with semantic fields",
+                    "value": {
+                      "task_title": "Download, complete, and upload the county form",
+                      "task_type": "form_download_upload",
+                      "form_url": "https://example-court.gov/small-claims.pdf",
+                      "submit_instructions": "Complete every field and upload the signed PDF.",
+                      "is_active": true
+                    }
+                  },
+                  "form_online": {
+                    "summary": "form_online with an external form link",
+                    "value": {
+                      "task_title": "Submit form on county portal",
+                      "task_type": "form_online",
+                      "unlock_after": "unlock_immediately",
+                      "optional_url": "https://example-court.gov/forms",
+                      "internal_note": "Submit online and confirm when finished.",
+                      "is_active": true
+                    }
+                  },
+                  "form_print_mail": {
+                    "summary": "form_print_mail with mailing instructions",
+                    "value": {
+                      "task_title": "Print and mail the court form",
+                      "task_type": "form_print_mail",
+                      "unlock_after": "unlock_immediately",
+                      "internal_note": "Print the completed form, mail it to the court, then confirm it was sent.",
+                      "is_active": true
+                    }
+                  },
+                  "fee_online": {
+                    "summary": "fee_online with a payment link",
+                    "value": {
+                      "task_title": "Pay the filing fee online",
+                      "task_type": "fee_online",
+                      "unlock_after": "unlock_immediately",
+                      "optional_url": "https://example-court.gov/payments",
+                      "internal_note": "Pay the filing fee online and confirm the payment.",
+                      "is_active": true
+                    }
+                  },
+                  "fee_inperson": {
+                    "summary": "fee_inperson requiring a receipt",
+                    "value": {
+                      "task_title": "Pay the filing fee in person",
+                      "task_type": "fee_inperson",
+                      "unlock_after": "unlock_immediately",
+                      "internal_note": "Pay at the clerk's office and upload the receipt.",
+                      "is_active": true
+                    }
+                  },
+                  "serve_mail": {
+                    "summary": "serve_mail requiring certified-mail proof",
+                    "value": {
+                      "task_title": "Serve the defendant by mail",
+                      "task_type": "serve_mail",
+                      "unlock_after": "after_pay_filing_fee",
+                      "internal_note": "Send by certified mail and upload proof of service.",
+                      "is_active": true
+                    }
+                  },
+                  "serve_sheriff": {
+                    "summary": "serve_sheriff requiring service proof",
+                    "value": {
+                      "task_title": "Arrange sheriff service",
+                      "task_type": "serve_sheriff",
+                      "unlock_after": "after_pay_filing_fee",
+                      "internal_note": "Arrange service with the sheriff and upload the service proof.",
+                      "is_active": true
+                    }
+                  },
+                  "court_date": {
+                    "summary": "court_date entry task",
+                    "value": {
+                      "task_title": "Enter the court date",
+                      "task_type": "court_date",
+                      "unlock_after": "after_serve_defendant",
+                      "internal_note": "Enter the scheduled court date and choose whether to receive email reminders.",
+                      "is_active": true
+                    }
+                  },
+                  "print_prep": {
+                    "summary": "print_prep with county-specific categories and instructions",
+                    "value": {
+                      "task_title": "Prepare documents for court",
+                      "task_type": "print_prep",
+                      "unlock_after": "after_enter_court_date",
+                      "task_requirements": {
+                        "checklist_item_values": [
+                          "small_claims_petition_3_copies",
+                          "demand_letter_signed_copy_3_copies"
+                        ],
+                        "instructions": [
+                          "Prepare three sets: judge, other party, and customer records.",
+                          "Attach the required files manually before sending a print-shop email."
+                        ]
+                      },
+                      "is_active": true
+                    }
+                  },
+                  "hearing": {
+                    "summary": "hearing confirmation task",
+                    "value": {
+                      "task_title": "Attend the hearing",
+                      "task_type": "hearing",
+                      "unlock_after": "after_print_prepare_docs",
+                      "internal_note": "Attend the hearing and confirm once it is complete.",
+                      "is_active": true
+                    }
+                  }
                 }
               }
             }
@@ -5752,7 +6019,7 @@
     },
     "/api/internal/counties/{county_id}/task-steps/{step_id}": {
       "patch": {
-        "description": "",
+        "description": "Updates one county task step. Send a complete replacement task_requirements object with checklist_item_values from GET /api/internal/print-checklist-items and customer-facing preparation instructions when changing print_prep county configuration. Active global print shops are returned separately to the customer task and are not accepted in this request. Sending checklist_options or print_shop_options inside task_requirements returns 400 VALIDATION_ERROR.",
         "summary": "PATCH /api/internal/counties/{county_id}/task-steps/{step_id}",
         "tags": [
           "Internal/Counties"
@@ -5781,6 +6048,9 @@
           "200": {
             "description": "successful"
           },
+          "400": {
+            "description": "validation failed"
+          },
           "401": {
             "description": "authorization failed"
           },
@@ -5800,6 +6070,80 @@
                 "example": {
                   "task_title": "Submit form",
                   "internal_note": "Updated by internal team"
+                },
+                "examples": {
+                  "form_download_upload": {
+                    "summary": "Update form fields",
+                    "value": {
+                      "form_url": "https://example-court.gov/updated-form.pdf",
+                      "submit_instructions": "Use black ink and upload the signed PDF."
+                    }
+                  },
+                  "form_online": {
+                    "summary": "Update form_online link and instructions",
+                    "value": {
+                      "optional_url": "https://example-court.gov/updated-portal",
+                      "internal_note": "Submit online and confirm when the county accepts the form."
+                    }
+                  },
+                  "form_print_mail": {
+                    "summary": "Update form_print_mail instructions",
+                    "value": {
+                      "internal_note": "Print, sign, mail the form, and confirm it was sent."
+                    }
+                  },
+                  "fee_online": {
+                    "summary": "Update fee_online link and instructions",
+                    "value": {
+                      "optional_url": "https://example-court.gov/updated-payments",
+                      "internal_note": "Pay online and confirm the transaction."
+                    }
+                  },
+                  "fee_inperson": {
+                    "summary": "Update fee_inperson instructions",
+                    "value": {
+                      "internal_note": "Pay at the clerk's office and upload the issued receipt."
+                    }
+                  },
+                  "serve_mail": {
+                    "summary": "Update serve_mail instructions",
+                    "value": {
+                      "internal_note": "Use certified mail and upload the mailing receipt or delivery proof."
+                    }
+                  },
+                  "serve_sheriff": {
+                    "summary": "Update serve_sheriff instructions",
+                    "value": {
+                      "internal_note": "Contact the sheriff's office and upload the completed proof of service."
+                    }
+                  },
+                  "court_date": {
+                    "summary": "Update court_date instructions",
+                    "value": {
+                      "internal_note": "Enter the scheduled date and select the email-reminder preference."
+                    }
+                  },
+                  "print_prep": {
+                    "summary": "Replace print_prep requirements",
+                    "value": {
+                      "task_requirements": {
+                        "checklist_item_values": [
+                          "small_claims_petition_3_copies",
+                          "mailing_receipt_proof_of_delivery",
+                          "government_issued_id"
+                        ],
+                        "instructions": [
+                          "Prepare the selected documents before confirming this task."
+                        ]
+                      }
+                    }
+                  },
+                  "hearing": {
+                    "summary": "Update hearing instructions",
+                    "value": {
+                      "internal_note": "Attend the hearing and confirm once it is complete."
+                    }
+                  }
                 }
               }
             }
