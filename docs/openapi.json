@@ -5857,8 +5857,9 @@
                   "optional_url": "https://example-court.gov/forms",
                   "internal_note": "Customer must submit online and confirm.",
                   "is_active": true
-                },
-                "examples": {
+                }
+              },
+              "examples": {
                   "form_download_upload": {
                     "summary": "form_download_upload with semantic fields",
                     "value": {
@@ -5970,7 +5971,6 @@
                       "is_active": true
                     }
                   }
-                }
               }
             }
           }
@@ -6090,8 +6090,9 @@
                 "example": {
                   "task_title": "Submit form",
                   "internal_note": "Updated by internal team"
-                },
-                "examples": {
+                }
+              },
+              "examples": {
                   "form_download_upload": {
                     "summary": "Update form fields",
                     "value": {
@@ -6164,7 +6165,6 @@
                       "internal_note": "Attend the hearing and confirm once it is complete."
                     }
                   }
-                }
               }
             }
           }
