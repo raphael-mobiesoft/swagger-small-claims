@@ -3559,7 +3559,7 @@
     "/api/intake/flows/{id}/payment": {
       "post": {
         "summary": "POST /api/intake/flows/{id}/payment",
-        "description": "Creates a payment step for a saved intake flow. Every paid checkout validates a Cloudflare Turnstile token. Small Claims flows must use provider=authorize_net and create an Authorize.Net Accept Hosted token. Activation Hero flows must use provider=shift4 and create a Shift4 Checkout Session for the frontend overlay. provider=zero_amount is valid for either service only when the recalculated total is zero and does not require Turnstile. The API rejects an external provider that does not match the intake flow service.",
+        "description": "Creates a payment step for a saved intake flow. Every paid checkout validates a Cloudflare Turnstile token. Small Claims flows must use provider=authorize_net and create an Authorize.Net Accept Hosted token. Activation Hero flows must use provider=shift4 and receive a Shift4 Components draft containing the server-calculated amount and currency. The frontend securely tokenizes card data with Shift4.js, completes 3D Secure when required, and sends the resulting one-time token to the Shift4 confirmation endpoint. provider=zero_amount is valid for either service only when the recalculated total is zero and does not require Turnstile. The API rejects an external provider that does not match the intake flow service.",
         "tags": [
           "Intake"
         ],
@@ -3593,16 +3593,15 @@
             "content": {
               "application/json": {
                 "examples": {
-                  "shift4_checkout_session": {
-                    "summary": "Activation Hero Shift4 checkout session",
+                  "shift4_components": {
+                    "summary": "Activation Hero Shift4 Components draft",
                     "value": {
                       "provider": "shift4",
-                      "payment_mode": "checkout_session",
-                      "checkout_session_id": "chse_shift4_checkout_session_id",
-                      "client_secret": "chcs_shift4_client_secret",
-                      "status": "created",
+                      "payment_mode": "components",
+                      "status": "pending_token",
                       "amount_total_cents": 9900,
                       "amount_discount_cents": 0,
+                      "currency": "USD",
                       "draft_id": "checkout-draft-uuid",
                       "service": "activation_hero"
                     }
@@ -3703,7 +3702,7 @@
                   }
                 },
                 "shift4": {
-                  "summary": "Activation Hero Shift4 Checkout Session",
+                  "summary": "Activation Hero Shift4 Components draft",
                   "value": {
                     "provider": "shift4",
                     "turnstile_token": "token_from_cloudflare_turnstile",
@@ -6872,7 +6871,7 @@
     "/api/intake/flows/{id}/payment/shift4/confirm": {
       "post": {
         "summary": "POST /api/intake/flows/{id}/payment/shift4/confirm",
-        "description": "Confirms a completed Activation Hero Shift4 Checkout Session. The API retrieves the server-created session directly from Shift4, requires status=paid, and validates its draft, service, amount, currency, and optional charge_id before creating local payment records.",
+        "description": "Completes an Activation Hero Shift4 Components payment. After the frontend has securely tokenized the card with Shift4.js and completed 3D Secure when required, it sends the one-time shift4_token here. The API charges the token server-side, verifies the resulting charge against the draft, service, amount, currency, and metadata, then creates local payment records. Card data and the token are never persisted.",
         "tags": [
           "Intake"
         ],
@@ -6911,24 +6910,20 @@
                     "type": "string",
                     "format": "uuid"
                   },
-                  "charge_id": {
+                  "shift4_token": {
                     "type": "string",
-                    "description": "Optional Shift4 charge id returned after the checkout overlay succeeds. When supplied, it must match the verified Checkout Session."
+                    "pattern": "^tok_[A-Za-z0-9]+$",
+                    "maxLength": 255,
+                    "description": "One-time card token returned by Shift4.js after Components tokenization and 3D Secure verification. Required unless the same draft has already completed. Do not persist it."
                   }
                 }
               },
               "examples": {
-                "overlay_success": {
-                  "summary": "Confirm a Shift4 checkout overlay success",
+                "components_payment": {
+                  "summary": "Charge a Shift4 Components token",
                   "value": {
                     "draft_id": "checkout-draft-uuid",
-                    "charge_id": "char_shift4_charge_id"
-                  }
-                },
-                "session_only": {
-                  "summary": "Confirm from the stored Checkout Session only",
-                  "value": {
-                    "draft_id": "checkout-draft-uuid"
+                    "shift4_token": "tok_shift4_card_token"
                   }
                 }
               }
@@ -6940,19 +6935,41 @@
             "description": "already confirmed"
           },
           "201": {
-            "description": "confirmed"
+            "description": "confirmed",
+            "content": {
+              "application/json": {
+                "example": {
+                  "provider": "shift4",
+                  "payment_mode": "components",
+                  "charge_id": "char_shift4_charge_id",
+                  "status": "succeeded",
+                  "amount_total_cents": 9900,
+                  "amount_discount_cents": 0,
+                  "draft_id": "checkout-draft-uuid",
+                  "payment_id": "payment-uuid",
+                  "claim_id": "claim-uuid",
+                  "service": "activation_hero"
+                }
+              }
+            }
           },
           "401": {
             "description": "authorization failed"
           },
+          "400": {
+            "description": "Shift4 token is required for a Components draft"
+          },
           "402": {
-            "description": "Shift4 Checkout Session is not paid"
+            "description": "Shift4 declined or could not complete the card charge"
           },
           "409": {
             "description": "session, charge, draft, amount, currency, or service mismatch"
           },
           "422": {
             "description": "validation failed"
+          },
+          "502": {
+            "description": "Shift4 provider request failed"
           },
           "500": {
             "description": "unknown server error"
@@ -6964,7 +6981,7 @@
     "/api/webhooks/shift4": {
       "post": {
         "summary": "POST /api/webhooks/shift4",
-        "description": "Receives Shift4 events for Activation Hero. The API treats the payload only as an event reference, retrieves the event directly from Shift4, and processes only verified CHARGE_SUCCEEDED events related to a valid Checkout Session/draft. No webhook signing secret is configured for this provider.",
+        "description": "Receives Shift4 events for Activation Hero. The API treats the payload only as an event reference, retrieves the event directly from Shift4, and processes only verified CHARGE_SUCCEEDED events related to a valid Components charge/draft. No webhook signing secret is configured for this provider.",
         "tags": [
           "Webhooks"
         ],
