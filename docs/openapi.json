@@ -136,7 +136,7 @@
     },
     "/api/admin/dashboard/overview": {
       "get": {
-        "description": "Returns admin dashboard metrics. conversion_funnel uses intake_started from intake_flows, intake_completed for flows that reached review/payment or checkout draft, checkout_started from checkout_drafts, payment_made from succeeded payments, letter_signed from signed-or-beyond claims, letter_sent from mailing-or-beyond claims, and settled from closed claims.",
+        "description": "Returns admin dashboard metrics. Optionally filter all metrics by service. conversion_funnel uses intake_started from intake_flows, intake_completed for flows that reached review/payment or checkout draft, checkout_started from checkout_drafts, payment_made from succeeded payments, letter_signed from signed-or-beyond claims, letter_sent from mailing-or-beyond claims, and settled from closed claims.",
         "summary": "GET /api/admin/dashboard/overview",
         "tags": [
           "Admin/Dashboard"
@@ -156,6 +156,19 @@
                 "all_time"
               ],
               "default": "last_30_days"
+            }
+          },
+          {
+            "name": "service",
+            "in": "query",
+            "required": false,
+            "description": "Optional service scope. Omit for the combined overview.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "small_claims",
+                "activation_hero"
+              ]
             }
           }
         ],
