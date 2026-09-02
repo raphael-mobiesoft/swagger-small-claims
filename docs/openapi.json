@@ -894,7 +894,7 @@
     },
     "/api/admin/users/{user_id}/remove": {
       "post": {
-        "description": "",
+        "description": "Deactivates an internal user and blocks future login. Any non-closed claims assigned to that user are returned to the unassigned queue, with an assignment activity log created for each. The successful response includes unassigned_claims_count.",
         "summary": "POST /api/admin/users/{user_id}/remove",
         "tags": [
           "Admin/Users"
