@@ -5087,7 +5087,7 @@
     },
     "/api/internal/claims/{id}/assign": {
       "patch": {
-        "description": "",
+        "description": "Assigns or reassigns a claim. A changed assignment queues an immediate email notification for the new assignee; repeating the same assignment does not queue another email.",
         "summary": "PATCH /api/internal/claims/{id}/assign",
         "tags": [
           "Internal/Claims"
