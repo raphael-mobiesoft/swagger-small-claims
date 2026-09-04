@@ -4745,6 +4745,84 @@
         ]
       }
     },
+    "/api/internal/assignees": {
+      "get": {
+        "description": "Returns assignable internal users for the Claims assignee filter. Use this endpoint for all internal roles; `is_current_user` identifies the caller for an optional Assigned to me filter.",
+        "summary": "GET /api/internal/assignees",
+        "tags": [
+          "Internal/Claims"
+        ],
+        "responses": {
+          "200": {
+            "description": "successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "assignees"
+                  ],
+                  "properties": {
+                    "assignees": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "email",
+                          "full_name",
+                          "role",
+                          "is_current_user"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "email": {
+                            "type": "string",
+                            "format": "email"
+                          },
+                          "full_name": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "admin",
+                              "cx_agent",
+                              "paralegal"
+                            ]
+                          },
+                          "is_current_user": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "403": {
+            "description": "forbidden"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/internal/claims": {
       "get": {
         "description": "",
