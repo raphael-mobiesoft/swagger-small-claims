@@ -1216,7 +1216,6 @@
                 "type": "object",
                 "example": {
                   "full_name": "Customer Test Name",
-                  "contact_email": "{{ _.customer_email }}",
                   "contact_phone": "15551112222",
                   "contact_address": {
                     "address_line1": "1600 Amphitheatre Parkway",
