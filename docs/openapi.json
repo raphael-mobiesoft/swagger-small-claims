@@ -6,6 +6,54 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/addresses/validate": {
+      "post": {
+        "description": "Validates one typed address through Google Geocoding before persistence. The response returns a short-lived signed validation_token. For needs_confirmation, send confirmed=true with that token when saving the address.",
+        "summary": "POST /api/addresses/validate",
+        "tags": [
+          "Addresses"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Returns status=verified, needs_confirmation, or not_found. Found addresses include normalized_address, changed_fields, material_changed_fields, place_id, and a validation token."
+          },
+          "400": {
+            "description": "Invalid address payload or validation token configuration."
+          },
+          "502": {
+            "description": "Google address validation provider is unavailable."
+          },
+          "503": {
+            "description": "Google Maps API key is not configured."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "address"
+                ],
+                "example": {
+                  "address": {
+                    "address_line1": "401 S 2nd St",
+                    "address_line2": null,
+                    "city": "Springfield",
+                    "state": "IL",
+                    "zip": "62701",
+                    "country": "US"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
     "/api/admin/coupons": {
       "get": {
         "description": "",
@@ -1188,7 +1236,7 @@
         ]
       },
       "patch": {
-        "description": "",
+        "description": "A non-null contact_address requires contact_address_validation with the short-lived token returned by POST /api/addresses/validate. Set confirmed=true only after accepting a needs_confirmation result.",
         "summary": "PATCH /api/auth/profile",
         "tags": [
           "Auth"
@@ -1203,6 +1251,9 @@
           },
           "422": {
             "description": "validation failed"
+          },
+          "409": {
+            "description": "Address confirmation is required or the submitted address does not match its validation token."
           },
           "500": {
             "description": "unknown server error"
@@ -1223,6 +1274,10 @@
                     "state": "CA",
                     "zip": "94043",
                     "country": "US"
+                  },
+                  "contact_address_validation": {
+                    "token": "{{ _.address_validation_token }}",
+                    "confirmed": false
                   }
                 }
               }
@@ -3844,7 +3899,7 @@
     },
     "/api/intake/flows/{id}/customer-information": {
       "patch": {
-        "description": "",
+        "description": "customer.address_validation is required. It must contain the validation token from POST /api/addresses/validate; set confirmed=true only after accepting a needs_confirmation result.",
         "summary": "PATCH /api/intake/flows/{id}/customer-information",
         "tags": [
           "Intake"
@@ -3905,6 +3960,10 @@
                       "state": "CA",
                       "zip": "94043",
                       "country": "US"
+                    },
+                    "address_validation": {
+                      "token": "{{ _.address_validation_token }}",
+                      "confirmed": false
                     }
                   }
                 }
@@ -3917,7 +3976,7 @@
     },
     "/api/intake/flows/{id}/defendant-information": {
       "patch": {
-        "description": "",
+        "description": "Small Claims individual and manual business defendants require defendant.address_validation with the token from POST /api/addresses/validate. Existing business defendants and Activation Hero platform defendants do not require a token.",
         "summary": "PATCH /api/intake/flows/:id/defendant-information (activation_hero|small_claims)",
         "tags": [
           "Intake"
@@ -3995,6 +4054,10 @@
                         "state": "CA",
                         "zip": "95014",
                         "country": "US"
+                      },
+                      "address_validation": {
+                        "token": "{{ _.address_validation_token }}",
+                        "confirmed": false
                       }
                     }
                   }
@@ -4023,6 +4086,10 @@
                         "state": "CA",
                         "zip": "90012",
                         "country": "US"
+                      },
+                      "address_validation": {
+                        "token": "{{ _.address_validation_token }}",
+                        "confirmed": false
                       }
                     }
                   }
@@ -4041,6 +4108,10 @@
                         "state": "SP",
                         "zip": "01310-100",
                         "country": "BR"
+                      },
+                      "address_validation": {
+                        "token": "{{ _.address_validation_token }}",
+                        "confirmed": false
                       }
                     }
                   }
