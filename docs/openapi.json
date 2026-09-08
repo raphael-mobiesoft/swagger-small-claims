@@ -315,12 +315,26 @@
     },
     "/api/admin/template-variables": {
       "get": {
-        "description": "",
+        "description": "Lists template variables. Send service to return only variables usable by that service's templates. Activation Hero includes platform_account_email and platform_account_phone.",
         "summary": "GET /api/admin/template-variables",
         "tags": [
           "Admin/Templates"
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "service",
+            "in": "query",
+            "required": false,
+            "description": "Return variables allowed for this template service.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "small_claims",
+                "activation_hero"
+              ]
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "successful"
@@ -529,7 +543,7 @@
     },
     "/api/admin/templates/preview": {
       "post": {
-        "description": "",
+        "description": "Preview placeholders allowed for service. Defaults to small_claims; send activation_hero for AH-only placeholders.",
         "summary": "POST /api/admin/templates/preview",
         "tags": [
           "Admin/Templates"
@@ -556,10 +570,12 @@
               "schema": {
                 "type": "object",
                 "example": {
-                  "content_html": "<h2>Demand Letter</h2><p>Hello {{claimant_name}}</p><p>Amount: ${{claim_amount}}</p>",
+                  "content_html": "<h2>Demand Letter</h2><p>Hello {{claimant_name}}</p><p>Platform account: {{platform_account_email}} / {{platform_account_phone}}</p>",
+                  "service": "activation_hero",
                   "sample_data": {
                     "claimant_name": "Jane Doe",
-                    "claim_amount": "250.00"
+                    "platform_account_email": "driver@example.com",
+                    "platform_account_phone": "+1 555 010 0100"
                   }
                 }
               }
@@ -3976,7 +3992,7 @@
     },
     "/api/intake/flows/{id}/defendant-information": {
       "patch": {
-        "description": "Small Claims individual and manual business defendants require defendant.address_validation with the token from POST /api/addresses/validate. Existing business defendants and Activation Hero platform defendants do not require a token.",
+        "description": "Small Claims individual and manual business defendants require defendant.address_validation with the token from POST /api/addresses/validate. Existing business defendants do not require a token. Activation Hero platform defendants use the internal platform address and require platform_id plus at least one of platform_account_email or platform_account_phone, but no address_validation token.",
         "summary": "PATCH /api/intake/flows/:id/defendant-information (activation_hero|small_claims)",
         "tags": [
           "Intake"
@@ -4027,7 +4043,9 @@
                 "type": "object",
                 "example": {
                   "defendant": {
-                    "platform_id": "{{ _.ah_platform_id }}"
+                    "platform_id": "{{ _.ah_platform_id }}",
+                    "platform_account_email": "driver@example.com",
+                    "platform_account_phone": "+15550100100"
                   }
                 }
               },
@@ -4036,7 +4054,9 @@
                   "summary": "Activation Hero defendant payload",
                   "value": {
                     "defendant": {
-                      "platform_id": "{{ _.ah_platform_id }}"
+                      "platform_id": "{{ _.ah_platform_id }}",
+                      "platform_account_email": "driver@example.com",
+                      "platform_account_phone": "+15550100100"
                     }
                   }
                 },
