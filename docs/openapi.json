@@ -8,7 +8,7 @@
   "paths": {
     "/api/addresses/validate": {
       "post": {
-        "description": "Validates one typed address through Google Geocoding before persistence. The response returns a short-lived signed validation_token. For needs_confirmation, send confirmed=true with that token when saving the address.",
+        "description": "Validates one typed address before persistence. It uses Google Address Validation for supported countries, with USPS CASS enabled for US and Puerto Rico, and falls back to Google Geocoding where Address Validation is unsupported. state accepts a full state/province/region name or its code, including for US addresses. Normalized state uses Google's postal representation; Geocoding fallback prefers its abbreviated state name when available. Provider-supported name/code equivalents (California/CA, São Paulo/SP, New South Wales/NSW) are formatting changes, not material state changes. Replaced, inferred, corrected, or unconfirmed states are not treated as equivalent. Other provider signals can still require confirmation. International state codes are not restricted to two characters. The response returns a short-lived signed validation_token only for verified or needs_confirmation results. For needs_confirmation, send confirmed=true with that token when saving the address. For US/PR, USPS DPV N or a result without a real street at PREMISE/SUB_PREMISE granularity returns not_found; D (missing unit) and S (unconfirmed unit) require confirmation. For every country, possibleNextAction FIX, validationGranularity ROUTE/OTHER, or an incomplete result without a street, premise, or PO box component returns not_found without a token. A street-only match is insufficient. normalized_address includes corrections supplied by Google. If validation cannot produce a usable address, use lookup and validate the selected candidate's address, or explicitly confirm manual entry.",
         "summary": "POST /api/addresses/validate",
         "tags": [
           "Addresses"
@@ -19,7 +19,7 @@
             "description": "Returns status=verified, needs_confirmation, or not_found. Found addresses include normalized_address, changed_fields, material_changed_fields, place_id, and a validation token."
           },
           "400": {
-            "description": "Invalid address payload or validation token configuration."
+            "description": "Invalid address payload."
           },
           "502": {
             "description": "Google address validation provider is unavailable."
@@ -46,6 +46,58 @@
                     "zip": "62701",
                     "country": "US"
                   }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/addresses/lookup": {
+      "post": {
+        "description": "Best-effort address recovery for incomplete input. Uses both Places Autocomplete (New) and Places Text Search (New), combining and deduplicating their results. search_hint optionally refines any lookup, such as a business, building, or property name. state accepts full names or codes. Normalized state prefers Google's abbreviation (for example AL, SP, or NSW), preserving the provider's full name when no abbreviation is available; names are never truncated to create codes. A candidate is returned only when Places itself provides its number, street, city, state, ZIP/postal code, and country; no typed field is used to complete a provider result. Candidates are suggestions: the first usable result is best_match and others are possible_match. Lookup does not issue a persistence token. After the customer selects a candidate, send its normalized_address to /api/addresses/validate and use that response's token when saving. This public endpoint is limited to 20 requests per 15 minutes per client.",
+        "summary": "POST /api/addresses/lookup",
+        "tags": [
+          "Addresses"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Returns a short candidate list. candidates is empty when Google has no complete postal-address candidate."
+          },
+          "400": {
+            "description": "Invalid lookup payload."
+          },
+          "429": {
+            "description": "Too many lookup requests."
+          },
+          "502": {
+            "description": "Google Places lookup provider is unavailable."
+          },
+          "503": {
+            "description": "Google Maps API key is not configured."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "address"
+                ],
+                "example": {
+                  "address": {
+                    "address_line1": "15090",
+                    "address_line2": null,
+                    "city": "Madison",
+                    "state": "AL",
+                    "zip": "35756",
+                    "country": "US"
+                  },
+                  "search_hint": "Example Equipment Company"
                 }
               }
             }
@@ -1252,7 +1304,7 @@
         ]
       },
       "patch": {
-        "description": "A non-null contact_address requires contact_address_validation with the short-lived token returned by POST /api/addresses/validate. Set confirmed=true only after accepting a needs_confirmation result.",
+        "description": "A non-null contact_address requires contact_address_validation. Use the short-lived token from POST /api/addresses/validate; set confirmed=true after accepting a needs_confirmation result. An explicit manual override is also allowed with { source: 'user_provided', confirmed: true }; it is stored as a manual address submission. confirmed=false returns 409 ADDRESS_MANUAL_CONFIRMATION_REQUIRED.",
         "summary": "PATCH /api/auth/profile",
         "tags": [
           "Auth"
@@ -3915,7 +3967,7 @@
     },
     "/api/intake/flows/{id}/customer-information": {
       "patch": {
-        "description": "customer.address_validation is required. It must contain the validation token from POST /api/addresses/validate; set confirmed=true only after accepting a needs_confirmation result.",
+        "description": "customer.address_validation is required. Use the validation token from POST /api/addresses/validate; set confirmed=true after accepting a needs_confirmation result. An explicit manual override is also allowed with { source: 'user_provided', confirmed: true }. confirmed=false returns 409 ADDRESS_MANUAL_CONFIRMATION_REQUIRED.",
         "summary": "PATCH /api/intake/flows/{id}/customer-information",
         "tags": [
           "Intake"
@@ -3992,7 +4044,7 @@
     },
     "/api/intake/flows/{id}/defendant-information": {
       "patch": {
-        "description": "Small Claims individual and manual business defendants require defendant.address_validation with the token from POST /api/addresses/validate. Existing business defendants do not require a token. Activation Hero platform defendants use the internal platform address and require platform_id plus at least one of platform_account_email or platform_account_phone, but no address_validation token.",
+        "description": "Small Claims individual and manual business defendants require defendant.address_validation. Use the token from POST /api/addresses/validate, or an explicit manual override { source: 'user_provided', confirmed: true }. confirmed=false returns 409 ADDRESS_MANUAL_CONFIRMATION_REQUIRED. Existing business defendants do not require address validation. Activation Hero platform defendants use the internal platform address and require platform_id plus at least one of platform_account_email or platform_account_phone, but no address_validation token.",
         "summary": "PATCH /api/intake/flows/:id/defendant-information (activation_hero|small_claims)",
         "tags": [
           "Intake"
