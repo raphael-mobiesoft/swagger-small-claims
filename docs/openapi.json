@@ -408,6 +408,372 @@
         ]
       }
     },
+    "/api/admin/templates/default": {
+      "get": {
+        "summary": "GET /api/admin/templates/default",
+        "description": "Admin only. Get the independent default for a service. Returns default_template: null when unconfigured. Frontend Start from default template prefills content_html and response_deadline_default in the form only; it does not save or create a template.",
+        "tags": [
+          "Admin/Templates"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "service",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "small_claims",
+                "activation_hero"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Service default or null",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "default_template": {
+                      "type": "object",
+                      "nullable": true,
+                      "properties": {
+                        "service": {
+                          "type": "string",
+                          "enum": [
+                            "small_claims",
+                            "activation_hero"
+                          ]
+                        },
+                        "content_html": {
+                          "type": "string"
+                        },
+                        "response_deadline_default": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 80
+                        },
+                        "updated_by": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "Preserve this exact string for default_updated_at when applying."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: missing or invalid service"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "403": {
+            "description": "admin role required"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "PUT /api/admin/templates/default",
+        "description": "Admin only. Create or update the default content and required response_deadline_default (3-80 characters) for one service. Sanitizes HTML and validates service-specific placeholders. Does not update existing claim-type templates or generated letters. Use the existing template preview endpoint with the same service. GET and PUT return the same default_template fields; PUT always returns the saved object.",
+        "tags": [
+          "Admin/Templates"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "service",
+                  "content_html",
+                  "response_deadline_default"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "service": {
+                    "type": "string",
+                    "enum": [
+                      "small_claims",
+                      "activation_hero"
+                    ]
+                  },
+                  "content_html": {
+                    "type": "string",
+                    "minLength": 10
+                  },
+                  "response_deadline_default": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 80,
+                    "example": "10 business days"
+                  }
+                }
+              },
+              "example": {
+                "service": "activation_hero",
+                "content_html": "<p>Dear {{defendant_name}},</p><p>Please respond within {{response_deadline}}.</p>",
+                "response_deadline_default": "10 business days"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved default_template with service, content_html, response_deadline_default, updated_by, created_at and updated_at",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "default_template": {
+                      "type": "object",
+                      "properties": {
+                        "service": {
+                          "type": "string"
+                        },
+                        "content_html": {
+                          "type": "string"
+                        },
+                        "response_deadline_default": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 80
+                        },
+                        "updated_by": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR, INVALID_PLACEHOLDERS, or DEFAULT_TEMPLATE_CONTENT_INVALID (sanitized content too short)"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "403": {
+            "description": "admin role required"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        }
+      }
+    },
+    "/api/admin/templates/default/apply": {
+      "post": {
+        "summary": "POST /api/admin/templates/default/apply",
+        "description": "Admin only. Explicitly replace content_html and response_deadline_default on selected templates or all existing templates within the service, including inactive versions. All does not create missing templates. Legacy templates without claim_type_id belong to small_claims. Validate the entire selection before any write. Preserves bindings, active status, metadata (except updated_at/updated_by audit), and generated letter snapshots. Rows with identical content and deadline are not rewritten. Warn the admin that custom content and response deadlines will be replaced before sending confirmed: true. Copy default_updated_at exactly from GET/PUT; reload and reconfirm after a conflict.",
+        "tags": [
+          "Admin/Templates"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "service",
+                  "scope",
+                  "default_updated_at",
+                  "confirmed"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "service": {
+                    "type": "string",
+                    "enum": [
+                      "small_claims",
+                      "activation_hero"
+                    ]
+                  },
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "all",
+                      "selected"
+                    ]
+                  },
+                  "template_ids": {
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "description": "Required for selected; forbidden for all. Letter template IDs, not claim-type IDs."
+                  },
+                  "default_updated_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "confirmed": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ]
+                  }
+                },
+                "oneOf": [
+                  {
+                    "required": [
+                      "template_ids"
+                    ],
+                    "properties": {
+                      "scope": {
+                        "enum": [
+                          "selected"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "scope": {
+                        "enum": [
+                          "all"
+                        ]
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "template_ids"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "examples": {
+                "all": {
+                  "value": {
+                    "service": "activation_hero",
+                    "scope": "all",
+                    "default_updated_at": "2026-09-13T12:00:00.123456+00:00",
+                    "confirmed": true
+                  }
+                },
+                "selected": {
+                  "value": {
+                    "service": "small_claims",
+                    "scope": "selected",
+                    "template_ids": [
+                      "22222222-2222-4222-8222-222222222222"
+                    ],
+                    "default_updated_at": "2026-09-13T12:00:00.123456+00:00",
+                    "confirmed": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Atomic application completed; counts can be zero",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "service": {
+                      "type": "string"
+                    },
+                    "scope": {
+                      "type": "string"
+                    },
+                    "default_updated_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "matched_count": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "updated_count": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Templates whose content or response deadline changed."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR or INVALID_PLACEHOLDERS"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "403": {
+            "description": "admin role required"
+          },
+          "404": {
+            "description": "DEFAULT_TEMPLATE_NOT_FOUND"
+          },
+          "409": {
+            "description": "DEFAULT_TEMPLATE_CHANGED: reload the default and reconfirm"
+          },
+          "422": {
+            "description": "DEFAULT_TEMPLATE_TARGETS_INVALID: missing or cross-service template ID; no templates updated"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        }
+      }
+    },
     "/api/admin/templates": {
       "get": {
         "description": "List letter templates. Results include computed service, claim_type_description, and usage_count metadata. Supports filtering by service and searching by template/claim type text.",
@@ -595,7 +961,7 @@
     },
     "/api/admin/templates/preview": {
       "post": {
-        "description": "Preview placeholders allowed for service. Defaults to small_claims; send activation_hero for AH-only placeholders.",
+        "description": "Preview placeholders allowed for service. Defaults to small_claims; send activation_hero for AH-only placeholders. Optional response_deadline_default (3-80 characters) overrides sample_data.response_deadline; if omitted, sample/catalog behavior is unchanged.",
         "summary": "POST /api/admin/templates/preview",
         "tags": [
           "Admin/Templates"
@@ -625,6 +991,7 @@
                   "content_html": "<h2>Demand Letter</h2><p>Hello {{claimant_name}}</p><p>Platform account: {{platform_account_email}} / {{platform_account_phone}}</p>",
                   "service": "activation_hero",
                   "sample_data": {
+                    "response_deadline": "10 business days",
                     "claimant_name": "Jane Doe",
                     "platform_account_email": "driver@example.com",
                     "platform_account_phone": "+1 555 010 0100"
