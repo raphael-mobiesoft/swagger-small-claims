@@ -1377,7 +1377,7 @@
     },
     "/api/admin/users/{user_id}/remove": {
       "post": {
-        "description": "Deactivates an internal user and blocks future login. Any non-closed claims assigned to that user are returned to the unassigned queue, with an assignment activity log created for each. The successful response includes unassigned_claims_count.",
+        "description": "Deactivates an internal user, blocks future login, and deactivates that user's linked claim-created notification recipient when present. Any non-closed claims assigned to that user are returned to the unassigned queue, with an assignment activity log created for each. The successful response includes unassigned_claims_count.",
         "summary": "POST /api/admin/users/{user_id}/remove",
         "tags": [
           "Admin/Users"
@@ -1466,6 +1466,168 @@
         ]
       }
     },
+    "/api/admin/notification-recipients": {
+      "get": {
+        "description": "Lists admin-configured recipients for the internal claim-created notification. An entry may be linked to an internal profile or be an external email.",
+        "summary": "GET /api/admin/notification-recipients",
+        "tags": [
+          "Admin/Notification Recipients"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "403": {
+            "description": "admin role required"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "description": "Adds one recipient for the internal copy of future claim-created notifications. Internal profile emails are linked automatically. Customer account emails are rejected.",
+        "summary": "POST /api/admin/notification-recipients",
+        "tags": [
+          "Admin/Notification Recipients"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "recipient created"
+          },
+          "409": {
+            "description": "duplicate recipient or customer email"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "example": {
+                  "email": "ops@example.com",
+                  "is_active": true
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/notification-recipients/{id}": {
+      "patch": {
+        "description": "Updates the recipient email and/or active state. Changing to an active internal profile email links that profile automatically.",
+        "summary": "PATCH /api/admin/notification-recipients/{id}",
+        "tags": [
+          "Admin/Notification Recipients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "recipient updated"
+          },
+          "404": {
+            "description": "recipient not found"
+          },
+          "409": {
+            "description": "duplicate recipient or customer email"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "is_active": false
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "description": "Deactivates a recipient without deleting its record.",
+        "summary": "DELETE /api/admin/notification-recipients/{id}",
+        "tags": [
+          "Admin/Notification Recipients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "recipient deactivated"
+          },
+          "404": {
+            "description": "recipient not found"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/auth/magic-link/login": {
       "post": {
         "description": "",
@@ -1506,7 +1668,7 @@
     },
     "/api/auth/magic-link/signup": {
       "post": {
-        "description": "",
+        "description": "Creates customer magic links only. Emails configured as active claim-created notification recipients, and emails belonging to internal or inactive profiles, return 409 CUSTOMER_EMAIL_RESERVED_FOR_INTERNAL_USE.",
         "summary": "POST /api/auth/magic-link/signup",
         "tags": [
           "Auth"
@@ -1573,7 +1735,7 @@
     },
     "/api/auth/email": {
       "patch": {
-        "description": "",
+        "description": "Starts a customer email change. Reserved internal notification-recipient emails return 409 CUSTOMER_EMAIL_RESERVED_FOR_INTERNAL_USE.",
         "summary": "PATCH /api/auth/email",
         "tags": [
           "Auth"
