@@ -234,12 +234,12 @@
         ]
       }
     },
-    "/api/admin/dashboard/overview": {
+    "/api/internal/dashboard/business-overview": {
       "get": {
-        "description": "Returns admin dashboard metrics. Optionally filter all metrics by service. conversion_funnel uses intake_started from intake_flows, intake_completed for flows that reached review/payment or checkout draft, checkout_started from checkout_drafts, payment_made from succeeded payments, letter_signed from signed-or-beyond claims, letter_sent from mailing-or-beyond claims, and settled from closed claims.",
-        "summary": "GET /api/admin/dashboard/overview",
+        "description": "Returns business performance metrics for internal users. Optionally filter all metrics by service. conversion_funnel uses intake_started from intake_flows, intake_completed for flows that reached review/payment or checkout draft, checkout_started from checkout_drafts, payment_made from succeeded payments, letter_signed from signed-or-beyond claims, letter_sent from mailing-or-beyond claims, and settled from closed claims.",
+        "summary": "GET /api/internal/dashboard/business-overview",
         "tags": [
-          "Admin/Dashboard"
+          "Internal/Dashboard"
         ],
         "parameters": [
           {
@@ -7046,10 +7046,10 @@
         ]
       }
     },
-    "/api/internal/dashboard/cx-overview": {
+    "/api/internal/dashboard/case-operations": {
       "get": {
-        "description": "",
-        "summary": "GET /api/internal/dashboard/cx-overview",
+        "description": "Returns operational case metrics, alerts, queue preview, counties preview, and pipeline summary for internal users.",
+        "summary": "GET /api/internal/dashboard/case-operations",
         "tags": [
           "Internal/Dashboard"
         ],
@@ -7838,10 +7838,6 @@
     },
     {
       "name": "Internal/Business Defendants",
-      "description": ""
-    },
-    {
-      "name": "Admin/Dashboard",
       "description": ""
     },
     {
