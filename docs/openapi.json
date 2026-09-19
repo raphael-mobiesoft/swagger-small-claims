@@ -5579,7 +5579,7 @@
     },
     "/api/internal/claims/queue": {
       "get": {
-        "description": "",
+        "description": "Returns queue items. Each item includes `service` (`small_claims` or `activation_hero`) for service filtering.",
         "summary": "GET /api/internal/claims/queue",
         "tags": [
           "Internal/Dashboard"
@@ -5599,6 +5599,19 @@
                 "letter_revision_requested",
                 "letter_signature_declined",
                 "letter_revision_declined"
+              ]
+            }
+          },
+          {
+            "name": "service",
+            "in": "query",
+            "required": false,
+            "description": "Filter by claim service.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "small_claims",
+                "activation_hero"
               ]
             }
           },
