@@ -3331,7 +3331,7 @@
     },
     "/api/claims/{id}/send-mailing": {
       "post": {
-        "description": "",
+        "description": "Sends the signed letter through the destination-based mailing provider. PostGrid requests always enforce `size=us_letter` so they match the signed Firma PDF; `postgrid_payload.size` cannot override this standard.",
         "summary": "POST /api/claims/{id}/send-mailing",
         "tags": [
           "Claims"
