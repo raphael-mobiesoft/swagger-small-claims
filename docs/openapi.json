@@ -3730,7 +3730,7 @@
     },
     "/api/intake/activation-hero/categories": {
       "get": {
-        "description": "",
+        "description": "Returns active Activation Hero categories. When state_code/state is supplied and no active categories exist for that code, the API retries with AH_INTERNATIONAL_CATEGORY_FALLBACK_STATE_CODE and returns the fallback state's category rows and IDs without changing the response shape. Omitting the state filter preserves the unfiltered behavior.",
         "summary": "GET /api/intake/activation-hero/categories",
         "tags": [
           "Intake"
@@ -3740,7 +3740,7 @@
             "name": "state_code",
             "in": "query",
             "required": false,
-            "description": "State code filter (preferred).",
+            "description": "Two-letter state/province filter (preferred). If no active categories exist, the configured international fallback state is used.",
             "schema": {
               "type": "string",
               "minLength": 2,
@@ -3751,7 +3751,7 @@
             "name": "state",
             "in": "query",
             "required": false,
-            "description": "Alias for state_code.",
+            "description": "Alias for state_code, with the same configured fallback behavior.",
             "schema": {
               "type": "string",
               "minLength": 2,
@@ -3782,7 +3782,7 @@
             "description": "validation failed"
           },
           "500": {
-            "description": "unknown server error"
+            "description": "AH_CATEGORY_FALLBACK_STATE_NOT_CONFIGURED, AH_CATEGORY_FALLBACK_CATEGORIES_NOT_FOUND, or unknown server error"
           }
         },
         "security": []
