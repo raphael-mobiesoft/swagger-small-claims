@@ -3740,11 +3740,11 @@
             "name": "state_code",
             "in": "query",
             "required": false,
-            "description": "Two-letter state/province filter (preferred). If no active categories exist, the configured international fallback state is used.",
+            "description": "State/province/region code or name, up to 32 characters (preferred). If no active categories exist, the configured international fallback state is used.",
             "schema": {
               "type": "string",
-              "minLength": 2,
-              "maxLength": 2
+              "minLength": 1,
+              "maxLength": 32
             }
           },
           {
@@ -3754,8 +3754,8 @@
             "description": "Alias for state_code, with the same configured fallback behavior.",
             "schema": {
               "type": "string",
-              "minLength": 2,
-              "maxLength": 2
+              "minLength": 1,
+              "maxLength": 32
             }
           },
           {
