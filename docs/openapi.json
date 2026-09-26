@@ -367,7 +367,7 @@
     },
     "/api/admin/template-variables": {
       "get": {
-        "description": "Lists template variables. Send service to return only variables usable by that service's templates. Activation Hero includes platform_account_email and platform_account_phone.",
+        "description": "Lists template variables. Send service to return only variables usable by that service's templates. Both services include the reserved signature_anchor system variable, which the editor must render as one movable, non-duplicable signature-position block and serialize as the only content of its own paragraph.",
         "summary": "GET /api/admin/template-variables",
         "tags": [
           "Admin/Templates"
@@ -498,7 +498,7 @@
       },
       "put": {
         "summary": "PUT /api/admin/templates/default",
-        "description": "Admin only. Create or update the default content and required response_deadline_default (3-80 characters) for one service. Sanitizes HTML and validates service-specific placeholders. Does not update existing claim-type templates or generated letters. Use the existing template preview endpoint with the same service. GET and PUT return the same default_template fields; PUT always returns the saved object.",
+        "description": "Admin only. Create or update the default content and required response_deadline_default (3-80 characters) for one service. Sanitizes HTML, validates service-specific placeholders, and requires exactly one {{signature_anchor}} as the only content of its own paragraph. Does not update existing claim-type templates or generated letters. Use the existing template preview endpoint with the same service. GET and PUT return the same default_template fields; PUT always returns the saved object.",
         "tags": [
           "Admin/Templates"
         ],
@@ -541,7 +541,7 @@
               },
               "example": {
                 "service": "activation_hero",
-                "content_html": "<p>Dear {{defendant_name}},</p><p>Please respond within {{response_deadline}}.</p>",
+                "content_html": "<p>Dear {{defendant_name}},</p><p>Please respond within {{response_deadline}}.</p><p>Sincerely,</p><p>{{signature_anchor}}</p><p>{{claimant_name}}</p>",
                 "response_deadline_default": "10 business days"
               }
             }
@@ -590,7 +590,7 @@
             }
           },
           "400": {
-            "description": "VALIDATION_ERROR, INVALID_PLACEHOLDERS, or DEFAULT_TEMPLATE_CONTENT_INVALID (sanitized content too short)"
+            "description": "VALIDATION_ERROR, INVALID_PLACEHOLDERS, TEMPLATE_SIGNATURE_ANCHOR_REQUIRED, TEMPLATE_SIGNATURE_ANCHOR_DUPLICATED, TEMPLATE_SIGNATURE_ANCHOR_BLOCK_REQUIRED, or DEFAULT_TEMPLATE_CONTENT_INVALID"
           },
           "401": {
             "description": "authorization failed"
@@ -751,7 +751,7 @@
             }
           },
           "400": {
-            "description": "VALIDATION_ERROR or INVALID_PLACEHOLDERS"
+            "description": "VALIDATION_ERROR, INVALID_PLACEHOLDERS, TEMPLATE_SIGNATURE_ANCHOR_REQUIRED, TEMPLATE_SIGNATURE_ANCHOR_DUPLICATED, or TEMPLATE_SIGNATURE_ANCHOR_BLOCK_REQUIRED"
           },
           "401": {
             "description": "authorization failed"
@@ -881,7 +881,7 @@
                       "claim_type": "property_damage",
                       "claim_type_id": "56d38fb0-d646-4ab6-81ec-3ad75d1a6344",
                       "response_deadline_default": "10 business days",
-                      "content_html": "<p>{{letter_date}}</p><p>{{defendant_name}}</p>",
+                      "content_html": "<p>{{letter_date}}</p><p>{{defendant_name}}</p><p>{{signature_anchor}}</p>",
                       "is_active": true,
                       "created_by": null,
                       "updated_by": null,
@@ -913,7 +913,7 @@
         ]
       },
       "post": {
-        "description": "",
+        "description": "Creates a template. content_html must contain exactly one {{signature_anchor}} as the only content of its own paragraph; missing, duplicated, or inline anchors return a 400 template signature-anchor error.",
         "summary": "POST /api/admin/templates",
         "tags": [
           "Admin/Templates"
@@ -922,6 +922,9 @@
         "responses": {
           "200": {
             "description": "successful"
+          },
+          "400": {
+            "description": "INVALID_PLACEHOLDERS, TEMPLATE_SIGNATURE_ANCHOR_REQUIRED, TEMPLATE_SIGNATURE_ANCHOR_DUPLICATED, or TEMPLATE_SIGNATURE_ANCHOR_BLOCK_REQUIRED"
           },
           "401": {
             "description": "authorization failed"
@@ -946,7 +949,7 @@
                   "claim_type_id": "{{ _.claim_type_id }}",
                   "is_active": true,
                   "response_deadline_default": "10 business days",
-                  "content_html": "<p>{{letter_date}}</p><p>{{defendant_name}}<br>{{defendant_address}}<br>{{defendant_city_state_zip}}</p><p><strong>Re: Formal Demand for Payment - Property Damage ({{claim_amount}})</strong></p><p>Dear {{defendant_name}},</p><p>This letter is a formal demand for payment in the amount of <strong>${{claim_amount}}</strong> for property damage caused by your actions, based on the incident that occurred on {{incident_date}}.</p><p>Incident summary: {{claim_description}}</p><p>Please remit full payment within <strong>{{response_deadline}}</strong> from the date of this letter. If payment is not received, I will file a claim in <strong>{{county_name}}</strong> without further notice.</p><p>Sincerely,</p><p>{{claimant_name}}<br>{{claimant_address}}<br>{{claimant_city_state_zip}}</p>"
+                  "content_html": "<p>{{letter_date}}</p><p>{{defendant_name}}<br>{{defendant_address}}<br>{{defendant_city_state_zip}}</p><p><strong>Re: Formal Demand for Payment - Property Damage ({{claim_amount}})</strong></p><p>Dear {{defendant_name}},</p><p>This letter is a formal demand for payment in the amount of <strong>${{claim_amount}}</strong> for property damage caused by your actions.</p><p>Sincerely,</p><p>{{signature_anchor}}</p><p>{{claimant_name}}</p>"
                 }
               }
             }
@@ -961,7 +964,7 @@
     },
     "/api/admin/templates/preview": {
       "post": {
-        "description": "Preview placeholders allowed for service. Defaults to small_claims; send activation_hero for AH-only placeholders. Optional response_deadline_default (3-80 characters) overrides sample_data.response_deadline; if omitted, sample/catalog behavior is unchanged.",
+        "description": "Preview placeholders allowed for service. Exactly one {{signature_anchor}} is required as the only content of its own paragraph and rendered as a visible, left-aligned Signature position block. Defaults to small_claims; send activation_hero for AH-only placeholders. Optional response_deadline_default overrides sample_data.response_deadline.",
         "summary": "POST /api/admin/templates/preview",
         "tags": [
           "Admin/Templates"
@@ -970,6 +973,9 @@
         "responses": {
           "200": {
             "description": "successful"
+          },
+          "400": {
+            "description": "INVALID_PLACEHOLDERS, TEMPLATE_SIGNATURE_ANCHOR_REQUIRED, TEMPLATE_SIGNATURE_ANCHOR_DUPLICATED, or TEMPLATE_SIGNATURE_ANCHOR_BLOCK_REQUIRED"
           },
           "401": {
             "description": "authorization failed"
@@ -988,7 +994,7 @@
               "schema": {
                 "type": "object",
                 "example": {
-                  "content_html": "<h2>Demand Letter</h2><p>Hello {{claimant_name}}</p><p>Platform account: {{platform_account_email}} / {{platform_account_phone}}</p>",
+                  "content_html": "<h2>Demand Letter</h2><p>Hello {{claimant_name}}</p><p>Platform account: {{platform_account_email}} / {{platform_account_phone}}</p><p>{{signature_anchor}}</p>",
                   "service": "activation_hero",
                   "sample_data": {
                     "response_deadline": "10 business days",
@@ -1010,7 +1016,7 @@
     },
     "/api/admin/templates/{id}": {
       "put": {
-        "description": "",
+        "description": "Full template update. content_html must contain exactly one {{signature_anchor}} as the only content of its own paragraph.",
         "summary": "PUT /api/admin/templates/{id}",
         "tags": [
           "Admin/Templates"
@@ -1029,6 +1035,9 @@
         "responses": {
           "200": {
             "description": "successful"
+          },
+          "400": {
+            "description": "INVALID_PLACEHOLDERS, TEMPLATE_SIGNATURE_ANCHOR_REQUIRED, TEMPLATE_SIGNATURE_ANCHOR_DUPLICATED, or TEMPLATE_SIGNATURE_ANCHOR_BLOCK_REQUIRED"
           },
           "401": {
             "description": "authorization failed"
@@ -1053,7 +1062,7 @@
                   "claim_type_id": "{{ _.claim_type_id }}",
                   "is_active": false,
                   "response_deadline_default": "10 business days",
-                  "content_html": "<p>{{letter_date}}</p><p>{{defendant_name}}<br>{{defendant_address}}<br>{{defendant_city_state_zip}}</p><p><strong>Re: Formal Demand for Payment - Property Damage ({{claim_amount}})</strong></p><p>Dear {{defendant_name}},</p><p>This letter is a formal demand for payment in the amount of <strong>${{claim_amount}}</strong> for property damage caused by your actions, based on the incident that occurred on {{incident_date}}.</p><p>Incident summary: {{claim_description}}</p><p>Please remit full payment within <strong>{{response_deadline}}</strong> from the date of this letter. If payment is not received, I will file a claim in <strong>{{county_name}}</strong> without further notice.</p><p>Sincerely,</p><p>{{claimant_name}}<br>{{claimant_address}}<br>{{claimant_city_state_zip}}</p>"
+                  "content_html": "<p>{{letter_date}}</p><p>{{defendant_name}}</p><p>Updated letter content.</p><p>Sincerely,</p><p>{{signature_anchor}}</p><p>{{claimant_name}}</p>"
                 }
               }
             }
@@ -1103,7 +1112,7 @@
         ]
       },
       "patch": {
-        "description": "",
+        "description": "Partial template update. When content_html is supplied, it must contain exactly one {{signature_anchor}} as the only content of its own paragraph.",
         "summary": "PATCH /api/admin/templates/{id}",
         "tags": [
           "Admin/Templates"
@@ -1122,6 +1131,9 @@
         "responses": {
           "200": {
             "description": "successful"
+          },
+          "400": {
+            "description": "INVALID_PLACEHOLDERS, TEMPLATE_SIGNATURE_ANCHOR_REQUIRED, TEMPLATE_SIGNATURE_ANCHOR_DUPLICATED, or TEMPLATE_SIGNATURE_ANCHOR_BLOCK_REQUIRED"
           },
           "401": {
             "description": "authorization failed"
@@ -1269,7 +1281,7 @@
                         "claim_type": "property_damage",
                         "claim_type_id": "56d38fb0-d646-4ab6-81ec-3ad75d1a6344",
                         "response_deadline_default": "10 business days",
-                        "content_html": "<p>{{letter_date}}</p><p>{{defendant_name}}</p>",
+                        "content_html": "<p>{{letter_date}}</p><p>{{defendant_name}}</p><p>{{signature_anchor}}</p>",
                         "is_active": true,
                         "created_by": null,
                         "updated_by": null,
@@ -5935,7 +5947,7 @@
     },
     "/api/internal/claims/{id}/letter": {
       "patch": {
-        "description": "",
+        "description": "Saves a new individual letter version. letter_html must contain exactly one movable {{signature_anchor}} as the only content of its own paragraph.",
         "summary": "PATCH /api/internal/claims/{id}/letter",
         "tags": [
           "Internal/Claims"
@@ -5955,6 +5967,9 @@
           "200": {
             "description": "successful"
           },
+          "400": {
+            "description": "LETTER_SIGNATURE_ANCHOR_REQUIRED, LETTER_SIGNATURE_ANCHOR_DUPLICATED, or LETTER_SIGNATURE_ANCHOR_BLOCK_REQUIRED"
+          },
           "401": {
             "description": "authorization failed"
           },
@@ -5972,7 +5987,7 @@
               "schema": {
                 "type": "object",
                 "example": {
-                  "letter_html": "<p>2026-04-16</p><p>Defendant Name<br />1 Infinite Loop<br />Cupertino, CA, 95014</p><p><strong>Re: Consumer Dispute Demand (250.00)</strong></p><p>Dear Defendant Name,</p><p>I demand payment of <strong>$250.00</strong> due to damages and losses from a consumer transaction issue that occurred on 2026-03-01T00:00:00.000Z.</p><p>Claim summary: word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12 word13 word14 word15 word16 word17 word18 word19 word20 word21 word22 word23 word24 word25 word26 word27 word28 word29 word30 word31 word32 word33 word34 word35 word36 word37 word38 word39 word40 word41 word42 word43 word44 word45 word46 word47 word48 word49 word50 word51 word52 word53 word54 word55 word56 word57 word58 word59 word60 word61 word62 word63 word64 word65 word66 word67 word68 word69 word70 word71 word72 word73 word74 word75 word76 word77 word78 word79 word80 word81 word82 word83 word84 word85 word86 word87 word88 word89 word90 word91 word92 word93 word94 word95 word96 word97 word98 word99 word100 word101 word102 word103 word104 word22 word23 word24 word25 word26 word27 word28 word29 word30 word31 word32 word33 word34 word35 word36 word37 word38 word39 word40 word41 word42 word43 word44 word45 word46 word47 word48 word49 word50 word51 word52 word53 word54 word55 word56 word57 word58 word59 word60 word61 word62 word63 word64 word65 word66 word67 word68 word69 word70 word71 word72 word73 word74 word75 word76 word77 word78 word79 word80 word81 word82 word83 word84 word85 word86 word87 word88 word89 word90 word91 word92 word93 word94 word95 word96 word97 word98 word99 word100 word101 word102 word103 word104word22 word23 word24 word25 word26 word27 word28 word29 word30 word31 word32 word33 word34 word35 word36 word37 word38 word39 word40 word41 word42 word43 word44 word45 word46 word47 word48 word49 word50 word51 word52 word53 word54 word55 word56 word57 word58 word59 word60 word61 word62 word63 word64 word65 word66 word67 word68 word69 word70 word71 word72 word73 word74 word75 word76 word77 word78 word79 word80 word81 word82 word83 word84 word85 word86 word87 word88 word89 word90 word91 word92 word93 word94 word95 word96 word97 word98 word99 word100 word101 word102 word103 word104 word105 word106 word107 word108 word109 word110</p><p>Please submit payment within <strong>10 business days</strong>. If you fail to resolve this matter, I will file in <strong>Santa Clara County Small Claims Court</strong>, <strong>Santa Clara County</strong>, and seek all available costs.</p><p>This letter is your final opportunity to resolve the dispute without court intervention.</p><p>Sincerely,</p><p>Test Customer<br />1600 Amphitheatre Parkway<br />Mountain View, CA, 94043</p>",
+                  "letter_html": "<p>2026-04-16</p><p>Defendant Name<br />1 Infinite Loop<br />Cupertino, CA 95014</p><p>Updated demand letter.</p><p>Sincerely,</p><p>{{signature_anchor}}</p><p>Test Customer</p>",
                   "note": "Adjusted after review"
                 }
               }
@@ -6105,7 +6120,7 @@
     },
     "/api/internal/claims/{id}/send-signature": {
       "post": {
-        "description": "Sends the current internal letter snapshot to Firma for signature and tracks the provider document. Allowed only while the claim is in letter review/revision statuses and the letter has rendered content. Sends the Firma email invite by default and can also return an embedded signing URL with embedded_sign=true.",
+        "description": "Sends the current internal letter snapshot to Firma for signature and tracks the provider document. The snapshot must contain exactly one {{signature_anchor}} as the only content of its own paragraph. The API resolves US Letter/A4, renders the PDF, locates the anchor's page/x/y coordinates, reserves 216 x 52 pt in the letter, and places Firma's 140 x 30 pt signature field at the anchor's exact horizontal position. Firma scales the completed signature to the field and does not expose a separate signature font-size setting. Sends the Firma email invite by default and can also return an embedded signing URL with embedded_sign=true.",
         "summary": "POST /api/internal/claims/{id}/send-signature",
         "tags": [
           "Internal/Claims"
@@ -6145,7 +6160,17 @@
                       "example": "https://app.firma.dev/signing/firma_signer_user_id"
                     },
                     "signature_placement": {
-                      "type": "object"
+                      "type": "object",
+                      "description": "Absolute PDF points derived from the rendered signature anchor.",
+                      "properties": {
+                        "pageNumber": { "type": "integer", "minimum": 1 },
+                        "x": { "type": "number" },
+                        "y": { "type": "number" },
+                        "width": { "type": "number", "example": 140 },
+                        "height": { "type": "number", "example": 30 },
+                        "pageWidth": { "type": "number" },
+                        "pageHeight": { "type": "number" }
+                      }
                     },
                     "signature_field_bounds": {
                       "type": "object"
@@ -6159,13 +6184,13 @@
             "description": "authorization failed"
           },
           "409": {
-            "description": "signature send not allowed, missing letter content, or a pending Firma signature request already exists"
+            "description": "SIGNATURE_SEND_NOT_ALLOWED_FOR_STATUS, SIGNATURE_LETTER_CONTENT_REQUIRED, SIGNATURE_PENDING_DOCUMENT_EXISTS, LETTER_SIGNATURE_ANCHOR_REQUIRED, LETTER_SIGNATURE_ANCHOR_DUPLICATED, or LETTER_SIGNATURE_ANCHOR_BLOCK_REQUIRED"
           },
           "422": {
             "description": "validation failed"
           },
           "500": {
-            "description": "unknown server error"
+            "description": "LETTER_PDF_RENDER_FAILED, LETTER_SIGNATURE_ANCHOR_NOT_FOUND, or unknown server error"
           }
         },
         "requestBody": {
