@@ -6,9 +6,131 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/addresses/autocomplete": {
+      "post": {
+        "summary": "POST /api/addresses/autocomplete",
+        "description": "Public Google Places Autocomplete (New) endpoint for intake and profile address fields. Calls only Autocomplete during typing: it does not call Text Search, Place Details, Address Validation, or Geocoding. country is optional; omission keeps the search global. No Google session token is used. Frontends must wait for at least 3 characters, debounce by about 300 ms, cancel or ignore stale requests, close suggestions after selection, and then call POST /api/addresses/validate. This endpoint has its own 60 requests per IP per 15 minutes limit in addition to the global API limit.",
+        "tags": [
+          "Addresses"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Address suggestions from Places Autocomplete (New). Suggestions are not validated and must not be persisted directly.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "suggestions"
+                  ],
+                  "properties": {
+                    "suggestions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "place_id",
+                          "description",
+                          "main_text",
+                          "secondary_text"
+                        ],
+                        "properties": {
+                          "place_id": {
+                            "type": "string",
+                            "example": "ChIJ..."
+                          },
+                          "description": {
+                            "type": "string",
+                            "nullable": true,
+                            "example": "1600 Amphitheatre Parkway, Mountain View, CA, USA"
+                          },
+                          "main_text": {
+                            "type": "string",
+                            "nullable": true,
+                            "example": "1600 Amphitheatre Parkway"
+                          },
+                          "secondary_text": {
+                            "type": "string",
+                            "nullable": true,
+                            "example": "Mountain View, CA, USA"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "input is shorter than 3 characters, too long, or country is invalid."
+          },
+          "429": {
+            "description": "Too many address autocomplete requests. Please try again later.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "RATE_LIMIT_EXCEEDED",
+                    "message": "Too many address autocomplete requests. Please try again later."
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Google Places Autocomplete provider is unavailable."
+          },
+          "503": {
+            "description": "Google Maps API key is not configured."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "input"
+                ],
+                "properties": {
+                  "input": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 200
+                  },
+                  "country": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{2}$",
+                    "description": "Optional two-letter country restriction. Omit for global suggestions."
+                  }
+                }
+              },
+              "examples": {
+                "country_restricted": {
+                  "value": {
+                    "input": "1600 Amphitheatre Pkw",
+                    "country": "US"
+                  }
+                },
+                "global": {
+                  "value": {
+                    "input": "Avenida Paulista 1000"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "operationId": "autocompleteAddresses"
+      }
+    },
     "/api/addresses/validate": {
       "post": {
-        "description": "Validates one typed address before persistence. It uses Google Address Validation for supported countries, with USPS CASS enabled for US and Puerto Rico, and falls back to Google Geocoding where Address Validation is unsupported. state accepts a full state/province/region name or its code, including for US addresses. Normalized state uses Google's postal representation; Geocoding fallback prefers its abbreviated state name when available. Provider-supported name/code equivalents (California/CA, São Paulo/SP, New South Wales/NSW) are formatting changes, not material state changes. Replaced, inferred, corrected, or unconfirmed states are not treated as equivalent. Other provider signals can still require confirmation. International state codes are not restricted to two characters. The response returns a short-lived signed validation_token only for verified or needs_confirmation results. For needs_confirmation, send confirmed=true with that token when saving the address. For US/PR, USPS DPV N or a result without a real street at PREMISE/SUB_PREMISE granularity returns not_found; D (missing unit) and S (unconfirmed unit) require confirmation. For every country, possibleNextAction FIX, validationGranularity ROUTE/OTHER, or an incomplete result without a street, premise, or PO box component returns not_found without a token. A street-only match is insufficient. normalized_address includes corrections supplied by Google. If validation cannot produce a usable address, use lookup and validate the selected candidate's address, or explicitly confirm manual entry.",
+        "description": "Validates one typed address before persistence. It uses Google Address Validation for supported countries, with USPS CASS enabled for US and Puerto Rico, and falls back to Google Geocoding where Address Validation is unsupported. state accepts a full state/province/region name or its code, including for US addresses. Normalized state uses Google's postal representation; Geocoding fallback prefers its abbreviated state name when available. Provider-supported name/code equivalents (California/CA, São Paulo/SP, New South Wales/NSW) are formatting changes, not material state changes. Replaced, inferred, corrected, or unconfirmed states are not treated as equivalent. Other provider signals can still require confirmation. International state codes are not restricted to two characters. The response returns a short-lived signed validation_token only for verified or needs_confirmation results. For needs_confirmation, send confirmed=true with that token when saving the address. For US/PR, USPS DPV N or a result without a real street at PREMISE/SUB_PREMISE granularity returns not_found; D (missing unit) and S (unconfirmed unit) require confirmation. For every country, possibleNextAction FIX, validationGranularity ROUTE/OTHER, or an incomplete result without a street, premise, or PO box component returns not_found without a token. A street-only match is insufficient. normalized_address includes corrections supplied by Google. If validation cannot produce a usable address, use lookup and validate the selected candidate's address, or explicitly confirm manual entry. After an autocomplete selection, the request may instead contain formatted_address plus optional country. That formatted value is sent through the same validation flow; the returned normalized_address is bound to the persistence token and must be used when saving. For status=not_found, the response also returns reason_code, reason_message, and missing_component_types so clients can explain and localize the failure without parsing provider data. Clients must not persist not_found results because normalized_address and validation_token are null. When formatted_address includes country and Google normalizes the address to another country, status is needs_confirmation and material_changed_fields includes country; the mismatch is never silently verified.",
         "summary": "POST /api/addresses/validate",
         "tags": [
           "Addresses"
@@ -16,10 +138,143 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Returns status=verified, needs_confirmation, or not_found. Found addresses include normalized_address, changed_fields, material_changed_fields, place_id, and a validation token."
+            "description": "Returns status=verified, needs_confirmation, or not_found. Successful results include normalized_address and a validation token. not_found includes an actionable reason and no persistable address or token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "normalized_address",
+                    "changed_fields",
+                    "material_changed_fields",
+                    "place_id",
+                    "validation_token",
+                    "validation_expires_at",
+                    "reason_code",
+                    "reason_message",
+                    "missing_component_types"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "verified",
+                        "needs_confirmation",
+                        "not_found"
+                      ]
+                    },
+                    "normalized_address": {
+                      "type": "object",
+                      "nullable": true,
+                      "additionalProperties": true
+                    },
+                    "changed_fields": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "material_changed_fields": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "place_id": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "formatted_address": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "validation_token": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "validation_expires_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true
+                    },
+                    "reason_code": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Stable failure reason for not_found: STREET_NUMBER_REQUIRED, ADDRESS_TOO_BROAD, ADDRESS_FIX_REQUIRED, ADDRESS_INCOMPLETE, ADDRESS_UNDELIVERABLE, or ADDRESS_NOT_FOUND. Null for verified and needs_confirmation."
+                    },
+                    "reason_message": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Actionable English fallback message. Use reason_code for localized/custom UI."
+                    },
+                    "missing_component_types": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Google address component types that are missing, for example street_number."
+                    }
+                  }
+                },
+                "examples": {
+                  "verified": {
+                    "value": {
+                      "status": "verified",
+                      "normalized_address": {
+                        "address_line1": "100 Avenida Paulista",
+                        "address_line2": null,
+                        "city": "São Paulo",
+                        "state": "SP",
+                        "zip": "01310-100",
+                        "country": "BR"
+                      },
+                      "changed_fields": [],
+                      "material_changed_fields": [],
+                      "place_id": "ChIJ...",
+                      "formatted_address": "Avenida Paulista, 100 - Bela Vista, São Paulo - SP, 01310-100, Brazil",
+                      "validation_token": "eyJ...",
+                      "validation_expires_at": "2026-09-26T12:10:00.000Z",
+                      "reason_code": null,
+                      "reason_message": null,
+                      "missing_component_types": []
+                    }
+                  },
+                  "missing_street_number": {
+                    "value": {
+                      "status": "not_found",
+                      "normalized_address": null,
+                      "changed_fields": [],
+                      "material_changed_fields": [],
+                      "place_id": null,
+                      "validation_token": null,
+                      "validation_expires_at": null,
+                      "reason_code": "STREET_NUMBER_REQUIRED",
+                      "reason_message": "Add a street or building number, then validate the address again.",
+                      "missing_component_types": [
+                        "street_number"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "Invalid address payload."
+          },
+          "429": {
+            "description": "Too many address lookup or validation requests. Please try again later.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "RATE_LIMIT_EXCEEDED",
+                    "message": "Too many address lookup or validation requests. Please try again later."
+                  }
+                }
+              }
+            }
           },
           "502": {
             "description": "Google address validation provider is unavailable."
@@ -33,17 +288,92 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "address"
-                ],
-                "example": {
-                  "address": {
-                    "address_line1": "401 S 2nd St",
-                    "address_line2": null,
-                    "city": "Springfield",
-                    "state": "IL",
-                    "zip": "62701",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "address"
+                    ],
+                    "properties": {
+                      "address": {
+                        "type": "object",
+                        "required": [
+                          "address_line1",
+                          "city",
+                          "state",
+                          "zip",
+                          "country"
+                        ],
+                        "additionalProperties": true,
+                        "properties": {
+                          "address_line1": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "address_line2": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "city": {
+                            "type": "string",
+                            "minLength": 2
+                          },
+                          "state": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "zip": {
+                            "type": "string",
+                            "minLength": 2,
+                            "maxLength": 32
+                          },
+                          "country": {
+                            "type": "string",
+                            "pattern": "^[A-Z]{2}$"
+                          }
+                        }
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "formatted_address"
+                    ],
+                    "properties": {
+                      "formatted_address": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 280
+                      },
+                      "country": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{2}$",
+                        "description": "Optional expected country for the formatted selection. A different normalized country requires confirmation and is reported in material_changed_fields."
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "examples": {
+                "structured": {
+                  "value": {
+                    "address": {
+                      "address_line1": "401 S 2nd St",
+                      "address_line2": null,
+                      "city": "Springfield",
+                      "state": "IL",
+                      "zip": "62701",
+                      "country": "US"
+                    }
+                  }
+                },
+                "autocomplete_selection": {
+                  "value": {
+                    "formatted_address": "1600 Amphitheatre Parkway, Mountain View, CA, USA",
                     "country": "US"
                   }
                 }
@@ -56,7 +386,7 @@
     },
     "/api/addresses/lookup": {
       "post": {
-        "description": "Best-effort address recovery for incomplete input. Uses both Places Autocomplete (New) and Places Text Search (New), combining and deduplicating their results. search_hint optionally refines any lookup, such as a business, building, or property name. state accepts full names or codes. Normalized state prefers Google's abbreviation (for example AL, SP, or NSW), preserving the provider's full name when no abbreviation is available; names are never truncated to create codes. A candidate is returned only when Places itself provides its number, street, city, state, ZIP/postal code, and country; no typed field is used to complete a provider result. Candidates are suggestions: the first usable result is best_match and others are possible_match. Lookup does not issue a persistence token. After the customer selects a candidate, send its normalized_address to /api/addresses/validate and use that response's token when saving. This public endpoint is limited to 20 requests per 15 minutes per client.",
+        "description": "Best-effort complete postal-address lookup. Supports structured address mode with optional search_hint and business-only mode with search_hint plus optional country. A supplied country is a hard restriction: candidates from Places Text Search and Place Details are discarded unless their Google postal country matches it. In structured mode the restriction comes from address.country; in business-only mode it comes from the top-level country. Omitting country in business-only mode keeps the search global. One request can call Places Autocomplete (New), Places Text Search (New), and up to five Place Details requests. It combines and deduplicates results, and returns only complete candidates. Candidates must never be selected automatically. After selection, send normalized_address to POST /api/addresses/validate. Lookup issues no persistence token and shares a 60 requests per IP per 15 minutes limit with /api/addresses/validate.",
         "summary": "POST /api/addresses/lookup",
         "tags": [
           "Addresses"
@@ -64,13 +394,23 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Returns a short candidate list. candidates is empty when Google has no complete postal-address candidate."
+            "description": "Returns a short candidate list. candidates is empty when Google has no complete candidate in the requested country. When country is supplied, every candidate has the same normalized_address.country."
           },
           "400": {
             "description": "Invalid lookup payload."
           },
           "429": {
-            "description": "Too many lookup requests."
+            "description": "Too many address lookup or validation requests. Please try again later.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "RATE_LIMIT_EXCEEDED",
+                    "message": "Too many address lookup or validation requests. Please try again later."
+                  }
+                }
+              }
+            }
           },
           "502": {
             "description": "Google Places lookup provider is unavailable."
@@ -84,20 +424,106 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "address"
-                ],
-                "example": {
-                  "address": {
-                    "address_line1": "15090",
-                    "address_line2": null,
-                    "city": "Madison",
-                    "state": "AL",
-                    "zip": "35756",
-                    "country": "US"
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "address"
+                    ],
+                    "properties": {
+                      "address": {
+                        "type": "object",
+                        "required": [
+                          "address_line1",
+                          "city",
+                          "state",
+                          "zip",
+                          "country"
+                        ],
+                        "additionalProperties": true,
+                        "properties": {
+                          "address_line1": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "address_line2": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "city": {
+                            "type": "string",
+                            "minLength": 2
+                          },
+                          "state": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "zip": {
+                            "type": "string",
+                            "minLength": 2,
+                            "maxLength": 32
+                          },
+                          "country": {
+                            "type": "string",
+                            "pattern": "^[A-Z]{2}$",
+                            "description": "Required two-letter hard country restriction for structured lookup."
+                          }
+                        }
+                      },
+                      "search_hint": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 200,
+                        "nullable": true
+                      }
+                    }
                   },
-                  "search_hint": "Example Equipment Company"
+                  {
+                    "type": "object",
+                    "required": [
+                      "search_hint"
+                    ],
+                    "properties": {
+                      "search_hint": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 200
+                      },
+                      "country": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{2}$",
+                        "description": "Optional two-letter hard country restriction. Omit for global business search."
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "examples": {
+                "structured_address": {
+                  "value": {
+                    "address": {
+                      "address_line1": "15090",
+                      "address_line2": null,
+                      "city": "Madison",
+                      "state": "AL",
+                      "zip": "35756",
+                      "country": "US"
+                    },
+                    "search_hint": "Example Equipment Company"
+                  }
+                },
+                "business_with_country": {
+                  "value": {
+                    "search_hint": "Target Culver City",
+                    "country": "US"
+                  }
+                },
+                "business_global": {
+                  "value": {
+                    "search_hint": "Target Culver City"
+                  }
                 }
               }
             }
@@ -1858,11 +2284,11 @@
           "401": {
             "description": "authorization failed"
           },
-          "422": {
-            "description": "validation failed"
-          },
           "409": {
             "description": "Address confirmation is required or the submitted address does not match its validation token."
+          },
+          "422": {
+            "description": "validation failed"
           },
           "500": {
             "description": "unknown server error"
@@ -3837,7 +4263,7 @@
     },
     "/api/intake/assist": {
       "post": {
-        "description": "Address assist for customer + defendant. Supports Small Claims individual/business defendants and Activation Hero platform lookup by platform_id.",
+        "description": "Address assist for customer + defendant. Supports Small Claims individual/business defendants and Activation Hero platform lookup by platform_id. This endpoint shares a dedicated 60 requests per IP per 15 minutes limit with GET /api/intake/counties/lookup-by-zip, in addition to the global API limit.",
         "summary": "POST /api/intake/assist (existing_business|individual|ah_platform)",
         "tags": [
           "Intake"
@@ -3852,6 +4278,19 @@
           },
           "422": {
             "description": "validation failed"
+          },
+          "429": {
+            "description": "Too many Google-assisted intake requests. Please try again later.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "RATE_LIMIT_EXCEEDED",
+                    "message": "Too many Google-assisted intake requests. Please try again later."
+                  }
+                }
+              }
+            }
           },
           "500": {
             "description": "unknown server error"
@@ -4095,24 +4534,53 @@
     },
     "/api/intake/flows": {
       "post": {
-        "description": "",
+        "description": "Creates a resumable intake flow only after validating a fresh Cloudflare Turnstile Managed token. Validation occurs before customer identity checks and before any flow or resume-token record is created. The token is not stored or reused. This first-step token is independent from the fresh Turnstile token still required for paid checkout.",
         "summary": "POST /api/intake/flows",
         "tags": [
           "Intake"
         ],
         "parameters": [],
         "responses": {
-          "200": {
-            "description": "successful"
+          "201": {
+            "description": "Intake flow created after successful Turnstile verification."
+          },
+          "400": {
+            "description": "Invalid payload or missing Turnstile token.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "message": "\"turnstile_token\" is required"
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "authorization failed"
+          },
+          "403": {
+            "description": "Cloudflare rejected the Turnstile token.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "TURNSTILE_TOKEN_INVALID",
+                    "message": "Cloudflare Turnstile verification failed"
+                  }
+                }
+              }
+            }
           },
           "422": {
             "description": "validation failed"
           },
           "500": {
             "description": "unknown server error"
+          },
+          "502": {
+            "description": "Cloudflare Turnstile verification request failed."
           }
         },
         "requestBody": {
@@ -4121,11 +4589,41 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "example": {
-                  "service": "activation_hero",
-                  "customer_user_id": "8e4e1f34-a5fd-4a6c-bf59-0096f1540dce",
-                  "customer_email": "{{ _.customer_email }}"
+                "required": [
+                  "turnstile_token"
+                ],
+                "properties": {
+                  "service": {
+                    "type": "string",
+                    "enum": [
+                      "small_claims",
+                      "activation_hero"
+                    ],
+                    "default": "small_claims"
+                  },
+                  "customer_user_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "nullable": true
+                  },
+                  "customer_email": {
+                    "type": "string",
+                    "format": "email",
+                    "nullable": true
+                  },
+                  "turnstile_token": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "description": "Fresh first-step Managed Turnstile token. Never reuse the checkout token."
+                  }
                 }
+              },
+              "example": {
+                "service": "activation_hero",
+                "customer_user_id": "8e4e1f34-a5fd-4a6c-bf59-0096f1540dce",
+                "customer_email": "{{ _.customer_email }}",
+                "turnstile_token": "token_from_cloudflare_turnstile"
               }
             }
           }
@@ -6163,13 +6661,32 @@
                       "type": "object",
                       "description": "Absolute PDF points derived from the rendered signature anchor.",
                       "properties": {
-                        "pageNumber": { "type": "integer", "minimum": 1 },
-                        "x": { "type": "number" },
-                        "y": { "type": "number" },
-                        "width": { "type": "number", "description": "140 for US Letter; 150 for A4.", "example": 140 },
-                        "height": { "type": "number", "description": "30 for US Letter; 32 for A4.", "example": 30 },
-                        "pageWidth": { "type": "number" },
-                        "pageHeight": { "type": "number" }
+                        "pageNumber": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "x": {
+                          "type": "number"
+                        },
+                        "y": {
+                          "type": "number"
+                        },
+                        "width": {
+                          "type": "number",
+                          "description": "140 for US Letter; 150 for A4.",
+                          "example": 140
+                        },
+                        "height": {
+                          "type": "number",
+                          "description": "30 for US Letter; 32 for A4.",
+                          "example": 30
+                        },
+                        "pageWidth": {
+                          "type": "number"
+                        },
+                        "pageHeight": {
+                          "type": "number"
+                        }
                       }
                     },
                     "signature_field_bounds": {
@@ -6659,117 +7176,117 @@
                 }
               },
               "examples": {
-                  "form_download_upload": {
-                    "summary": "form_download_upload with semantic fields",
-                    "value": {
-                      "task_title": "Download, complete, and upload the county form",
-                      "task_type": "form_download_upload",
-                      "form_url": "https://example-court.gov/small-claims.pdf",
-                      "submit_instructions": "Complete every field and upload the signed PDF.",
-                      "is_active": true
-                    }
-                  },
-                  "form_online": {
-                    "summary": "form_online with an external form link",
-                    "value": {
-                      "task_title": "Submit form on county portal",
-                      "task_type": "form_online",
-                      "unlock_after": "unlock_immediately",
-                      "optional_url": "https://example-court.gov/forms",
-                      "internal_note": "Submit online and confirm when finished.",
-                      "is_active": true
-                    }
-                  },
-                  "form_print_mail": {
-                    "summary": "form_print_mail with mailing instructions",
-                    "value": {
-                      "task_title": "Print and mail the court form",
-                      "task_type": "form_print_mail",
-                      "unlock_after": "unlock_immediately",
-                      "internal_note": "Print the completed form, mail it to the court, then confirm it was sent.",
-                      "is_active": true
-                    }
-                  },
-                  "fee_online": {
-                    "summary": "fee_online with a payment link",
-                    "value": {
-                      "task_title": "Pay the filing fee online",
-                      "task_type": "fee_online",
-                      "unlock_after": "unlock_immediately",
-                      "optional_url": "https://example-court.gov/payments",
-                      "internal_note": "Pay the filing fee online and confirm the payment.",
-                      "is_active": true
-                    }
-                  },
-                  "fee_inperson": {
-                    "summary": "fee_inperson requiring a receipt",
-                    "value": {
-                      "task_title": "Pay the filing fee in person",
-                      "task_type": "fee_inperson",
-                      "unlock_after": "unlock_immediately",
-                      "internal_note": "Pay at the clerk's office and upload the receipt.",
-                      "is_active": true
-                    }
-                  },
-                  "serve_mail": {
-                    "summary": "serve_mail requiring certified-mail proof",
-                    "value": {
-                      "task_title": "Serve the defendant by mail",
-                      "task_type": "serve_mail",
-                      "unlock_after": "after_pay_filing_fee",
-                      "internal_note": "Send by certified mail and upload proof of service.",
-                      "is_active": true
-                    }
-                  },
-                  "serve_sheriff": {
-                    "summary": "serve_sheriff requiring service proof",
-                    "value": {
-                      "task_title": "Arrange sheriff service",
-                      "task_type": "serve_sheriff",
-                      "unlock_after": "after_pay_filing_fee",
-                      "internal_note": "Arrange service with the sheriff and upload the service proof.",
-                      "is_active": true
-                    }
-                  },
-                  "court_date": {
-                    "summary": "court_date entry task",
-                    "value": {
-                      "task_title": "Enter the court date",
-                      "task_type": "court_date",
-                      "unlock_after": "after_serve_defendant",
-                      "internal_note": "Enter the scheduled court date and choose whether to receive email reminders.",
-                      "is_active": true
-                    }
-                  },
-                  "print_prep": {
-                    "summary": "print_prep with county-specific categories and instructions",
-                    "value": {
-                      "task_title": "Prepare documents for court",
-                      "task_type": "print_prep",
-                      "unlock_after": "after_enter_court_date",
-                      "task_requirements": {
-                        "checklist_item_values": [
-                          "small_claims_petition_3_copies",
-                          "demand_letter_signed_copy_3_copies"
-                        ],
-                        "instructions": [
-                          "Prepare three sets: judge, other party, and customer records.",
-                          "Attach the required files manually before sending a print-shop email."
-                        ]
-                      },
-                      "is_active": true
-                    }
-                  },
-                  "hearing": {
-                    "summary": "hearing confirmation task",
-                    "value": {
-                      "task_title": "Attend the hearing",
-                      "task_type": "hearing",
-                      "unlock_after": "after_print_prepare_docs",
-                      "internal_note": "Attend the hearing and confirm once it is complete.",
-                      "is_active": true
-                    }
+                "form_download_upload": {
+                  "summary": "form_download_upload with semantic fields",
+                  "value": {
+                    "task_title": "Download, complete, and upload the county form",
+                    "task_type": "form_download_upload",
+                    "form_url": "https://example-court.gov/small-claims.pdf",
+                    "submit_instructions": "Complete every field and upload the signed PDF.",
+                    "is_active": true
                   }
+                },
+                "form_online": {
+                  "summary": "form_online with an external form link",
+                  "value": {
+                    "task_title": "Submit form on county portal",
+                    "task_type": "form_online",
+                    "unlock_after": "unlock_immediately",
+                    "optional_url": "https://example-court.gov/forms",
+                    "internal_note": "Submit online and confirm when finished.",
+                    "is_active": true
+                  }
+                },
+                "form_print_mail": {
+                  "summary": "form_print_mail with mailing instructions",
+                  "value": {
+                    "task_title": "Print and mail the court form",
+                    "task_type": "form_print_mail",
+                    "unlock_after": "unlock_immediately",
+                    "internal_note": "Print the completed form, mail it to the court, then confirm it was sent.",
+                    "is_active": true
+                  }
+                },
+                "fee_online": {
+                  "summary": "fee_online with a payment link",
+                  "value": {
+                    "task_title": "Pay the filing fee online",
+                    "task_type": "fee_online",
+                    "unlock_after": "unlock_immediately",
+                    "optional_url": "https://example-court.gov/payments",
+                    "internal_note": "Pay the filing fee online and confirm the payment.",
+                    "is_active": true
+                  }
+                },
+                "fee_inperson": {
+                  "summary": "fee_inperson requiring a receipt",
+                  "value": {
+                    "task_title": "Pay the filing fee in person",
+                    "task_type": "fee_inperson",
+                    "unlock_after": "unlock_immediately",
+                    "internal_note": "Pay at the clerk's office and upload the receipt.",
+                    "is_active": true
+                  }
+                },
+                "serve_mail": {
+                  "summary": "serve_mail requiring certified-mail proof",
+                  "value": {
+                    "task_title": "Serve the defendant by mail",
+                    "task_type": "serve_mail",
+                    "unlock_after": "after_pay_filing_fee",
+                    "internal_note": "Send by certified mail and upload proof of service.",
+                    "is_active": true
+                  }
+                },
+                "serve_sheriff": {
+                  "summary": "serve_sheriff requiring service proof",
+                  "value": {
+                    "task_title": "Arrange sheriff service",
+                    "task_type": "serve_sheriff",
+                    "unlock_after": "after_pay_filing_fee",
+                    "internal_note": "Arrange service with the sheriff and upload the service proof.",
+                    "is_active": true
+                  }
+                },
+                "court_date": {
+                  "summary": "court_date entry task",
+                  "value": {
+                    "task_title": "Enter the court date",
+                    "task_type": "court_date",
+                    "unlock_after": "after_serve_defendant",
+                    "internal_note": "Enter the scheduled court date and choose whether to receive email reminders.",
+                    "is_active": true
+                  }
+                },
+                "print_prep": {
+                  "summary": "print_prep with county-specific categories and instructions",
+                  "value": {
+                    "task_title": "Prepare documents for court",
+                    "task_type": "print_prep",
+                    "unlock_after": "after_enter_court_date",
+                    "task_requirements": {
+                      "checklist_item_values": [
+                        "small_claims_petition_3_copies",
+                        "demand_letter_signed_copy_3_copies"
+                      ],
+                      "instructions": [
+                        "Prepare three sets: judge, other party, and customer records.",
+                        "Attach the required files manually before sending a print-shop email."
+                      ]
+                    },
+                    "is_active": true
+                  }
+                },
+                "hearing": {
+                  "summary": "hearing confirmation task",
+                  "value": {
+                    "task_title": "Attend the hearing",
+                    "task_type": "hearing",
+                    "unlock_after": "after_print_prepare_docs",
+                    "internal_note": "Attend the hearing and confirm once it is complete.",
+                    "is_active": true
+                  }
+                }
               }
             }
           }
@@ -6892,78 +7409,78 @@
                 }
               },
               "examples": {
-                  "form_download_upload": {
-                    "summary": "Update form fields",
-                    "value": {
-                      "form_url": "https://example-court.gov/updated-form.pdf",
-                      "submit_instructions": "Use black ink and upload the signed PDF."
-                    }
-                  },
-                  "form_online": {
-                    "summary": "Update form_online link and instructions",
-                    "value": {
-                      "optional_url": "https://example-court.gov/updated-portal",
-                      "internal_note": "Submit online and confirm when the county accepts the form."
-                    }
-                  },
-                  "form_print_mail": {
-                    "summary": "Update form_print_mail instructions",
-                    "value": {
-                      "internal_note": "Print, sign, mail the form, and confirm it was sent."
-                    }
-                  },
-                  "fee_online": {
-                    "summary": "Update fee_online link and instructions",
-                    "value": {
-                      "optional_url": "https://example-court.gov/updated-payments",
-                      "internal_note": "Pay online and confirm the transaction."
-                    }
-                  },
-                  "fee_inperson": {
-                    "summary": "Update fee_inperson instructions",
-                    "value": {
-                      "internal_note": "Pay at the clerk's office and upload the issued receipt."
-                    }
-                  },
-                  "serve_mail": {
-                    "summary": "Update serve_mail instructions",
-                    "value": {
-                      "internal_note": "Use certified mail and upload the mailing receipt or delivery proof."
-                    }
-                  },
-                  "serve_sheriff": {
-                    "summary": "Update serve_sheriff instructions",
-                    "value": {
-                      "internal_note": "Contact the sheriff's office and upload the completed proof of service."
-                    }
-                  },
-                  "court_date": {
-                    "summary": "Update court_date instructions",
-                    "value": {
-                      "internal_note": "Enter the scheduled date and select the email-reminder preference."
-                    }
-                  },
-                  "print_prep": {
-                    "summary": "Replace print_prep requirements",
-                    "value": {
-                      "task_requirements": {
-                        "checklist_item_values": [
-                          "small_claims_petition_3_copies",
-                          "mailing_receipt_proof_of_delivery",
-                          "government_issued_id"
-                        ],
-                        "instructions": [
-                          "Prepare the selected documents before confirming this task."
-                        ]
-                      }
-                    }
-                  },
-                  "hearing": {
-                    "summary": "Update hearing instructions",
-                    "value": {
-                      "internal_note": "Attend the hearing and confirm once it is complete."
+                "form_download_upload": {
+                  "summary": "Update form fields",
+                  "value": {
+                    "form_url": "https://example-court.gov/updated-form.pdf",
+                    "submit_instructions": "Use black ink and upload the signed PDF."
+                  }
+                },
+                "form_online": {
+                  "summary": "Update form_online link and instructions",
+                  "value": {
+                    "optional_url": "https://example-court.gov/updated-portal",
+                    "internal_note": "Submit online and confirm when the county accepts the form."
+                  }
+                },
+                "form_print_mail": {
+                  "summary": "Update form_print_mail instructions",
+                  "value": {
+                    "internal_note": "Print, sign, mail the form, and confirm it was sent."
+                  }
+                },
+                "fee_online": {
+                  "summary": "Update fee_online link and instructions",
+                  "value": {
+                    "optional_url": "https://example-court.gov/updated-payments",
+                    "internal_note": "Pay online and confirm the transaction."
+                  }
+                },
+                "fee_inperson": {
+                  "summary": "Update fee_inperson instructions",
+                  "value": {
+                    "internal_note": "Pay at the clerk's office and upload the issued receipt."
+                  }
+                },
+                "serve_mail": {
+                  "summary": "Update serve_mail instructions",
+                  "value": {
+                    "internal_note": "Use certified mail and upload the mailing receipt or delivery proof."
+                  }
+                },
+                "serve_sheriff": {
+                  "summary": "Update serve_sheriff instructions",
+                  "value": {
+                    "internal_note": "Contact the sheriff's office and upload the completed proof of service."
+                  }
+                },
+                "court_date": {
+                  "summary": "Update court_date instructions",
+                  "value": {
+                    "internal_note": "Enter the scheduled date and select the email-reminder preference."
+                  }
+                },
+                "print_prep": {
+                  "summary": "Replace print_prep requirements",
+                  "value": {
+                    "task_requirements": {
+                      "checklist_item_values": [
+                        "small_claims_petition_3_copies",
+                        "mailing_receipt_proof_of_delivery",
+                        "government_issued_id"
+                      ],
+                      "instructions": [
+                        "Prepare the selected documents before confirming this task."
+                      ]
                     }
                   }
+                },
+                "hearing": {
+                  "summary": "Update hearing instructions",
+                  "value": {
+                    "internal_note": "Attend the hearing and confirm once it is complete."
+                  }
+                }
               }
             }
           }
@@ -7272,7 +7789,7 @@
     },
     "/api/intake/counties/lookup-by-zip": {
       "get": {
-        "description": "Looks up a filing county/jurisdiction through Google Geocoding using a postal code and country. The matched jurisdiction is inserted or updated in the counties table. Country is required because postal codes are not globally unique.",
+        "description": "Looks up a filing county/jurisdiction through Google Geocoding using a postal code and country. The matched jurisdiction is inserted or updated in the counties table. Country is required because postal codes are not globally unique. This endpoint shares a dedicated 60 requests per IP per 15 minutes limit with POST /api/intake/assist, in addition to the global API limit.",
         "summary": "Find filing jurisdiction by postal code",
         "tags": [
           "Intake"
@@ -7387,6 +7904,19 @@
           },
           "422": {
             "description": "ZIP or country validation failed."
+          },
+          "429": {
+            "description": "Too many Google-assisted intake requests. Please try again later.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "RATE_LIMIT_EXCEEDED",
+                    "message": "Too many Google-assisted intake requests. Please try again later."
+                  }
+                }
+              }
+            }
           },
           "500": {
             "description": "Unknown server error."
@@ -7753,11 +8283,11 @@
               }
             }
           },
-          "401": {
-            "description": "authorization failed"
-          },
           "400": {
             "description": "Shift4 token is required for a Components draft"
+          },
+          "401": {
+            "description": "authorization failed"
           },
           "402": {
             "description": "Shift4 declined or could not complete the card charge"
@@ -7768,11 +8298,11 @@
           "422": {
             "description": "validation failed"
           },
-          "502": {
-            "description": "Shift4 provider request failed"
-          },
           "500": {
             "description": "unknown server error"
+          },
+          "502": {
+            "description": "Shift4 provider request failed"
           }
         },
         "security": []
