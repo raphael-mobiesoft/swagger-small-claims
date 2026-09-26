@@ -6120,7 +6120,7 @@
     },
     "/api/internal/claims/{id}/send-signature": {
       "post": {
-        "description": "Sends the current internal letter snapshot to Firma for signature and tracks the provider document. The snapshot must contain exactly one {{signature_anchor}} as the only content of its own paragraph. The API resolves US Letter/A4, renders the PDF, locates the anchor's page/x/y coordinates, reserves 216 x 52 pt in the letter, and places Firma's 140 x 30 pt signature field at the anchor's exact horizontal position. Firma scales the completed signature to the field and does not expose a separate signature font-size setting. Sends the Firma email invite by default and can also return an embedded signing URL with embedded_sign=true.",
+        "description": "Sends the current internal letter snapshot to Firma for signature and tracks the provider document. The snapshot must contain exactly one {{signature_anchor}} as the only content of its own paragraph. The API resolves US Letter/A4, renders the PDF, locates the anchor's page/x/y coordinates, reserves 216 x 52 pt in the letter, and places Firma's signature field at the anchor's exact horizontal position: 140 x 30 pt for US Letter or 150 x 32 pt for A4. Firma scales the completed signature to the field and does not expose a separate signature font-size setting. Sends the Firma email invite by default and can also return an embedded signing URL with embedded_sign=true.",
         "summary": "POST /api/internal/claims/{id}/send-signature",
         "tags": [
           "Internal/Claims"
@@ -6166,8 +6166,8 @@
                         "pageNumber": { "type": "integer", "minimum": 1 },
                         "x": { "type": "number" },
                         "y": { "type": "number" },
-                        "width": { "type": "number", "example": 140 },
-                        "height": { "type": "number", "example": 30 },
+                        "width": { "type": "number", "description": "140 for US Letter; 150 for A4.", "example": 140 },
+                        "height": { "type": "number", "description": "30 for US Letter; 32 for A4.", "example": 30 },
                         "pageWidth": { "type": "number" },
                         "pageHeight": { "type": "number" }
                       }
