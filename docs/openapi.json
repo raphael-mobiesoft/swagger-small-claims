@@ -3240,9 +3240,72 @@
         ]
       }
     },
+    "/api/claims/{id}/evidence/preference": {
+      "patch": {
+        "description": "Updates whether the authenticated customer has evidence to upload for the claim.",
+        "summary": "PATCH /api/claims/{id}/evidence/preference",
+        "tags": [
+          "Claims/Evidence"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Claim evidence preference updated successfully"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "403": {
+            "description": "customer does not own the claim"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "has_evidence_to_upload": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "has_evidence_to_upload"
+                ]
+              },
+              "example": {
+                "has_evidence_to_upload": false
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/claims/{id}/evidence/suggestions": {
       "post": {
-        "description": "Uses AI to suggest evidence upload items for the claim. Response includes ai_usage_log_id.",
+        "description": "Uses AI to suggest evidence upload items from the available claim context, both before and after Activation Hero questionnaire completion. Response includes ai_usage_log_id.",
         "summary": "POST /api/claims/{id}/evidence/suggestions",
         "tags": [
           "Claims/Evidence"
