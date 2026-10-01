@@ -719,6 +719,144 @@
         ]
       }
     },
+    "/api/internal/dashboard/payment-failures": {
+      "get": {
+        "summary": "GET /api/internal/dashboard/payment-failures",
+        "description": "Occasional internal report of sanitized failed card attempts. It is separate from daily operations endpoints. Summary counts use up to 5,000 matching rows and summary.truncated indicates when that sample limit was reached.",
+        "tags": [
+          "Internal/Dashboard"
+        ],
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "last_30_days",
+                "last_90_days",
+                "year_to_date",
+                "all_time"
+              ],
+              "default": "last_30_days"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "authorize_net",
+                "shift4"
+              ]
+            }
+          },
+          {
+            "name": "service",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "small_claims",
+                "activation_hero"
+              ]
+            }
+          },
+          {
+            "name": "stage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "hosted_form",
+                "tokenization",
+                "three_d_secure",
+                "charge",
+                "transaction_lookup",
+                "transaction_validation"
+              ]
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "backend",
+                "client_reported"
+              ]
+            }
+          },
+          {
+            "name": "response_code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated payment failures and grouped summary.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentFailureDashboardResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query filters."
+          },
+          "401": {
+            "description": "Authorization failed."
+          },
+          "403": {
+            "description": "Internal role required."
+          },
+          "500": {
+            "description": "Payment failure report could not be loaded."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "getPaymentFailures"
+      }
+    },
     "/api/admin/pricing": {
       "get": {
         "description": "",
@@ -8146,7 +8284,7 @@
     "/api/intake/flows/{id}/payment/authorize-net/confirm": {
       "post": {
         "summary": "POST /api/intake/flows/{id}/payment/authorize-net/confirm",
-        "description": "Confirms an Authorize.Net Accept Hosted transaction for a saved intake flow. The API fetches transaction details from Authorize.Net, validates that the transaction is approved and matches the checkout draft amount/invoice, then finalizes the same claim/payment/coupon/lifecycle records as other successful payment flows.",
+        "description": "Confirms an Authorize.Net Accept Hosted transaction for a saved intake flow. The API fetches transaction details from Authorize.Net, validates that the transaction is approved and matches the checkout draft amount/invoice, then finalizes the same claim/payment/coupon/lifecycle records as other successful payment flows. The optional attempt_id correlates this Pay attempt with failure reporting. Provider lookup and transaction validation failures reached by this endpoint are stored automatically; the frontend must not report the same confirmation error separately.",
         "tags": [
           "Intake"
         ],
@@ -8226,6 +8364,11 @@
                       }
                     ],
                     "description": "Authorize.Net transactResponse payload from the iframe communicator. Must contain transId when sent as an object/string JSON."
+                  },
+                  "attempt_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "UUID generated once for this customer Pay attempt and reused for correlation/deduplication."
                   }
                 },
                 "example": {
@@ -8233,7 +8376,8 @@
                   "transaction_response": {
                     "transId": "1234567890",
                     "responseCode": "1"
-                  }
+                  },
+                  "attempt_id": "ef13b3ec-c104-43c3-938c-b7efad50d314"
                 }
               },
               "examples": {
@@ -8244,14 +8388,16 @@
                     "transaction_response": {
                       "transId": "1234567890",
                       "responseCode": "1"
-                    }
+                    },
+                    "attempt_id": "ef13b3ec-c104-43c3-938c-b7efad50d314"
                   }
                 },
                 "transaction_id": {
                   "summary": "Confirm using transaction id",
                   "value": {
                     "draft_id": "checkout-draft-uuid",
-                    "transaction_id": "1234567890"
+                    "transaction_id": "1234567890",
+                    "attempt_id": "ef13b3ec-c104-43c3-938c-b7efad50d314"
                   }
                 }
               }
@@ -8264,7 +8410,7 @@
     "/api/intake/flows/{id}/payment/shift4/confirm": {
       "post": {
         "summary": "POST /api/intake/flows/{id}/payment/shift4/confirm",
-        "description": "Completes an Activation Hero Shift4 Components payment. After the frontend has securely tokenized the card with Shift4.js and completed 3D Secure when required, it sends the one-time shift4_token here. The API charges the token server-side, verifies the resulting charge against the draft, service, amount, currency, and metadata, then creates local payment records. Card data and the token are never persisted.",
+        "description": "Completes an Activation Hero Shift4 Components payment. After the frontend has securely tokenized the card with Shift4.js and completed 3D Secure when required, it sends the one-time shift4_token here. The API charges the token server-side, verifies the resulting charge against the draft, service, amount, currency, and metadata, then creates local payment records. Card data and the token are never persisted. The optional attempt_id correlates this Pay attempt with failure reporting. Server-side charge failures reached by this endpoint are stored automatically; the frontend must not report the same confirmation error separately.",
         "tags": [
           "Intake"
         ],
@@ -8308,6 +8454,11 @@
                     "pattern": "^tok_[A-Za-z0-9]+$",
                     "maxLength": 255,
                     "description": "One-time card token returned by Shift4.js after Components tokenization and 3D Secure verification. Required unless the same draft has already completed. Do not persist it."
+                  },
+                  "attempt_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "UUID generated once for this customer Pay attempt and reused for correlation/deduplication."
                   }
                 }
               },
@@ -8316,7 +8467,8 @@
                   "summary": "Charge a Shift4 Components token",
                   "value": {
                     "draft_id": "checkout-draft-uuid",
-                    "shift4_token": "tok_shift4_card_token"
+                    "shift4_token": "tok_shift4_card_token",
+                    "attempt_id": "ef13b3ec-c104-43c3-938c-b7efad50d314"
                   }
                 }
               }
@@ -8369,6 +8521,168 @@
           }
         },
         "security": []
+      }
+    },
+    "/api/intake/flows/{id}/payment/failure": {
+      "post": {
+        "summary": "POST /api/intake/flows/{id}/payment/failure",
+        "description": "Stores a sanitized provider failure observed in the browser before a confirmation endpoint can be called. Use one frontend-generated attempt_id per Pay click. Authorize.Net accepts only stage=hosted_form; Shift4 accepts stage=tokenization or stage=three_d_secure. Do not call this endpoint for confirmation errors because the backend records those provider failures automatically. Never send card data, CVC, expiration, provider tokens, or raw provider payloads. Reusing the same draft_id and attempt_id is deduplicated; provider-verified backend details can enrich the same row later.",
+        "tags": [
+          "Intake"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Intake flow ID.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "x-intake-resume-token",
+            "in": "header",
+            "required": true,
+            "description": "Resume token for intake flow access and updates.",
+            "schema": {
+              "type": "string",
+              "minLength": 24
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "draft_id",
+                  "attempt_id",
+                  "provider",
+                  "stage",
+                  "provider_message"
+                ],
+                "properties": {
+                  "draft_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "attempt_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "authorize_net",
+                      "shift4"
+                    ]
+                  },
+                  "stage": {
+                    "type": "string",
+                    "enum": [
+                      "hosted_form",
+                      "tokenization",
+                      "three_d_secure"
+                    ],
+                    "description": "authorize_net uses hosted_form; shift4 uses tokenization or three_d_secure."
+                  },
+                  "provider_http_status": {
+                    "type": "integer",
+                    "minimum": 100,
+                    "maximum": 599,
+                    "nullable": true
+                  },
+                  "provider_response_code": {
+                    "type": "string",
+                    "maxLength": 120,
+                    "nullable": true
+                  },
+                  "provider_reason_code": {
+                    "type": "string",
+                    "maxLength": 120,
+                    "nullable": true
+                  },
+                  "provider_status": {
+                    "type": "string",
+                    "maxLength": 120,
+                    "nullable": true
+                  },
+                  "provider_message": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "provider_transaction_id": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "nullable": true
+                  }
+                }
+              },
+              "examples": {
+                "shift4_three_d_secure": {
+                  "summary": "Shift4 failure before API confirmation",
+                  "value": {
+                    "draft_id": "checkout-draft-uuid",
+                    "attempt_id": "ef13b3ec-c104-43c3-938c-b7efad50d314",
+                    "provider": "shift4",
+                    "stage": "three_d_secure",
+                    "provider_response_code": "authentication_failed",
+                    "provider_reason_code": "cardholder_authentication_failed",
+                    "provider_status": "failed",
+                    "provider_message": "3D Secure authentication failed"
+                  }
+                },
+                "authorize_net_hosted_form": {
+                  "summary": "Authorize.Net hosted form failure before API confirmation",
+                  "value": {
+                    "draft_id": "checkout-draft-uuid",
+                    "attempt_id": "ef13b3ec-c104-43c3-938c-b7efad50d314",
+                    "provider": "authorize_net",
+                    "stage": "hosted_form",
+                    "provider_response_code": "2",
+                    "provider_reason_code": "27",
+                    "provider_status": "declined",
+                    "provider_message": "The transaction was declined"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sanitized failed attempt stored or deduplicated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentFailureReportResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid provider/stage/body combination."
+          },
+          "401": {
+            "description": "Invalid or expired intake resume token."
+          },
+          "404": {
+            "description": "Intake flow or checkout draft not found."
+          },
+          "409": {
+            "description": "Draft/flow/provider mismatch, non-payable draft, or already paid checkout."
+          },
+          "500": {
+            "description": "Failure report could not be persisted."
+          }
+        },
+        "security": [],
+        "operationId": "reportPaymentFailure"
       }
     },
     "/api/webhooks/shift4": {
@@ -8489,6 +8803,294 @@
       "bearerAuth": {
         "type": "http",
         "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "PaymentAttempt": {
+        "type": "object",
+        "required": [
+          "id",
+          "attempt_id",
+          "checkout_draft_id",
+          "intake_flow_id",
+          "provider",
+          "service",
+          "outcome",
+          "stage",
+          "source",
+          "provider_verified",
+          "created_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attempt_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "checkout_draft_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "intake_flow_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "authorize_net",
+              "shift4"
+            ]
+          },
+          "service": {
+            "type": "string",
+            "enum": [
+              "small_claims",
+              "activation_hero"
+            ]
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "failed"
+            ]
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "hosted_form",
+              "tokenization",
+              "three_d_secure",
+              "charge",
+              "transaction_lookup",
+              "transaction_validation"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "backend",
+              "client_reported"
+            ]
+          },
+          "provider_verified": {
+            "type": "boolean"
+          },
+          "provider_http_status": {
+            "type": "integer",
+            "nullable": true
+          },
+          "provider_response_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "provider_reason_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "provider_status": {
+            "type": "string",
+            "nullable": true
+          },
+          "provider_message": {
+            "type": "string",
+            "nullable": true
+          },
+          "provider_transaction_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "internal_error_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PaymentFailureReportResponse": {
+        "type": "object",
+        "required": [
+          "payment_attempt"
+        ],
+        "properties": {
+          "payment_attempt": {
+            "$ref": "#/components/schemas/PaymentAttempt"
+          }
+        }
+      },
+      "PaymentFailureDashboardResponse": {
+        "type": "object",
+        "required": [
+          "period",
+          "filters",
+          "summary",
+          "items",
+          "pagination"
+        ],
+        "properties": {
+          "period": {
+            "type": "string",
+            "enum": [
+              "last_30_days",
+              "last_90_days",
+              "year_to_date",
+              "all_time"
+            ]
+          },
+          "filters": {
+            "type": "object",
+            "properties": {
+              "provider": {
+                "type": "string",
+                "nullable": true
+              },
+              "service": {
+                "type": "string",
+                "nullable": true
+              },
+              "stage": {
+                "type": "string",
+                "nullable": true
+              },
+              "source": {
+                "type": "string",
+                "nullable": true
+              },
+              "response_code": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          },
+          "summary": {
+            "type": "object",
+            "required": [
+              "total_failed_attempts",
+              "sample_size",
+              "truncated",
+              "by_provider",
+              "by_service",
+              "by_stage",
+              "by_source",
+              "by_response_code"
+            ],
+            "properties": {
+              "total_failed_attempts": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sample_size": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 5000
+              },
+              "truncated": {
+                "type": "boolean"
+              },
+              "by_provider": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "by_service": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "by_stage": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "by_source": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "by_response_code": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/PaymentAttempt"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "customer_name": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "customer_email": {
+                      "type": "string",
+                      "format": "email",
+                      "nullable": true
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "pagination": {
+            "type": "object",
+            "required": [
+              "limit",
+              "offset",
+              "count",
+              "total"
+            ],
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "total": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        }
       }
     }
   }
