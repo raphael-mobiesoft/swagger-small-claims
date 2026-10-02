@@ -3970,7 +3970,7 @@
     },
     "/api/claims/{id}/send-mailing": {
       "post": {
-        "description": "Sends the signed letter through the destination-based mailing provider. PostGrid requests always enforce `size=us_letter` so they match the signed Firma PDF; `postgrid_payload.size` cannot override this standard.",
+        "description": "Customer-only endpoint that sends the signed letter through the destination-based mailing provider. PostGrid requests enforce the page size resolved before the Firma signature; `postgrid_payload.size` cannot override that signed-document standard.",
         "summary": "POST /api/claims/{id}/send-mailing",
         "tags": [
           "Claims"
@@ -6808,6 +6808,52 @@
                 }
               }
             }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/internal/claims/{id}/send-mailing": {
+      "post": {
+        "description": "Allows an authenticated internal user (`admin`, `cx_agent`, or `paralegal`) to send a signed claim letter through the destination-based mailing provider. It uses the same protected mailing flow as the customer endpoint and records the internal requester in the activity log and provider metadata.",
+        "summary": "POST /api/internal/claims/{id}/send-mailing",
+        "operationId": "sendInternalClaimMailing",
+        "tags": [
+          "Internal/Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "403": {
+            "description": "internal role required"
+          },
+          "409": {
+            "description": "claim is not ready for mailing, mailing was already requested, or provider account cannot submit mailing (for example insufficient funds)"
+          },
+          "422": {
+            "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
           }
         },
         "security": [
