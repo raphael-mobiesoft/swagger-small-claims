@@ -3914,8 +3914,9 @@
     },
     "/api/claims/{id}/revisions": {
       "post": {
-        "description": "Customer requests edits while a Firma signing request is pending. The API cancels pending Firma documents, creates one customer_request revision, sets the claim to letter_revision_requested, and records source metadata. If the customer declines/refuses through the Firma in-app/email flow instead, the Firma webhook creates a signature_decline revision; Firma cancelled/revoked events do not create a duplicate revision when cancellation was initiated by this endpoint.",
+        "description": "Customer requests edits while a Firma signature is pending or after the letter is signed, before DocuPost/PostGrid mailing starts. For a pending signature, the API cancels pending Firma documents. For a signed letter, it preserves the completed Firma document as historical metadata (is_superseded=true) rather than deleting or cancelling it. Both paths create one customer_request revision and set the claim to letter_revision_requested. The request is rejected with 409 REVISION_NOT_ALLOWED_AFTER_MAILING once mailing has started. If the customer declines/refuses through the Firma in-app/email flow instead, the Firma webhook creates a signature_decline revision; Firma cancelled/revoked events do not create a duplicate revision when cancellation was initiated by this endpoint.",
         "summary": "POST /api/claims/{id}/revisions",
+        "operationId": "requestClaimRevision",
         "tags": [
           "Claims"
         ],
@@ -3931,7 +3932,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "successful"
           },
           "401": {
