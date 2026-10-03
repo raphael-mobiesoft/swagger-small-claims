@@ -2282,7 +2282,7 @@
     },
     "/api/auth/me": {
       "get": {
-        "description": "",
+        "description": "Returns authenticated token context only. It does not create a local profile or link guest claims.",
         "summary": "GET /api/auth/me",
         "tags": [
           "Auth"
@@ -2297,6 +2297,54 @@
           },
           "422": {
             "description": "validation failed"
+          },
+          "500": {
+            "description": "unknown server error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/auth/session/initialize": {
+      "post": {
+        "description": "Required after handling a standard Supabase magic-link signup or login, before routing to a claim or dashboard page. Idempotently creates the local profile when absent and, for customer accounts, links guest claims whose customer_email matches the authenticated email and whose user_id is null. Safe after an accepted internal invite; internal profiles are already provisioned and no claims are linked. Do not use after an email-change confirmation; call POST /api/auth/email/sync instead. Returns 409 EMAIL_SYNC_REQUIRED when the authenticated email differs from an existing profile email.",
+        "summary": "POST /api/auth/session/initialize",
+        "operationId": "initializeAuthSession",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "session initialized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "profile": {
+                      "id": "b4fd5b3f-7f35-4d12-857c-80a4d6c5b623",
+                      "email": "customer@example.com",
+                      "role": "customer"
+                    },
+                    "actions": {
+                      "profile_created": true,
+                      "claims_linked": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "authorization failed"
+          },
+          "409": {
+            "description": "EMAIL_SYNC_REQUIRED: complete POST /api/auth/email/sync after an email-change confirmation before initializing the session."
           },
           "500": {
             "description": "unknown server error"
@@ -2504,7 +2552,7 @@
     },
     "/api/claims/mine": {
       "get": {
-        "description": "Lists customer claims. Each claim includes has_evidence_to_upload, indicating whether the customer said they have evidence to upload later.",
+        "description": "Lists customer claims. Each claim includes has_evidence_to_upload, indicating whether the customer said they have evidence to upload later. It retains automatic profile/guest-claim linking as a recovery safeguard, but new magic-link sessions must use POST /api/auth/session/initialize before routing to a claim or dashboard page.",
         "summary": "GET /api/claims/mine",
         "tags": [
           "Claims"
