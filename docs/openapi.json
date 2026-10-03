@@ -8505,7 +8505,7 @@
     "/api/intake/flows/{id}/payment/shift4/confirm": {
       "post": {
         "summary": "POST /api/intake/flows/{id}/payment/shift4/confirm",
-        "description": "Completes an Activation Hero Shift4 Components payment. After the frontend has securely tokenized the card with Shift4.js and completed 3D Secure when required, it sends the one-time shift4_token here. The API charges the token server-side, verifies the resulting charge against the draft, service, amount, currency, and metadata, then creates local payment records. Card data and the token are never persisted. The optional attempt_id correlates this Pay attempt with failure reporting. Server-side charge failures reached by this endpoint are stored automatically; the frontend must not report the same confirmation error separately.",
+        "description": "Completes an Activation Hero Shift4 Components payment. After the frontend has securely tokenized the card with Shift4.js and completed 3D Secure when required, it sends the one-time shift4_token here. The API charges the token server-side, verifies the resulting charge against the draft, service, amount, currency, and metadata, then creates local payment records. Card data and the token are never persisted. The frontend must generate attempt_id once for each new Pay click; the API forwards it as Shift4's idempotency key. Reuse an attempt_id only when resending the exact same confirmation request, including the same token, after an unknown network outcome. A new Pay click after a decline requires a new attempt_id and token. Older clients that omit attempt_id receive a server-generated value, but cannot receive browser-side duplicate-request protection. Server-side charge failures reached by this endpoint are stored automatically; the frontend must not report the same confirmation error separately. A recognized card decline returns HTTP 402 with a customer-safe instruction to check with the bank/card issuer or use another card; raw provider details remain internal.",
         "tags": [
           "Intake"
         ],
@@ -8553,7 +8553,7 @@
                   "attempt_id": {
                     "type": "string",
                     "format": "uuid",
-                    "description": "UUID generated once for this customer Pay attempt and reused for correlation/deduplication."
+                    "description": "Frontend-generated UUID for one Pay click. The API forwards it as Shift4's idempotency key. Use a new value with a newly generated Shift4 token after a decline; reuse it only when resending the exact same request. Older clients may omit it, but then cannot receive browser-side duplicate-request protection."
                   }
                 }
               },
@@ -8600,7 +8600,7 @@
             "description": "authorization failed"
           },
           "402": {
-            "description": "Shift4 declined or could not complete the card charge"
+            "description": "Shift4 declined or could not complete the card charge. Recognized card declines return the customer-safe message: Your card was not approved. Please check with your bank or card issuer, then try again or use a different card."
           },
           "409": {
             "description": "session, charge, draft, amount, currency, or service mismatch"
