@@ -672,7 +672,7 @@
             "name": "period",
             "in": "query",
             "required": false,
-            "description": "Reporting period for dashboard metrics. last_1_day is the rolling previous 24 hours; this_month begins on the first day of the current month; last_month is the complete preceding calendar month.",
+            "description": "Reporting period for dashboard metrics. last_1_day is the current day from midnight; this_month begins on the first day of the current month; last_month is the complete preceding calendar month. Calendar periods use America/Los_Angeles (US Pacific Time) and automatically follow daylight-saving transitions.",
             "schema": {
               "type": "string",
               "enum": [
