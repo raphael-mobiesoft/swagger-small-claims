@@ -672,10 +672,13 @@
             "name": "period",
             "in": "query",
             "required": false,
-            "description": "Reporting period for dashboard metrics.",
+            "description": "Reporting period for dashboard metrics. last_1_day is the rolling previous 24 hours; this_month begins on the first day of the current month; last_month is the complete preceding calendar month.",
             "schema": {
               "type": "string",
               "enum": [
+                "last_1_day",
+                "this_month",
+                "last_month",
                 "last_30_days",
                 "last_90_days",
                 "year_to_date",
