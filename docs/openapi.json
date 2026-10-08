@@ -2257,7 +2257,7 @@
     },
     "/api/auth/magic-link/signup": {
       "post": {
-        "description": "Creates customer magic links only. Emails configured as active claim-created notification recipients, and emails belonging to internal or inactive profiles, return 409 CUSTOMER_EMAIL_RESERVED_FOR_INTERNAL_USE.",
+        "description": "Creates customer magic links only. An optional service is stored only as Supabase Auth metadata for signup-confirmation email branding; it is not used for authorization or claim-service decisions. Emails configured as active claim-created notification recipients, and emails belonging to internal or inactive profiles, return 409 CUSTOMER_EMAIL_RESERVED_FOR_INTERNAL_USE.",
         "summary": "POST /api/auth/magic-link/signup",
         "tags": [
           "Auth"
@@ -2283,8 +2283,27 @@
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "service": {
+                    "type": "string",
+                    "enum": [
+                      "activation_hero",
+                      "small_claims",
+                      "case_dashboard"
+                    ],
+                    "default": "case_dashboard"
+                  }
+                },
                 "example": {
-                  "email": "{{ _.admin_email }}"
+                  "email": "{{ _.customer_email }}",
+                  "service": "activation_hero"
                 }
               }
             }
