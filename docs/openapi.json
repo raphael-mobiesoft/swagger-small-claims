@@ -9,7 +9,7 @@
     "/api/addresses/autocomplete": {
       "post": {
         "summary": "POST /api/addresses/autocomplete",
-        "description": "Public Google Places Autocomplete (New) endpoint for intake and profile address fields. Calls only Autocomplete during typing: it does not call Text Search, Place Details, Address Validation, or Geocoding. country is optional; omission keeps the search global. No Google session token is used. Frontends must wait for at least 3 characters, debounce by about 300 ms, cancel or ignore stale requests, close suggestions after selection, and then call POST /api/addresses/validate. This endpoint has its own 60 requests per IP per 15 minutes limit in addition to the global API limit.",
+        "description": "Public Google Places Autocomplete (New) endpoint for intake and profile address fields. Calls only Autocomplete during typing: it does not call Text Search, Place Details, Address Validation, or Geocoding. country is optional; omission keeps the search global. No Google session token is used. Each suggestion may include Google Place type metadata for frontend diagnostics, but the types do not replace address validation. Frontends must wait for at least 3 characters, debounce by about 300 ms, cancel or ignore stale requests, close suggestions after selection, and then call POST /api/addresses/validate. This endpoint has its own 60 requests per IP per 15 minutes limit in addition to the global API limit.",
         "tags": [
           "Addresses"
         ],
@@ -54,6 +54,16 @@
                             "type": "string",
                             "nullable": true,
                             "example": "Mountain View, CA, USA"
+                          },
+                          "types": {
+                            "type": "array",
+                            "description": "Optional Google Place type metadata for UI diagnostics. route identifies a named road and can be marked as a street-only suggestion; street_address, premise, and subpremise are still predictions. Types never replace address validation for any selected suggestion.",
+                            "items": {
+                              "type": "string"
+                            },
+                            "example": [
+                              "street_address"
+                            ]
                           }
                         }
                       }
