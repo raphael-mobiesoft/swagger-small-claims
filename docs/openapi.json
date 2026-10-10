@@ -672,7 +672,7 @@
     },
     "/api/internal/dashboard/business-overview": {
       "get": {
-        "description": "Returns business performance metrics for internal users. Optionally filter all metrics by service. conversion_funnel uses intake_started from intake_flows, intake_completed for flows that reached review/payment or checkout draft, checkout_started from checkout_drafts, payment_made from succeeded payments, letter_signed from signed-or-beyond claims, letter_sent from mailing-or-beyond claims, and settled from closed claims.",
+        "description": "Returns business performance metrics for internal users. Optionally filter all metrics by service. revenue_by_month includes every Pacific calendar month in the selected period, ordered by month_key (YYYY-MM), and month_label includes the year. funnel_as_of states when funnel stages were evaluated. conversion_funnel is a customer-conversion cohort: intake_flows started in the selected period, counted once per stage through intake completed, checkout started, and payment made; a flow can have multiple checkout drafts, but still counts once. claim_fulfillment_cohort states the count of distinct claims paid in the selected period; claim_fulfillment_funnel then measures only signature requested, letter signed, and letter mailed. claim_outcomes is a third cohort: claims whose mailing was submitted in the selected period. Settled means claim_phase2_flows.response_outcome=settled; unresolved means response_outcome=phase2_unlocked; claims with no explicit outcome are returned separately as awaiting_outcome_count. claims.status=closed is not an outcome because either path may close a claim. settlement_rate_pct is settled divided by resolved outcomes. Every funnel pct uses its own cohort denominator, so no artificial cap is applied. Letter mailed means successfully submitted to the postal provider, not confirmed physical delivery.",
         "summary": "GET /api/internal/dashboard/business-overview",
         "tags": [
           "Internal/Dashboard"
@@ -682,19 +682,21 @@
             "name": "period",
             "in": "query",
             "required": false,
-            "description": "Reporting period for dashboard metrics. last_1_day is the current day from midnight; this_month begins on the first day of the current month; last_month is the complete preceding calendar month. Calendar periods use America/Los_Angeles (US Pacific Time) and automatically follow daylight-saving transitions.",
+            "description": "Reporting period for dashboard metrics. today runs from midnight through now; yesterday is the complete preceding calendar day; this_week runs from Monday at midnight through now; last_week is the complete preceding Monday-Sunday week; this_month runs from the first day of the month through now; last_month is the complete preceding calendar month; last_90_days is the rolling preceding 90 Pacific calendar days through now; year_to_date runs from January 1 through now; all_time has no date filter. Calendar periods use America/Los_Angeles (US Pacific Time) and automatically follow daylight-saving transitions.",
             "schema": {
               "type": "string",
               "enum": [
-                "last_1_day",
+                "today",
+                "yesterday",
+                "this_week",
+                "last_week",
                 "this_month",
                 "last_month",
-                "last_30_days",
                 "last_90_days",
                 "year_to_date",
                 "all_time"
               ],
-              "default": "last_30_days"
+              "default": "this_month"
             }
           },
           {
@@ -713,7 +715,113 @@
         ],
         "responses": {
           "200": {
-            "description": "successful"
+            "description": "successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "funnel_as_of": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Point in time at which the funnel and outcome stages were evaluated."
+                    },
+                    "claim_fulfillment_cohort": {
+                      "type": "object",
+                      "description": "The base for claim_fulfillment_funnel; it is not a fulfillment stage.",
+                      "properties": {
+                        "label": {
+                          "type": "string",
+                          "example": "Claims paid in the selected period"
+                        },
+                        "count": {
+                          "type": "integer",
+                          "description": "Distinct claims with a successful payment in the selected period."
+                        }
+                      }
+                    },
+                    "claim_fulfillment_funnel": {
+                      "type": "array",
+                      "description": "Stages reached by the paid-claim cohort. The only stages are signature_requested, letter_signed, and letter_mailed.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string",
+                            "enum": [
+                              "signature_requested",
+                              "letter_signed",
+                              "letter_mailed"
+                            ]
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer"
+                          },
+                          "pct": {
+                            "type": "integer",
+                            "description": "Whole percentage of claim_fulfillment_cohort.count."
+                          }
+                        }
+                      }
+                    },
+                    "claim_outcomes": {
+                      "type": "object",
+                      "description": "Claims whose mailing was submitted in the selected period. settled and unresolved use the explicit Phase 2 response outcome; a closed claim is not assumed to be settled.",
+                      "properties": {
+                        "cohort_label": {
+                          "type": "string"
+                        },
+                        "as_of": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "eligible_count": {
+                          "type": "integer",
+                          "description": "resolved_count + awaiting_outcome_count."
+                        },
+                        "resolved_count": {
+                          "type": "integer",
+                          "description": "settled_count + unresolved_count."
+                        },
+                        "settled_count": {
+                          "type": "integer",
+                          "description": "claim_phase2_flows.response_outcome = settled."
+                        },
+                        "unresolved_count": {
+                          "type": "integer",
+                          "description": "claim_phase2_flows.response_outcome = phase2_unlocked."
+                        },
+                        "awaiting_outcome_count": {
+                          "type": "integer",
+                          "description": "Claims with no explicit Phase 2 response outcome yet."
+                        },
+                        "settlement_rate_pct": {
+                          "type": "integer",
+                          "description": "Whole percentage: settled_count / resolved_count; 0 when resolved_count is 0."
+                        }
+                      }
+                    },
+                    "settlement_breakdown": {
+                      "type": "object",
+                      "properties": {
+                        "settled_count": {
+                          "type": "integer"
+                        },
+                        "unresolved_count": {
+                          "type": "integer"
+                        },
+                        "awaiting_outcome_count": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "authorization failed"
