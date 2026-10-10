@@ -5068,6 +5068,61 @@
         "security": []
       }
     },
+    "/api/intake/reminders/opt-out": {
+      "post": {
+        "summary": "Stop unfinished-intake reminders for one intake",
+        "description": "Public endpoint for the confirmation page linked from an unfinished-intake reminder email. The email link opens /intake/reminders/opt-out on the frontend with a purpose-specific signed token in the URL fragment. After the customer confirms, send the token in this request body. No login or intake resume token is required. The API records the opt-out on that intake, cancels its scheduled/retryable reminders, and prevents later re-scheduling. Other intakes and other email types are unaffected. Repeated valid requests are idempotent.",
+        "tags": [
+          "Intake"
+        ],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "token"
+                ],
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "minLength": 20,
+                    "maxLength": 2048,
+                    "description": "Token from the Remove me email link URL fragment. Do not send an intake resume token."
+                  }
+                }
+              },
+              "example": {
+                "token": "<token-from-email-link>"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reminders disabled for this intake, including on repeated confirmation.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "reminders_disabled"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing, malformed, or invalid opt-out token."
+          },
+          "410": {
+            "description": "Opt-out token expired after 30 days."
+          },
+          "500": {
+            "description": "Server or database error."
+          }
+        }
+      }
+    },
     "/api/intake/flows/mine": {
       "get": {
         "description": "Lists intake flows for the authenticated customer. Cancelled flows are excluded. When claim_data.filing_county_id is present, the API enriches claim_data with filing_county_name, filing_county_state, filing_county_country, and filing_county_jurisdiction_type for frontend display.",
@@ -5396,7 +5451,7 @@
     },
     "/api/intake/flows/{id}/customer-information": {
       "patch": {
-        "description": "customer.address_validation is required. Use the validation token from POST /api/addresses/validate; set confirmed=true after accepting a needs_confirmation result. An explicit manual override is also allowed with { source: 'user_provided', confirmed: true }. confirmed=false returns 409 ADDRESS_MANUAL_CONFIRMATION_REQUIRED.",
+        "description": "customer.address_validation is required. Use the validation token from POST /api/addresses/validate; set confirmed=true after accepting a needs_confirmation result. An explicit manual override is also allowed with { source: 'user_provided', confirmed: true }. confirmed=false returns 409 ADDRESS_MANUAL_CONFIRMATION_REQUIRED. The first save of Customer Information normally schedules unfinished-intake reminders. Later edits call scheduling again, but do not reschedule reminders if this intake was opted out through POST /api/intake/reminders/opt-out.",
         "summary": "PATCH /api/intake/flows/{id}/customer-information",
         "tags": [
           "Intake"
