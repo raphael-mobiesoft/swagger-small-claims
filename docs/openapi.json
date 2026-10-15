@@ -2690,6 +2690,49 @@
         "security": []
       }
     },
+    "/api/claims/payment-receipt": {
+      "get": {
+        "summary": "Open payment receipt from internal claim-created email",
+        "description": "Public direct PDF link included in the internal claim-created email. A claim-specific signed token replaces login. The link does not expire or depend on the recipient's later status. The receipt is rendered on demand from the existing DOCX template and is not stored. Customer claim-created emails continue to receive the PDF as an attachment. Treat this link as private because anyone holding it can open the receipt.",
+        "tags": [
+          "Claims"
+        ],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "description": "Signed token from the internal notification email.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Receipt PDF displayed inline.",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "CLAIM_RECEIPT_LINK_INVALID"
+          },
+          "404": {
+            "description": "CLAIM_RECEIPT_NOT_FOUND"
+          },
+          "500": {
+            "description": "Receipt generation or database error"
+          }
+        },
+        "security": []
+      }
+    },
     "/api/claims/mine": {
       "get": {
         "description": "Lists customer claims. Each claim includes has_evidence_to_upload, indicating whether the customer said they have evidence to upload later. It retains automatic profile/guest-claim linking as a recovery safeguard, but new magic-link sessions must use POST /api/auth/session/initialize before routing to a claim or dashboard page.",
