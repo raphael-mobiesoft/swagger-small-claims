@@ -4202,7 +4202,7 @@
     },
     "/api/claims/{id}/send-mailing": {
       "post": {
-        "description": "Customer-only endpoint that sends the signed letter via DocuPost only when both customer sender and defendant recipient countries are US; otherwise it uses PostGrid. Both country codes are required (422 MAILING_COUNTRY_REQUIRED). PostGrid uses the signed page size and sends the claim preference as the generic mailingClass (first_class or certified), letting PostGrid resolve the postal service for the route without a US-only restriction or a mailing-class availability precheck. Provider rejections follow existing error handling without automatically downgrading the selected service. `postgrid_payload` cannot override size or mailingClass; legacy extraService overrides are ignored.",
+        "description": "Customer-only endpoint that sends the signed letter via DocuPost only when both customer sender and defendant recipient countries are US; otherwise it uses PostGrid. Both country codes are required (422 MAILING_COUNTRY_REQUIRED). PostGrid uses the signed page size and sends the claim preference as the generic mailingClass (first_class or certified), letting PostGrid resolve the postal service for the route without a US-only restriction or a mailing-class availability precheck. A PostGrid address_strictness_error returns 422 MAILING_ADDRESS_VERIFICATION_FAILED with a customer message asking them to contact our team to correct the address. Frontend must display error.message rather than a generic failure and must not retry automatically. Other provider rejections keep existing handling without automatically downgrading the selected service. `postgrid_payload` cannot override size or mailingClass; legacy extraService overrides are ignored.",
         "summary": "POST /api/claims/{id}/send-mailing",
         "tags": [
           "Claims"
@@ -4229,7 +4229,17 @@
             "description": "mailing conflict or provider account cannot submit mailing (for example insufficient funds)"
           },
           "422": {
-            "description": "validation failed"
+            "description": "Validation failed, MAILING_COUNTRY_REQUIRED, or MAILING_ADDRESS_VERIFICATION_FAILED. For an address-verification rejection, the customer should contact our team before trying again. Raw provider errors and addresses are not exposed.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "MAILING_ADDRESS_VERIFICATION_FAILED",
+                    "message": "We could not verify the sender or recipient mailing address. Please contact our team to have the address corrected before requesting mailing again."
+                  }
+                }
+              }
+            }
           },
           "500": {
             "description": "unknown server error"
@@ -7106,7 +7116,7 @@
     },
     "/api/internal/claims/{id}/send-mailing": {
       "post": {
-        "description": "Allows an authenticated internal user (`admin`, `cx_agent`, or `paralegal`) to send a signed claim letter through the same mailing flow as the customer endpoint. DocuPost is selected only when both sender and recipient countries are US; otherwise PostGrid is selected. Both country codes are required (422 MAILING_COUNTRY_REQUIRED). PostGrid sends the claim preference as the generic mailingClass (first_class or certified), letting PostGrid resolve the postal service for the route without a US-only restriction or a mailing-class availability precheck. Provider rejections follow existing error handling without automatically downgrading the selected service. `postgrid_payload` cannot override size or mailingClass; legacy extraService overrides are ignored. The internal requester is recorded in the activity log and provider metadata.",
+        "description": "Allows an authenticated internal user (`admin`, `cx_agent`, or `paralegal`) to send a signed claim letter through the same mailing flow as the customer endpoint. DocuPost is selected only when both sender and recipient countries are US; otherwise PostGrid is selected. Both country codes are required (422 MAILING_COUNTRY_REQUIRED). PostGrid sends the claim preference as the generic mailingClass (first_class or certified), letting PostGrid resolve the postal service for the route without a US-only restriction or a mailing-class availability precheck. A PostGrid address_strictness_error returns 422 MAILING_ADDRESS_VERIFICATION_FAILED with an internal message asking staff to review and correct the claim mailing address. Frontend must display error.message rather than a generic failure and must not retry automatically. Other provider rejections keep existing handling without automatically downgrading the selected service. `postgrid_payload` cannot override size or mailingClass; legacy extraService overrides are ignored. The internal requester is recorded in the activity log and provider metadata.",
         "summary": "POST /api/internal/claims/{id}/send-mailing",
         "operationId": "sendInternalClaimMailing",
         "tags": [
@@ -7137,7 +7147,17 @@
             "description": "claim is not ready for mailing, mailing was already requested, or provider account cannot submit mailing (for example insufficient funds)"
           },
           "422": {
-            "description": "validation failed"
+            "description": "Validation failed, MAILING_COUNTRY_REQUIRED, or MAILING_ADDRESS_VERIFICATION_FAILED. For an address-verification rejection, staff should review and correct the claim mailing address before trying again. Raw provider errors and addresses are not exposed.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "MAILING_ADDRESS_VERIFICATION_FAILED",
+                    "message": "The mailing provider could not verify the sender or recipient address. Please review and correct the claim mailing address before trying again."
+                  }
+                }
+              }
+            }
           },
           "500": {
             "description": "unknown server error"
@@ -8575,7 +8595,7 @@
     },
     "/api/firma-webhook": {
       "post": {
-        "description": "Firma webhook endpoint. Uses raw JSON body and X-Firma-Signature verification when FIRMA_WEBHOOK_SECRET is configured. Synchronizes Firma document and claim status, creates revision requests for decline/expiration events, stores Firma decline_reason when provided, and avoids duplicate revision requests for cancelled/revoked events initiated by the Case Dashboard revision endpoint.",
+        "description": "Firma webhook endpoint. Uses raw JSON body and X-Firma-Signature verification when FIRMA_WEBHOOK_SECRET is configured. Synchronizes document/claim status, creates revision requests for decline/expiration, and preserves existing completed/cancelled behavior. An authenticated recipient.signed with strict data.all_complete=true persists a verification job in the existing firma_completion_notification queue before returning 200; it does not wait for Firma finalization inside the callback. Only the latest active non-terminal document with claim letter_signature_sent is queued. The job is eligible after 30 seconds and requires the existing notification worker (NOTIFICATIONS_CRON_ENABLED=true; default every 10 minutes, or authenticated process-due endpoint). The worker confirms strict status.finished=true with no cancellation/decline/expiration and rechecks document/claim/latest state after the provider call before marking signed. Pending/provider failures use persisted job retries (normally max_attempts=3), not webhook 503 FIRMA_SIGNATURE_COMPLETION_PENDING. Exhausted retries need investigation. Completion email uses existing per-document deduplication; reconciliation sends custom email only for completion_email_provider=resend. Database/queue failures still return non-2xx. No new endpoint or migration. Old events are not automatically replayed by deployment.",
         "summary": "POST /api/firma-webhook",
         "tags": [
           "Webhooks"
