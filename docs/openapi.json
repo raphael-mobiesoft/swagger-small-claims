@@ -4202,7 +4202,7 @@
     },
     "/api/claims/{id}/send-mailing": {
       "post": {
-        "description": "Customer-only endpoint that sends the signed letter through the destination-based mailing provider. PostGrid requests enforce the page size resolved before the Firma signature; `postgrid_payload.size` cannot override that signed-document standard.",
+        "description": "Customer-only endpoint that sends the signed letter via DocuPost only when both customer sender and defendant recipient countries are US; otherwise it uses PostGrid. Both country codes are required (422 MAILING_COUNTRY_REQUIRED). PostGrid uses the signed page size and sends the claim preference as the generic mailingClass (first_class or certified), letting PostGrid resolve the postal service for the route without a US-only restriction or a mailing-class availability precheck. Provider rejections follow existing error handling without automatically downgrading the selected service. `postgrid_payload` cannot override size or mailingClass; legacy extraService overrides are ignored.",
         "summary": "POST /api/claims/{id}/send-mailing",
         "tags": [
           "Claims"
@@ -7106,7 +7106,7 @@
     },
     "/api/internal/claims/{id}/send-mailing": {
       "post": {
-        "description": "Allows an authenticated internal user (`admin`, `cx_agent`, or `paralegal`) to send a signed claim letter through the destination-based mailing provider. It uses the same protected mailing flow as the customer endpoint and records the internal requester in the activity log and provider metadata.",
+        "description": "Allows an authenticated internal user (`admin`, `cx_agent`, or `paralegal`) to send a signed claim letter through the same mailing flow as the customer endpoint. DocuPost is selected only when both sender and recipient countries are US; otherwise PostGrid is selected. Both country codes are required (422 MAILING_COUNTRY_REQUIRED). PostGrid sends the claim preference as the generic mailingClass (first_class or certified), letting PostGrid resolve the postal service for the route without a US-only restriction or a mailing-class availability precheck. Provider rejections follow existing error handling without automatically downgrading the selected service. `postgrid_payload` cannot override size or mailingClass; legacy extraService overrides are ignored. The internal requester is recorded in the activity log and provider metadata.",
         "summary": "POST /api/internal/claims/{id}/send-mailing",
         "operationId": "sendInternalClaimMailing",
         "tags": [
