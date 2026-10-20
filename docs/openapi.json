@@ -5399,7 +5399,7 @@
     },
     "/api/intake/flows/{id}/claim-information": {
       "patch": {
-        "description": "Saves intake claim information. claim.has_evidence_to_upload is optional, defaults to false, and records whether the customer has evidence to upload later.",
+        "description": "Saves intake claim information. For both activation_hero and small_claims, claim.description accepts at most 1000 whitespace-separated words. The field is required, but an empty string remains allowed; there is no minimum word count. Exceeding 1000 words returns 400 VALIDATION_ERROR. Frontend must update its intake description counter and limit to match. claim.has_evidence_to_upload is optional, defaults to false, and records whether the customer has evidence to upload later.",
         "summary": "PATCH /api/intake/flows/:id/claim-information (activation_hero|small_claims)",
         "tags": [
           "Intake"
