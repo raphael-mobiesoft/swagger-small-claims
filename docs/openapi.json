@@ -4202,7 +4202,7 @@
     },
     "/api/claims/{id}/send-mailing": {
       "post": {
-        "description": "Customer-only endpoint that sends the signed letter via DocuPost only when both customer sender and defendant recipient countries are US; otherwise it uses PostGrid. Both country codes are required (422 MAILING_COUNTRY_REQUIRED). PostGrid uses the signed page size and sends the claim preference as the generic mailingClass (first_class or certified), letting PostGrid resolve the postal service for the route without a US-only restriction or a mailing-class availability precheck. A PostGrid address_strictness_error returns 422 MAILING_ADDRESS_VERIFICATION_FAILED with a customer message asking them to contact our team to correct the address. Frontend must display error.message rather than a generic failure and must not retry automatically. Other provider rejections keep existing handling without automatically downgrading the selected service. `postgrid_payload` cannot override size or mailingClass; legacy extraService overrides are ignored.",
+        "description": "Customer-only mailing of the current signed Firma letter. Sender and recipient addresses come from the claim snapshot, never the request body or OCR. DocuPost is used only when both countries are US; otherwise PostGrid uses the signed page size and the claim's generic first_class or certified preference. Send {} or no body: document_url, docupost_payload, and postgrid_payload are rejected with 400 VALIDATION_ERROR. A PostGrid address_strictness_error returns 422 MAILING_ADDRESS_VERIFICATION_FAILED; show error.message and do not retry automatically. The customer can request a letter revision in the dashboard, mentioning the mailing address error. Staff investigate the address and update the claim and letter; a new signature is required before retrying. A rejected address creates no mailing document or response window.",
         "summary": "POST /api/claims/{id}/send-mailing",
         "tags": [
           "Claims"
@@ -4222,6 +4222,9 @@
           "200": {
             "description": "successful"
           },
+          "400": {
+            "description": "VALIDATION_ERROR for mailing body overrides"
+          },
           "401": {
             "description": "authorization failed"
           },
@@ -4229,13 +4232,13 @@
             "description": "mailing conflict or provider account cannot submit mailing (for example insufficient funds)"
           },
           "422": {
-            "description": "Validation failed, MAILING_COUNTRY_REQUIRED, or MAILING_ADDRESS_VERIFICATION_FAILED. For an address-verification rejection, the customer should contact our team before trying again. Raw provider errors and addresses are not exposed.",
+            "description": "MAILING_COUNTRY_REQUIRED or MAILING_ADDRESS_VERIFICATION_FAILED. For address rejection, request a letter revision; staff investigate the address, correct the claim and letter, and obtain a new signature. Raw provider errors and addresses are not exposed.",
             "content": {
               "application/json": {
                 "example": {
                   "error": {
                     "code": "MAILING_ADDRESS_VERIFICATION_FAILED",
-                    "message": "We could not verify the sender or recipient mailing address. Please contact our team to have the address corrected before requesting mailing again."
+                    "message": "We could not verify the sender or recipient address. Please request a letter revision in your dashboard and mention this mailing address validation error. Our team will check the address and correct the claim and letter. You will need to sign the updated letter before mailing can be tried again."
                   }
                 }
               }
@@ -4243,6 +4246,17 @@
           },
           "500": {
             "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "example": {}
+              }
+            }
           }
         },
         "security": [
@@ -6882,6 +6896,108 @@
         ]
       }
     },
+    "/api/internal/claims/{id}/details": {
+      "patch": {
+        "description": "Internal-only, partial claim-scoped correction. Supply at least one of customer, defendant, or claim; unknown fields and customer email are rejected. customer accepts name, phone, and a complete address. Activation Hero defendant accepts only an active platform_id; the claim copies that platform's catalog name, website, and address. Manually entered Small Claims defendant accepts legal_name, registered_agent, email, phone, and a complete address. claim accepts amount_cents, incident_date, and description (maximum 1000 words). While an Activation Hero claim awaits its questionnaire, only claim data changes; the first letter is generated from those corrected data after questionnaire submission. When a letter already exists before the first Firma signature send, it is regenerated from its claim template, creating a version and replacing prior manual letter edits. With revision open after a signature send, only claim data changes: staff must manually update the letter before resending it. Pending signature, signed without revision, and active or completed mailing block corrections. Account profile and customer email remain unchanged. Address save validates basic fields, not postal deliverability.",
+        "summary": "PATCH /api/internal/claims/{id}/details",
+        "operationId": "updateInternalClaimDetails",
+        "tags": [
+          "Internal/Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "customer": {
+                    "type": "object",
+                    "description": "Claim customer only; does not change the account profile or email.",
+                    "properties": {
+                      "name": { "type": "string" },
+                      "phone": { "type": "string" },
+                      "address": { "$ref": "#/components/schemas/ClaimCorrectionAddress" }
+                    },
+                    "additionalProperties": false
+                  },
+                  "defendant": {
+                    "type": "object",
+                    "description": "Activation Hero: platform_id only. Manual Small Claims: legal_name, registered_agent, email, phone, address.",
+                    "properties": {
+                      "platform_id": { "type": "string", "format": "uuid" },
+                      "legal_name": { "type": "string" },
+                      "registered_agent": { "type": "string", "nullable": true },
+                      "email": { "type": "string", "format": "email", "nullable": true },
+                      "phone": { "type": "string", "nullable": true },
+                      "address": { "$ref": "#/components/schemas/ClaimCorrectionAddress" }
+                    },
+                    "additionalProperties": false
+                  },
+                  "claim": {
+                    "type": "object",
+                    "properties": {
+                      "amount_cents": { "type": "integer", "minimum": 1 },
+                      "incident_date": { "type": "string", "format": "date" },
+                      "description": { "type": "string", "description": "Maximum 1000 words." }
+                    },
+                    "additionalProperties": false
+                  },
+                  "note": { "type": "string", "nullable": true }
+                },
+                "example": {
+                  "customer": {
+                    "name": "Jordan Smith",
+                    "phone": "+14155550123",
+                    "address": {
+                      "address_line1": "1 Market St",
+                      "city": "San Francisco",
+                      "state": "CA",
+                      "zip": "94105",
+                      "country": "US"
+                    }
+                  },
+                  "claim": {
+                    "amount_cents": 250000,
+                    "incident_date": "2026-10-01",
+                    "description": "Corrected account deactivation description."
+                  },
+                  "note": "Verified with case notes"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns claim, version (or null), letter_regenerated, and letter_requires_manual_update."
+          },
+          "400": { "description": "VALIDATION_ERROR for malformed or unknown fields" },
+          "401": { "description": "authentication required" },
+          "403": { "description": "internal role required" },
+          "404": { "description": "claim not found" },
+          "409": { "description": "claim state, mailing, letter readiness, or manual-defendant restriction" },
+          "422": { "description": "wrong-service defendant fields or inactive/invalid platform address" }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/internal/claims/{id}/documents/certification-mailing-submission": {
       "post": {
         "description": "Uploads the DocuPost Certification Mailing Submission PDF after mailing. This endpoint is DocuPost-only: it validates the uploaded PDF by OCR and requires the related DocuPost letter_id to appear before persisting the document. It does not support PostGrid artifacts.",
@@ -7116,7 +7232,7 @@
     },
     "/api/internal/claims/{id}/send-mailing": {
       "post": {
-        "description": "Allows an authenticated internal user (`admin`, `cx_agent`, or `paralegal`) to send a signed claim letter through the same mailing flow as the customer endpoint. DocuPost is selected only when both sender and recipient countries are US; otherwise PostGrid is selected. Both country codes are required (422 MAILING_COUNTRY_REQUIRED). PostGrid sends the claim preference as the generic mailingClass (first_class or certified), letting PostGrid resolve the postal service for the route without a US-only restriction or a mailing-class availability precheck. A PostGrid address_strictness_error returns 422 MAILING_ADDRESS_VERIFICATION_FAILED with an internal message asking staff to review and correct the claim mailing address. Frontend must display error.message rather than a generic failure and must not retry automatically. Other provider rejections keep existing handling without automatically downgrading the selected service. `postgrid_payload` cannot override size or mailingClass; legacy extraService overrides are ignored. The internal requester is recorded in the activity log and provider metadata.",
+        "description": "Internal mailing of the current signed Firma letter. Sender and recipient addresses come from the claim snapshot, never request overrides or OCR. DocuPost is used only when both countries are US; otherwise PostGrid uses the signed page size and the claim's generic first_class or certified preference. Send {} or no body: document_url, docupost_payload, and postgrid_payload are rejected with 400 VALIDATION_ERROR. A PostGrid address_strictness_error returns 422 MAILING_ADDRESS_VERIFICATION_FAILED: correct the claim only before first signature send or during an open revision; a signed letter requires the customer to request revision, followed by manual letter correction and a new signature before retrying. A rejected address creates no mailing document or response window. The internal requester is recorded in the activity log and provider metadata.",
         "summary": "POST /api/internal/claims/{id}/send-mailing",
         "operationId": "sendInternalClaimMailing",
         "tags": [
@@ -7137,6 +7253,9 @@
           "200": {
             "description": "successful"
           },
+          "400": {
+            "description": "VALIDATION_ERROR for mailing body overrides"
+          },
           "401": {
             "description": "authorization failed"
           },
@@ -7147,13 +7266,13 @@
             "description": "claim is not ready for mailing, mailing was already requested, or provider account cannot submit mailing (for example insufficient funds)"
           },
           "422": {
-            "description": "Validation failed, MAILING_COUNTRY_REQUIRED, or MAILING_ADDRESS_VERIFICATION_FAILED. For an address-verification rejection, staff should review and correct the claim mailing address before trying again. Raw provider errors and addresses are not exposed.",
+            "description": "MAILING_COUNTRY_REQUIRED or MAILING_ADDRESS_VERIFICATION_FAILED. Corrections require pre-signature or revision state; signed letters require revision and a new signature. Raw provider errors and addresses are not exposed.",
             "content": {
               "application/json": {
                 "example": {
                   "error": {
                     "code": "MAILING_ADDRESS_VERIFICATION_FAILED",
-                    "message": "The mailing provider could not verify the sender or recipient address. Please review and correct the claim mailing address before trying again."
+                    "message": "The mailing provider could not verify the sender or recipient address. Corrections are available before the first signature send or while the letter is in revision. If it is signed, ask the customer to request a letter revision, correct the claim and letter, and obtain a new signature before trying again."
                   }
                 }
               }
@@ -7161,6 +7280,17 @@
           },
           "500": {
             "description": "unknown server error"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "example": {}
+              }
+            }
           }
         },
         "security": [
@@ -9159,6 +9289,19 @@
       }
     },
     "schemas": {
+      "ClaimCorrectionAddress": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["address_line1", "city", "state", "zip", "country"],
+        "properties": {
+          "address_line1": { "type": "string" },
+          "address_line2": { "type": "string", "nullable": true },
+          "city": { "type": "string" },
+          "state": { "type": "string" },
+          "zip": { "type": "string" },
+          "country": { "type": "string", "minLength": 2, "maxLength": 2 }
+        }
+      },
       "PaymentAttempt": {
         "type": "object",
         "required": [
