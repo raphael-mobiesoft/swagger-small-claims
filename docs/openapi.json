@@ -6896,9 +6896,129 @@
         ]
       }
     },
+    "/api/internal/mailing-addresses/check": {
+      "post": {
+        "summary": "Check a claim mailing address before editing or signing the letter",
+        "operationId": "checkInternalMailingAddress",
+        "tags": ["Internal/Claims"],
+        "description": "Internal-only helper for admin, cx_agent, and paralegal. Checks one customer or manually entered Small Claims defendant address using live PostGrid contacts, including US-US claims that will later use DocuPost. Run this early, before letter edits and the first signature, to reduce address rejections when staff or the customer requests mailing and avoid reopening a signed letter for revision and another signature. A verified or corrected result is approved immediately. A failed result is checked once more only if PostGrid returned a complete, changed correction in the same country; the second request uses that provider-returned address. At most two contact requests are made. HTTP 200 also covers addresses that could not be confirmed, including nonexistent or deliberately incorrect addresses: distinguish NO_USABLE_CORRECTION from CORRECTION_NOT_CONFIRMED. Creates or reuses live PostGrid contacts; does not send a letter or update a claim, letter, profile, or platform. A test-mode response is rejected because it cannot verify real addresses. Review an approved normalized_address and pass it unchanged as customer.address or defendant.address to PATCH /api/internal/claims/{id}/details. Recheck after any manual change. Existing correction permissions and letter lifecycle rules still apply. Approval is PostGrid address validation, not a guarantee of later DocuPost/carrier acceptance or document/mailing-class validation. ZIP+4 is preserved.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["name", "address"],
+                "properties": {
+                  "name": { "type": "string", "minLength": 2, "maxLength": 200 },
+                  "address": { "$ref": "#/components/schemas/ClaimCorrectionAddress" }
+                }
+              },
+              "examples": {
+                "international_sender": {
+                  "value": {
+                    "name": "Syed Rahul",
+                    "address": {
+                      "address_line1": "24 Oval Road South",
+                      "city": "Dagenham",
+                      "state": "London",
+                      "zip": "Rm109dr",
+                      "country": "GB"
+                    }
+                  }
+                },
+                "us_defendant": {
+                  "value": {
+                    "name": "Uber (USA)",
+                    "address": {
+                      "address_line1": "1725 3rd St",
+                      "city": "San Francisco",
+                      "state": "CA",
+                      "zip": "94158",
+                      "country": "US"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Completed address check, whether approved or not. Corrections are illustrative and may vary. Only approved normalized_address may be offered as a confirmed address for staff to review and save.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MailingAddressCheckResult" },
+                "examples": {
+                  "approved_after_postgrid_correction": {
+                    "value": {
+                      "approved": true,
+                      "status": "corrected",
+                      "normalized_address": {
+                        "address_line1": "24 Oval Road South",
+                        "address_line2": "South",
+                        "city": "Dagenham",
+                        "state": "Essex",
+                        "zip": "RM10 9DR",
+                        "country": "GB"
+                      },
+                      "changed_fields": ["address_line2", "state", "zip"],
+                      "attempts": 2,
+                      "reason_code": null,
+                      "message": "PostGrid confirmed a corrected mailing address. Review the returned address before saving it to the claim."
+                    }
+                  },
+                  "no_usable_postgrid_correction": {
+                    "value": {
+                      "approved": false,
+                      "status": "not_confirmed",
+                      "normalized_address": null,
+                      "changed_fields": [],
+                      "attempts": 1,
+                      "reason_code": "NO_USABLE_CORRECTION",
+                      "message": "PostGrid could not confirm this mailing address and did not return a usable corrected address. Review the address and try again."
+                    }
+                  },
+                  "postgrid_correction_not_confirmed": {
+                    "value": {
+                      "approved": false,
+                      "status": "not_confirmed",
+                      "normalized_address": null,
+                      "changed_fields": [],
+                      "attempts": 2,
+                      "reason_code": "CORRECTION_NOT_CONFIRMED",
+                      "message": "PostGrid could not confirm the corrected mailing address it returned after the first check. Review the address and try again."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "VALIDATION_ERROR: missing or malformed name/address, invalid US ZIP format, or unknown fields. Provider payload overrides and verification-bypass flags are not accepted." },
+          "401": { "description": "Authentication required." },
+          "403": { "description": "Internal role required; customer tokens are not allowed." },
+          "502": {
+            "description": "MAILING_ADDRESS_CHECK_UNAVAILABLE for provider timeout, outage, rate limit, or other service failure; MAILING_ADDRESS_CHECK_INVALID_RESPONSE for missing/unknown verification status or an untrustworthy response. These are not address-not-confirmed results.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "MAILING_ADDRESS_CHECK_UNAVAILABLE",
+                    "message": "Mailing address verification is unavailable. Please try again later."
+                  }
+                }
+              }
+            }
+          },
+          "503": { "description": "MAILING_ADDRESS_CHECK_NOT_CONFIGURED for missing PostGrid configuration, or MAILING_ADDRESS_CHECK_LIVE_REQUIRED when the configured key produces test-mode contacts. Uses optional live POSTGRID_ADDRESS_CHECK_API_KEY, falling back to POSTGRID_API_KEY, plus existing POSTGRID_API_BASE_URL and POSTGRID_TIMEOUT_MS. In staging configure the optional live check key if mailing uses a test key; do not change the existing mailing key. The override applies only to contact checks, not letter creation or page-size preflight. No migration; production can keep its existing live key without the override." }
+        }
+      }
+    },
     "/api/internal/claims/{id}/details": {
       "patch": {
-        "description": "Internal-only partial corrections to the claim snapshot, not the customer's account profile or email. Send at least one nonempty customer, defendant, or claim object; note alone is insufficient. Activation Hero accepts only defendant.platform_id (an active platform with a usable address); Small Claims accepts defendant details only when the defendant was manually entered. An Activation Hero claim awaiting its questionnaire is updated without a letter/version; the questionnaire later generates the first letter from the corrected claim. An existing letter without Firma signature history is regenerated, replacing prior manual edits. With an open revision after a Firma request, the claim changes but the letter HTML/version do not; staff must edit the letter manually before resending. Pending signature, signed without revision, and active/completed mailing block corrections. Address saving validates format, not postal deliverability; see the README for frontend warnings and address-check guidance.",
+        "description": "Internal-only partial corrections to the claim snapshot, not the customer's account profile or email. Send at least one nonempty customer, defendant, or claim object; note alone is insufficient. Activation Hero accepts only defendant.platform_id (an active platform with a usable address); Small Claims accepts defendant details only when the defendant was manually entered. An Activation Hero claim awaiting its questionnaire is updated without a letter/version; the questionnaire later generates the first letter from the corrected claim. An existing letter without Firma signature history is regenerated, replacing prior manual edits. With an open revision after a Firma request, the claim changes but the letter HTML/version do not; staff must edit the letter manually before resending. Pending signature, signed without revision, and active/completed mailing block corrections. Address saving validates format, not postal deliverability. Before correcting customer or manually entered Small Claims defendant addresses, call POST /api/internal/mailing-addresses/check, review an approved normalized_address, and send it unchanged to this PATCH; recheck if edited. Do this before letter edits and the first signature to reduce mailing failures for both customer and internal send requests, and avoid reopening a signed letter for revision and another signature. The helper does not bypass these lifecycle or permission rules. See the README for frontend guidance.",
         "summary": "PATCH /api/internal/claims/{id}/details",
         "operationId": "updateInternalClaimDetails",
         "tags": [
@@ -9483,6 +9603,38 @@
       }
     },
     "schemas": {
+      "MailingAddressCheckResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["approved", "status", "normalized_address", "changed_fields", "attempts", "reason_code", "message"],
+        "properties": {
+          "approved": { "type": "boolean", "description": "True only when a usable same-country address received live PostGrid verified or corrected status." },
+          "status": { "type": "string", "enum": ["verified", "corrected", "not_confirmed"] },
+          "normalized_address": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": false,
+            "description": "Complete postal address to review and pass to the existing claim-details PATCH after approval. Null when not confirmed; no name or provider contact ID is included.",
+            "required": ["address_line1", "city", "state", "zip", "country"],
+            "properties": {
+              "address_line1": { "type": "string", "minLength": 3 },
+              "address_line2": { "type": "string", "nullable": true },
+              "city": { "type": "string", "minLength": 2 },
+              "state": { "type": "string", "minLength": 1, "maxLength": 120 },
+              "zip": { "type": "string", "minLength": 2, "maxLength": 32 },
+              "country": { "type": "string", "minLength": 2, "maxLength": 2 }
+            }
+          },
+          "changed_fields": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "type": "string", "enum": ["address_line1", "address_line2", "city", "state", "zip", "country"] }
+          },
+          "attempts": { "type": "integer", "minimum": 1, "maximum": 2 },
+          "reason_code": { "type": "string", "nullable": true, "enum": ["NO_USABLE_CORRECTION", "CORRECTION_NOT_CONFIRMED", null] },
+          "message": { "type": "string", "description": "User-facing result. Failure messages identify corrections as returned by PostGrid, not suggested by the caller." }
+        }
+      },
       "ClaimCorrectionAddress": {
         "type": "object",
         "additionalProperties": false,
