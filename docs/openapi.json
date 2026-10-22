@@ -6898,7 +6898,7 @@
     },
     "/api/internal/claims/{id}/details": {
       "patch": {
-        "description": "Internal-only, partial claim-scoped correction. Supply at least one of customer, defendant, or claim; unknown fields and customer email are rejected. customer accepts name, phone, and a complete address. Activation Hero defendant accepts only an active platform_id; the claim copies that platform's catalog name, website, and address. Manually entered Small Claims defendant accepts legal_name, registered_agent, email, phone, and a complete address. claim accepts amount_cents, incident_date, and description (maximum 1000 words). While an Activation Hero claim awaits its questionnaire, only claim data changes; the first letter is generated from those corrected data after questionnaire submission. When a letter already exists before the first Firma signature send, it is regenerated from its claim template, creating a version and replacing prior manual letter edits. With revision open after a signature send, only claim data changes: staff must manually update the letter before resending it. Pending signature, signed without revision, and active or completed mailing block corrections. Account profile and customer email remain unchanged. Address save validates basic fields, not postal deliverability.",
+        "description": "Internal-only partial corrections to the claim snapshot, not the customer's account profile or email. Send at least one nonempty customer, defendant, or claim object; note alone is insufficient. Activation Hero accepts only defendant.platform_id (an active platform with a usable address); Small Claims accepts defendant details only when the defendant was manually entered. An Activation Hero claim awaiting its questionnaire is updated without a letter/version; the questionnaire later generates the first letter from the corrected claim. An existing letter without Firma signature history is regenerated, replacing prior manual edits. With an open revision after a Firma request, the claim changes but the letter HTML/version do not; staff must edit the letter manually before resending. Pending signature, signed without revision, and active/completed mailing block corrections. Address saving validates format, not postal deliverability; see the README for frontend warnings and address-check guidance.",
         "summary": "PATCH /api/internal/claims/{id}/details",
         "operationId": "updateInternalClaimDetails",
         "tags": [
@@ -6922,13 +6922,19 @@
               "schema": {
                 "type": "object",
                 "additionalProperties": false,
+                "anyOf": [
+                  { "required": ["customer"] },
+                  { "required": ["defendant"] },
+                  { "required": ["claim"] }
+                ],
                 "properties": {
                   "customer": {
                     "type": "object",
                     "description": "Claim customer only; does not change the account profile or email.",
+                    "minProperties": 1,
                     "properties": {
-                      "name": { "type": "string" },
-                      "phone": { "type": "string" },
+                      "name": { "type": "string", "minLength": 2, "maxLength": 200 },
+                      "phone": { "type": "string", "minLength": 8, "maxLength": 40 },
                       "address": { "$ref": "#/components/schemas/ClaimCorrectionAddress" }
                     },
                     "additionalProperties": false
@@ -6936,18 +6942,20 @@
                   "defendant": {
                     "type": "object",
                     "description": "Activation Hero: platform_id only. Manual Small Claims: legal_name, registered_agent, email, phone, address.",
+                    "minProperties": 1,
                     "properties": {
                       "platform_id": { "type": "string", "format": "uuid" },
-                      "legal_name": { "type": "string" },
-                      "registered_agent": { "type": "string", "nullable": true },
-                      "email": { "type": "string", "format": "email", "nullable": true },
-                      "phone": { "type": "string", "nullable": true },
+                      "legal_name": { "type": "string", "minLength": 2, "maxLength": 200 },
+                      "registered_agent": { "type": "string", "maxLength": 200, "nullable": true },
+                      "email": { "type": "string", "format": "email", "maxLength": 254, "nullable": true },
+                      "phone": { "type": "string", "maxLength": 40, "nullable": true },
                       "address": { "$ref": "#/components/schemas/ClaimCorrectionAddress" }
                     },
                     "additionalProperties": false
                   },
                   "claim": {
                     "type": "object",
+                    "minProperties": 1,
                     "properties": {
                       "amount_cents": { "type": "integer", "minimum": 1 },
                       "incident_date": { "type": "string", "format": "date" },
@@ -6955,26 +6963,84 @@
                     },
                     "additionalProperties": false
                   },
-                  "note": { "type": "string", "nullable": true }
+                  "note": { "type": "string", "maxLength": 1000, "nullable": true }
+                }
+              },
+              "examples": {
+                "activation_hero_before_questionnaire": {
+                  "summary": "Activation Hero: correct data before the first letter exists",
+                  "description": "Replace platform_id with an active ID from GET /api/internal/activation-hero/platforms?is_active=true. Response has version=null and both letter flags false.",
+                  "value": {
+                    "customer": {
+                      "name": "Jordan Smith",
+                      "phone": "+14155550123",
+                      "address": {
+                        "address_line1": "1 Market St",
+                        "city": "San Francisco",
+                        "state": "CA",
+                        "zip": "94105",
+                        "country": "US"
+                      }
+                    },
+                    "defendant": { "platform_id": "00000000-0000-4000-8000-000000000001" },
+                    "claim": {
+                      "amount_cents": 250000,
+                      "incident_date": "2026-10-01",
+                      "description": "Corrected account deactivation details."
+                    },
+                    "note": "Checked intake details before editing the letter"
+                  }
                 },
-                "example": {
-                  "customer": {
-                    "name": "Jordan Smith",
-                    "phone": "+14155550123",
-                    "address": {
-                      "address_line1": "1 Market St",
-                      "city": "San Francisco",
-                      "state": "CA",
-                      "zip": "94105",
-                      "country": "US"
-                    }
-                  },
-                  "claim": {
-                    "amount_cents": 250000,
-                    "incident_date": "2026-10-01",
-                    "description": "Corrected account deactivation description."
-                  },
-                  "note": "Verified with case notes"
+                "activation_hero_platform_only": {
+                  "summary": "Activation Hero: change only the platform",
+                  "description": "The active platform's name, website, and address replace those stored in the claim; platform account contact remains unchanged.",
+                  "value": {
+                    "defendant": { "platform_id": "00000000-0000-4000-8000-000000000001" }
+                  }
+                },
+                "small_claims_manual_defendant": {
+                  "summary": "Small Claims: correct customer, manual defendant, and claim",
+                  "description": "Only for a manually entered Small Claims defendant; catalog defendants are not editable here.",
+                  "value": {
+                    "customer": {
+                      "name": "Jordan Smith",
+                      "phone": "+14155550123",
+                      "address": {
+                        "address_line1": "1 Market St",
+                        "city": "San Francisco",
+                        "state": "CA",
+                        "zip": "94105",
+                        "country": "US"
+                      }
+                    },
+                    "defendant": {
+                      "legal_name": "Example Defendant LLC",
+                      "registered_agent": "Alex Carter",
+                      "email": "agent@example.com",
+                      "phone": "+14155550124",
+                      "address": {
+                        "address_line1": "1600 Amphitheatre Pkwy",
+                        "city": "Mountain View",
+                        "state": "CA",
+                        "zip": "94043",
+                        "country": "US"
+                      }
+                    },
+                    "claim": {
+                      "amount_cents": 250000,
+                      "incident_date": "2026-10-01",
+                      "description": "Corrected facts for the demand letter."
+                    },
+                    "note": "Verified customer and defendant details"
+                  }
+                },
+                "open_revision_partial_update": {
+                  "summary": "Open revision: change one field without regenerating the letter",
+                  "description": "The claim changes, but staff must manually update the existing letter before resending it for signature.",
+                  "value": {
+                    "claim": { "description": "Corrected facts for the revised letter." },
+                    "note": "Review requested by customer"
+                  }
                 }
               }
             }
@@ -6982,14 +7048,142 @@
         },
         "responses": {
           "200": {
-            "description": "Returns claim, version (or null), letter_regenerated, and letter_requires_manual_update."
+            "description": "Returns the updated full claim, the newly created version or null, and letter flags. The examples abbreviate the claim/version objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["claim", "version", "letter_regenerated", "letter_requires_manual_update"],
+                  "properties": {
+                    "claim": { "type": "object", "additionalProperties": true },
+                    "version": { "type": "object", "nullable": true, "additionalProperties": true },
+                    "letter_regenerated": { "type": "boolean" },
+                    "letter_requires_manual_update": { "type": "boolean" }
+                  }
+                },
+                "examples": {
+                  "before_questionnaire": {
+                    "summary": "Claim updated; no letter or version yet",
+                    "value": {
+                      "claim": {
+                        "id": "11111111-1111-4111-8111-111111111111",
+                        "service": "activation_hero",
+                        "status": "paid_pending_claim_type_selection",
+                        "amount_cents": 250000,
+                        "letter_html_snapshot": null
+                      },
+                      "version": null,
+                      "letter_regenerated": false,
+                      "letter_requires_manual_update": false
+                    }
+                  },
+                  "before_first_signature": {
+                    "summary": "Existing letter regenerated; prior manual edits replaced",
+                    "value": {
+                      "claim": {
+                        "id": "11111111-1111-4111-8111-111111111111",
+                        "status": "paid_pending_letter_review",
+                        "current_version_number": 2
+                      },
+                      "version": {
+                        "id": "22222222-2222-4222-8222-222222222222",
+                        "version_number": 2
+                      },
+                      "letter_regenerated": true,
+                      "letter_requires_manual_update": false
+                    }
+                  },
+                  "during_revision": {
+                    "summary": "Claim updated; existing letter and version preserved",
+                    "value": {
+                      "claim": {
+                        "id": "11111111-1111-4111-8111-111111111111",
+                        "status": "letter_revision_requested",
+                        "current_version_number": 2
+                      },
+                      "version": null,
+                      "letter_regenerated": false,
+                      "letter_requires_manual_update": true
+                    }
+                  }
+                }
+              }
+            }
           },
-          "400": { "description": "VALIDATION_ERROR for malformed or unknown fields" },
+          "400": {
+            "description": "VALIDATION_ERROR: malformed fields, incomplete address, customer.email, unknown fields, empty groups, or note without a correction.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "message": "\"customer.email\" is not allowed"
+                  }
+                }
+              }
+            }
+          },
           "401": { "description": "authentication required" },
           "403": { "description": "internal role required" },
           "404": { "description": "claim not found" },
-          "409": { "description": "claim state, mailing, letter readiness, or manual-defendant restriction" },
-          "422": { "description": "wrong-service defendant fields or inactive/invalid platform address" }
+          "409": {
+            "description": "CLAIM_DETAILS_UPDATE_NOT_ALLOWED_FOR_STATUS for pending signature, signed without revision, or other noneditable status; CLAIM_DETAILS_MAILING_STARTED for active/completed mailing; CLAIM_DETAILS_MANUAL_DEFENDANT_REQUIRED for a Small Claims catalog defendant; or letter/template readiness errors.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "signature_pending_or_signed": {
+                    "value": {
+                      "error": {
+                        "code": "CLAIM_DETAILS_UPDATE_NOT_ALLOWED_FOR_STATUS",
+                        "message": "Claim details can only be changed before letter generation, before the first signature send, or while the letter is in revision"
+                      }
+                    }
+                  },
+                  "mailing_started": {
+                    "value": {
+                      "error": {
+                        "code": "CLAIM_DETAILS_MAILING_STARTED",
+                        "message": "Claim details cannot be changed while mailing is active or completed"
+                      }
+                    }
+                  },
+                  "catalog_defendant": {
+                    "value": {
+                      "error": {
+                        "code": "CLAIM_DETAILS_MANUAL_DEFENDANT_REQUIRED",
+                        "message": "Only manually entered Small Claims defendants can be corrected"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "CLAIM_DETAILS_DEFENDANT_FIELDS_INVALID for wrong-service defendant fields; AH_PLATFORM_NOT_FOUND for an inactive/missing platform; AH_PLATFORM_ADDRESS_INVALID if that platform lacks a usable address.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "wrong_service_fields": {
+                    "value": {
+                      "error": {
+                        "code": "CLAIM_DETAILS_DEFENDANT_FIELDS_INVALID",
+                        "message": "Platform selection is only available for Activation Hero"
+                      }
+                    }
+                  },
+                  "inactive_platform": {
+                    "value": {
+                      "error": {
+                        "code": "AH_PLATFORM_NOT_FOUND",
+                        "message": "Selected Activation Hero platform is not active or does not exist"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         },
         "security": [
           {
@@ -9292,13 +9486,14 @@
       "ClaimCorrectionAddress": {
         "type": "object",
         "additionalProperties": false,
+        "description": "Complete claim mailing address. country is a two-letter code; US ZIP must be five digits or ZIP+4. Saving checks format, not postal deliverability.",
         "required": ["address_line1", "city", "state", "zip", "country"],
         "properties": {
-          "address_line1": { "type": "string" },
+          "address_line1": { "type": "string", "minLength": 3 },
           "address_line2": { "type": "string", "nullable": true },
-          "city": { "type": "string" },
-          "state": { "type": "string" },
-          "zip": { "type": "string" },
+          "city": { "type": "string", "minLength": 2 },
+          "state": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "zip": { "type": "string", "minLength": 2, "maxLength": 32 },
           "country": { "type": "string", "minLength": 2, "maxLength": 2 }
         }
       },
