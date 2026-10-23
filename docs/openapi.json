@@ -6901,7 +6901,7 @@
         "summary": "Check a claim mailing address before editing or signing the letter",
         "operationId": "checkInternalMailingAddress",
         "tags": ["Internal/Claims"],
-        "description": "Internal-only helper for admin, cx_agent, and paralegal. Checks one customer or manually entered Small Claims defendant address using live PostGrid contacts, including US-US claims that will later use DocuPost. Run this early, before letter edits and the first signature, to reduce address rejections when staff or the customer requests mailing and avoid reopening a signed letter for revision and another signature. A verified or corrected result is approved immediately. A failed result is checked once more only if PostGrid returned a complete, changed correction in the same country; the second request uses that provider-returned address. At most two contact requests are made. HTTP 200 also covers addresses that could not be confirmed, including nonexistent or deliberately incorrect addresses: distinguish NO_USABLE_CORRECTION from CORRECTION_NOT_CONFIRMED. Creates or reuses live PostGrid contacts; does not send a letter or update a claim, letter, profile, or platform. A test-mode response is rejected because it cannot verify real addresses. Review an approved normalized_address and pass it unchanged as customer.address or defendant.address to PATCH /api/internal/claims/{id}/details. Recheck after any manual change. Existing correction permissions and letter lifecycle rules still apply. Approval is PostGrid address validation, not a guarantee of later DocuPost/carrier acceptance or document/mailing-class validation. ZIP+4 is preserved.",
+        "description": "Internal-only helper for admin, cx_agent, and paralegal. Checks one customer or manually entered Small Claims defendant address using live PostGrid contacts, including US-US claims that will later use DocuPost. Run this early, before letter edits and the first signature, to reduce address rejections when staff or the customer requests mailing and avoid reopening a signed letter for revision and another signature. A verified or corrected result is approved immediately. A failed result is checked once more only if PostGrid returned a complete, changed correction in the same country; the second request uses that provider-returned address. At most two contact requests are made. HTTP 200 also covers addresses that could not be confirmed, including nonexistent or deliberately incorrect addresses: distinguish NO_USABLE_CORRECTION from CORRECTION_NOT_CONFIRMED. Every HTTP 200 includes verification_details for each completed attempt, retaining the original PostGrid address_errors or a recognized postal-error type/message. An unconfirmed message includes the latest available provider reason, with a prompt to supply the actual address_line2 for a missing suite identifier. Details may also include correction warnings or an earlier failed attempt on an approved result; approved remains the deciding flag. Show feedback as plain text, not HTML, and never invent missing units or corrections. Technical failures remain generic HTTP 502/503; no IDs, full contacts, headers, credentials, or technical-error payloads are exposed. Creates or reuses live PostGrid contacts; does not send a letter or update a claim, letter, profile, or platform. A test-mode response is rejected because it cannot verify real addresses. Review an approved normalized_address and pass it unchanged as customer.address or defendant.address to PATCH /api/internal/claims/{id}/details. Recheck after any manual change. Existing correction permissions and letter lifecycle rules still apply. Approval is PostGrid address validation, not a guarantee of later DocuPost/carrier acceptance or document/mailing-class validation. ZIP+4 is preserved.",
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
@@ -6940,6 +6940,19 @@
                       "country": "US"
                     }
                   }
+                },
+                "canadian_missing_unit": {
+                  "summary": "Missing real apartment/unit number; confirm it with the customer",
+                  "value": {
+                    "name": "Address validation test",
+                    "address": {
+                      "address_line1": "550 Westmount Rd W",
+                      "city": "Kitchener",
+                      "state": "ON",
+                      "zip": "N2M 5G5",
+                      "country": "CA"
+                    }
+                  }
                 }
               }
             }
@@ -6947,7 +6960,7 @@
         },
         "responses": {
           "200": {
-            "description": "Completed address check, whether approved or not. Corrections are illustrative and may vary. Only approved normalized_address may be offered as a confirmed address for staff to review and save.",
+            "description": "Completed address check, whether approved or not. verification_details always reports each completed attempt and nullable provider reason fields. Original address_errors strings are preserved, including correction warnings; recognized provider postal-address HTTP 400/422 errors instead carry error_type/error_message and null address_status. Examples are illustrative and may vary. Only approved normalized_address may be offered as a confirmed address for staff to review and save.",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/MailingAddressCheckResult" },
@@ -6967,7 +6980,11 @@
                       "changed_fields": ["address_line2", "state", "zip"],
                       "attempts": 2,
                       "reason_code": null,
-                      "message": "PostGrid confirmed a corrected mailing address. Review the returned address before saving it to the claim."
+                      "message": "PostGrid confirmed a corrected mailing address. Review the returned address before saving it to the claim.",
+                      "verification_details": [
+                        { "attempt": 1, "address_status": "failed", "address_errors": null, "error_type": null, "error_message": null },
+                        { "attempt": 2, "address_status": "corrected", "address_errors": null, "error_type": null, "error_message": null }
+                      ]
                     }
                   },
                   "no_usable_postgrid_correction": {
@@ -6978,7 +6995,10 @@
                       "changed_fields": [],
                       "attempts": 1,
                       "reason_code": "NO_USABLE_CORRECTION",
-                      "message": "PostGrid could not confirm this mailing address and did not return a usable corrected address. Review the address and try again."
+                      "message": "PostGrid could not confirm this mailing address and did not return a usable corrected address. Review the address and try again.",
+                      "verification_details": [
+                        { "attempt": 1, "address_status": "failed", "address_errors": null, "error_type": null, "error_message": null }
+                      ]
                     }
                   },
                   "postgrid_correction_not_confirmed": {
@@ -6989,7 +7009,27 @@
                       "changed_fields": [],
                       "attempts": 2,
                       "reason_code": "CORRECTION_NOT_CONFIRMED",
-                      "message": "PostGrid could not confirm the corrected mailing address it returned after the first check. Review the address and try again."
+                      "message": "PostGrid could not confirm the corrected mailing address it returned after the first check. Review the address and try again.",
+                      "verification_details": [
+                        { "attempt": 1, "address_status": "failed", "address_errors": null, "error_type": null, "error_message": null },
+                        { "attempt": 2, "address_status": "failed", "address_errors": null, "error_type": null, "error_message": null }
+                      ]
+                    }
+                  },
+                  "canadian_missing_unit": {
+                    "summary": "Both checks report a missing apartment/unit; do not guess it",
+                    "value": {
+                      "approved": false,
+                      "status": "not_confirmed",
+                      "normalized_address": null,
+                      "changed_fields": [],
+                      "attempts": 2,
+                      "reason_code": "CORRECTION_NOT_CONFIRMED",
+                      "message": "PostGrid could not confirm this mailing address. PostGrid details: line1: Missing Value: Suite identifier. Provide the actual apartment/unit number in address_line2 and check again.",
+                      "verification_details": [
+                        { "attempt": 1, "address_status": "failed", "address_errors": "line1: Missing Value: Suite identifier", "error_type": null, "error_message": null },
+                        { "attempt": 2, "address_status": "failed", "address_errors": "line1: Missing Value: Suite identifier", "error_type": null, "error_message": null }
+                      ]
                     }
                   }
                 }
@@ -9606,7 +9646,7 @@
       "MailingAddressCheckResult": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["approved", "status", "normalized_address", "changed_fields", "attempts", "reason_code", "message"],
+        "required": ["approved", "status", "normalized_address", "changed_fields", "attempts", "reason_code", "message", "verification_details"],
         "properties": {
           "approved": { "type": "boolean", "description": "True only when a usable same-country address received live PostGrid verified or corrected status." },
           "status": { "type": "string", "enum": ["verified", "corrected", "not_confirmed"] },
@@ -9632,7 +9672,25 @@
           },
           "attempts": { "type": "integer", "minimum": 1, "maximum": 2 },
           "reason_code": { "type": "string", "nullable": true, "enum": ["NO_USABLE_CORRECTION", "CORRECTION_NOT_CONFIRMED", null] },
-          "message": { "type": "string", "description": "User-facing result. Failure messages identify corrections as returned by PostGrid, not suggested by the caller." }
+          "message": { "type": "string", "description": "User-facing result. Unconfirmed results include the latest available PostGrid reason and missing-unit guidance when applicable; without a provider reason, the generic message remains. Render as plain text." },
+          "verification_details": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "description": "One whitelisted record per completed attempt, in order. Original PostGrid address_errors strings are preserved; recognized provider postal-address HTTP 400/422 errors use null address_status and error_type/error_message. Approved results may still include correction warnings or earlier failed attempts: use approved to determine the overall result. All nullable fields are always present. Render provider text as plain text, not HTML. No provider IDs or full/technical-error payloads are included.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["attempt", "address_status", "address_errors", "error_type", "error_message"],
+              "properties": {
+                "attempt": { "type": "integer", "minimum": 1, "maximum": 2 },
+                "address_status": { "type": "string", "nullable": true, "enum": ["verified", "corrected", "failed", null] },
+                "address_errors": { "type": "string", "nullable": true, "description": "Original PostGrid addressErrors string, including postal correction warnings; null when absent." },
+                "error_type": { "type": "string", "nullable": true, "description": "Recognized PostGrid postal-address error type; null for contact verification results." },
+                "error_message": { "type": "string", "nullable": true, "description": "Original recognized PostGrid postal-address error message; null for contact verification results." }
+              }
+            }
+          }
         }
       },
       "ClaimCorrectionAddress": {
