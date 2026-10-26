@@ -2996,7 +2996,7 @@
     },
     "/api/claims/{id}/documents": {
       "get": {
-        "description": "",
+        "description": "Returns {documents: [...]} with claim document rows and top-level is_superseded, superseded_at, and superseded_reason fields. Document IDs identify individual records; the list is ordered by created_at descending, and a mailing/storage row can appear before the current signature. For the current signed demand letter, select provider=firma, status=signed, is_superseded=false, and revoked_at=null. Previous signed versions are provider=firma, status=signed, is_superseded=true, regardless of whether superseded_reason is internal_request, customer_request, or a legacy reason. Superseded requests with status revoked, declined, or expired are signing attempts, not previous signed letters. While revision is open there may be previous signed letters and no current signed letter. Keep PostGrid/DocuPost mailing records separate from signature versions; their metadata.signed_document_id links to the Firma document submitted for mailing. A provider preview or uploaded PDF can contain the same signed letter and does not represent a new signature. Storage rows with metadata.kind=signed_letter_pdf are copies of that same signature, not additional signed versions. New storage copies also expose metadata.signed_document_id. For legacy storage copies without that field, match metadata.mailing_provider_document_id to the mailing record provider_document_id, then use that record metadata.signed_document_id. Do not group by superseded_reason, provider row order, or a claim's latest version number. Download each current or historical document through /api/claims/{id}/documents/{document_id}/download using that document row ID; never replace an historical document ID with the current signature ID.",
         "summary": "GET /api/claims/{id}/documents",
         "tags": [
           "Claims"
@@ -3014,7 +3014,115 @@
         ],
         "responses": {
           "200": {
-            "description": "successful"
+            "description": "Claim document rows. Group the current signature, previous signed signatures, and provider mailing records separately. The example contains one current signature, one previous signed signature, one unsigned cancelled request, a mailing record, and a storage copy of the current signature. Signature history consists of the two signed Firma records only.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "signed_history_and_mailing": {
+                    "summary": "Current signed letter, previous signed letter, unsigned cancellation, and mailing artifacts",
+                    "description": "Illustrative response using the actual {documents: [...]} envelope. Show the current Firma row as the signed demand letter and the superseded signed Firma row under previous versions. The revoked unsigned request does not belong under signed previous versions. The storage PDF and PostGrid record both link to the current Firma row and do not add signed versions. Provider URLs may be null; use the document download endpoint for the intended row.",
+                    "value": {
+                      "documents": [
+                        {
+                          "id": "bfa01c47-81df-4992-888f-30e7d239cbb1",
+                          "claim_id": "025d306e-73ab-4756-94cf-bb97d0c0a383",
+                          "provider": "storage",
+                          "status": "sent",
+                          "created_at": "2026-10-26T18:00:01.000Z",
+                          "is_superseded": false,
+                          "superseded_at": null,
+                          "superseded_reason": null,
+                          "provider_document_id": null,
+                          "storage_path": "claims/025d306e-73ab-4756-94cf-bb97d0c0a383/signed-letter-example.pdf",
+                          "sent_at": "2026-10-26T18:00:01.000Z",
+                          "metadata": {
+                            "source": "send_mailing_signed_snapshot",
+                            "kind": "signed_letter_pdf",
+                            "mailing_provider": "postgrid",
+                            "mailing_provider_document_id": "letter_example_current_signature",
+                            "signed_document_id": "9eae5b32-f064-492e-acb4-79f9f2099091"
+                          }
+                        },
+                        {
+                          "id": "b70ef65c-6e73-48e6-a4e0-5c705fbbaf12",
+                          "claim_id": "025d306e-73ab-4756-94cf-bb97d0c0a383",
+                          "provider": "postgrid",
+                          "status": "ready",
+                          "created_at": "2026-10-26T18:00:00.000Z",
+                          "is_superseded": false,
+                          "superseded_at": null,
+                          "superseded_reason": null,
+                          "provider_document_id": "letter_example_current_signature",
+                          "sent_at": "2026-10-26T18:00:00.000Z",
+                          "download_url": null,
+                          "provider_document_url": null,
+                          "provider_uploaded_pdf_url": null,
+                          "provider_refresh_error": null,
+                          "metadata": {
+                            "mailing_provider": "postgrid",
+                            "destination_country": "CA",
+                        "page_size": "us_letter",
+                            "signed_document_id": "9eae5b32-f064-492e-acb4-79f9f2099091"
+                          }
+                        },
+                        {
+                          "id": "9eae5b32-f064-492e-acb4-79f9f2099091",
+                          "claim_id": "025d306e-73ab-4756-94cf-bb97d0c0a383",
+                          "provider": "firma",
+                          "status": "signed",
+                          "created_at": "2026-10-26T17:30:00.000Z",
+                          "is_superseded": false,
+                          "superseded_at": null,
+                          "superseded_reason": null,
+                          "provider_document_id": "firma_example_current_request",
+                          "sent_at": "2026-10-26T17:30:00.000Z",
+                          "signed_at": "2026-10-26T17:40:00.000Z",
+                          "revoked_at": null,
+                          "metadata": {}
+                        },
+                        {
+                          "id": "4d3d1b3f-029e-4353-b8c8-067b24eb01f6",
+                          "claim_id": "025d306e-73ab-4756-94cf-bb97d0c0a383",
+                          "provider": "firma",
+                          "status": "signed",
+                          "created_at": "2026-10-26T15:00:00.000Z",
+                          "is_superseded": true,
+                          "superseded_at": "2026-10-26T17:00:00.000Z",
+                          "superseded_reason": "internal_request",
+                          "provider_document_id": "firma_example_previous_request",
+                          "sent_at": "2026-10-26T15:00:00.000Z",
+                          "signed_at": "2026-10-26T15:10:00.000Z",
+                          "revoked_at": null,
+                          "metadata": {
+                            "superseded_at": "2026-10-26T17:00:00.000Z",
+                            "superseded_reason": "internal_request",
+                            "superseded_by_revision_id": "64f5943e-68f7-4015-a6cf-839746cd6bd6"
+                          }
+                        },
+                        {
+                          "id": "1a9d4dbe-83e7-4d6b-9dc2-9d9bb397ce16",
+                          "claim_id": "025d306e-73ab-4756-94cf-bb97d0c0a383",
+                          "provider": "firma",
+                          "status": "revoked",
+                          "created_at": "2026-10-26T14:00:00.000Z",
+                          "is_superseded": true,
+                          "superseded_at": "2026-10-26T14:30:00.000Z",
+                          "superseded_reason": "customer_request",
+                          "provider_document_id": "firma_example_cancelled_request",
+                          "sent_at": "2026-10-26T14:00:00.000Z",
+                          "signed_at": null,
+                          "revoked_at": "2026-10-26T14:30:00.000Z",
+                          "metadata": {
+                            "superseded_at": "2026-10-26T14:30:00.000Z",
+                            "superseded_reason": "customer_request"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "authorization failed"
@@ -3713,7 +3821,7 @@
     },
     "/api/claims/{id}/documents/{document_id}/download": {
       "get": {
-        "description": "Returns provider-aware claim document download data. For provider=firma, the API prefers Firma document-only signed PDF metadata when available, avoiding the signature certificate page, and can fall back to streaming the signed PDF. Use download=true to force attachment mode for streamed files. Use response=json for storage signed URL metadata.",
+        "description": "Returns provider-aware claim document download data. For provider=firma, the API prefers Firma document-only signed PDF metadata when available, avoiding the signature certificate page, and can fall back to streaming the signed PDF. Use download=true to force attachment mode for streamed files. Use response=json for storage signed URL metadata. Signed historical Firma documents remain downloadable by their original claim_documents.id after internal or customer revision; use the row ID returned in documents[].id, including for superseded signed versions. Do not substitute the current signed document ID or latest claim version number when downloading a previous version. A revoked/declined unsigned request is not a signed historical PDF.",
         "summary": "GET /api/claims/{id}/documents/{document_id}/download",
         "tags": [
           "Claims"
@@ -4145,7 +4253,7 @@
     },
     "/api/claims/{id}/revisions": {
       "post": {
-        "description": "Customer requests edits while a Firma signature is pending or after the letter is signed, before DocuPost/PostGrid mailing starts. For a pending signature, the API cancels pending Firma documents. For a signed letter, it preserves the completed Firma document as historical metadata (is_superseded=true) rather than deleting or cancelling it. Both paths create one customer_request revision and set the claim to letter_revision_requested. The request is rejected with 409 REVISION_NOT_ALLOWED_AFTER_MAILING once mailing has started. If the customer declines/refuses through the Firma in-app/email flow instead, the Firma webhook creates a signature_decline revision; Firma cancelled/revoked events do not create a duplicate revision when cancellation was initiated by this endpoint.",
+        "description": "Customer requests edits while a Firma signature is pending or after the letter is signed, before DocuPost/PostGrid mailing is accepted. The body remains type plus description. For a pending signature, the API cancels pending Firma documents first; an unconfirmed cancellation returns 502 SIGNATURE_CANCEL_FAILED without opening editing. In both paths the old Firma documents are superseded, signed files remain as history, and the claim enters letter_revision_requested with a customer_request revision. Current letter HTML/versions are preserved and a new signature is required before mailing. REVISION_NOT_ALLOWED_AFTER_MAILING rejects an already accepted order, including one later marked error. The customer and internal flows share a durable guard against concurrent mailing; LETTER_ACTION_IN_PROGRESS must not trigger automatic retries or guard clearing. Delayed old Firma events cannot restore the previous signature. If the customer declines/refuses directly in Firma instead, its webhook creates a signature_decline revision; cancellation initiated by this endpoint does not create a duplicate revision.",
         "summary": "POST /api/claims/{id}/revisions",
         "operationId": "requestClaimRevision",
         "tags": [
@@ -4169,11 +4277,17 @@
           "401": {
             "description": "authorization failed"
           },
-          "409": {
-            "description": "revision not allowed for current claim status or provider cancellation failed"
+          "400": {
+            "description": "VALIDATION_ERROR for malformed type, description, or claim ID."
           },
-          "422": {
-            "description": "validation failed"
+          "403": {
+            "description": "Customer role and claim ownership required."
+          },
+          "409": {
+            "description": "REVISION_NOT_ALLOWED_FOR_STATUS, REVISION_NOT_ALLOWED_AFTER_MAILING, or LETTER_ACTION_IN_PROGRESS."
+          },
+          "502": {
+            "description": "SIGNATURE_CANCEL_FAILED: the pending Firma cancellation could not be confirmed; editing is not unlocked."
           },
           "500": {
             "description": "unknown server error"
@@ -4202,7 +4316,7 @@
     },
     "/api/claims/{id}/send-mailing": {
       "post": {
-        "description": "Customer-only mailing of the current signed Firma letter. Sender and recipient addresses come from the claim snapshot, never the request body or OCR. DocuPost is used only when both countries are US; otherwise PostGrid uses the signed page size and the claim's generic first_class or certified preference. Send {} or no body: document_url, docupost_payload, and postgrid_payload are rejected with 400 VALIDATION_ERROR. A PostGrid address_strictness_error returns 422 MAILING_ADDRESS_VERIFICATION_FAILED; show error.message and do not retry automatically. The customer can request a letter revision in the dashboard, mentioning the mailing address error. Staff investigate the address and update the claim and letter; a new signature is required before retrying. A rejected address creates no mailing document or response window.",
+        "description": "Customer-only mailing of the current signed Firma letter. Sender and recipient addresses come from the claim snapshot, never the request body or OCR. DocuPost is used only when both countries are US; otherwise PostGrid uses the signed page size and the claim's generic first_class or certified preference. Send {} or no body: document_url, docupost_payload, and postgrid_payload are rejected with 400 VALIDATION_ERROR. A PostGrid address_strictness_error returns 422 MAILING_ADDRESS_VERIFICATION_FAILED; show error.message and do not retry automatically. The customer can request a letter revision in the dashboard, mentioning the mailing address error. Staff investigate the address and update the claim and letter; a new signature is required before retrying. A rejected address creates no mailing document or response window and releases the reservation. Both mailing routes share a durable per-claim reservation with customer/internal revision. LETTER_ACTION_IN_PROGRESS blocks concurrent actions; an accepted or uncertain provider submission remains blocked for reconciliation after a local failure or unknown timeout. Do not blindly resend or automatically clear this reservation.",
         "summary": "POST /api/claims/{id}/send-mailing",
         "tags": [
           "Claims"
@@ -4229,7 +4343,7 @@
             "description": "authorization failed"
           },
           "409": {
-            "description": "mailing conflict or provider account cannot submit mailing (for example insufficient funds)"
+            "description": "LETTER_ACTION_IN_PROGRESS, MAILING_ALREADY_REQUESTED, claim not ready/current signed document missing, or provider account cannot submit mailing (for example insufficient funds). Do not automatically retry an uncertain provider submission."
           },
           "422": {
             "description": "MAILING_COUNTRY_REQUIRED or MAILING_ADDRESS_VERIFICATION_FAILED. For address rejection, request a letter revision; staff investigate the address, correct the claim and letter, and obtain a new signature. Raw provider errors and addresses are not exposed.",
@@ -7606,9 +7720,15 @@
       "post": {
         "summary": "Check a claim mailing address before editing or signing the letter",
         "operationId": "checkInternalMailingAddress",
-        "tags": ["Internal/Claims"],
+        "tags": [
+          "Internal/Claims"
+        ],
         "description": "Internal-only helper for admin, cx_agent, and paralegal. Checks one customer or manually entered Small Claims defendant address using live PostGrid contacts, including US-US claims that will later use DocuPost. Run this early, before letter edits and the first signature, to reduce address rejections when staff or the customer requests mailing and avoid reopening a signed letter for revision and another signature. A verified or corrected result is approved immediately. A failed result is checked once more only if PostGrid returned a complete, changed correction in the same country; the second request uses that provider-returned address. At most two contact requests are made. HTTP 200 also covers addresses that could not be confirmed, including nonexistent or deliberately incorrect addresses: distinguish NO_USABLE_CORRECTION from CORRECTION_NOT_CONFIRMED. Every HTTP 200 includes verification_details for each completed attempt, retaining the original PostGrid address_errors or a recognized postal-error type/message. An unconfirmed message includes the latest available provider reason, with a prompt to supply the actual address_line2 for a missing suite identifier. Details may also include correction warnings or an earlier failed attempt on an approved result; approved remains the deciding flag. Show feedback as plain text, not HTML, and never invent missing units or corrections. Technical failures remain generic HTTP 502/503; no IDs, full contacts, headers, credentials, or technical-error payloads are exposed. Creates or reuses live PostGrid contacts; does not send a letter or update a claim, letter, profile, or platform. A test-mode response is rejected because it cannot verify real addresses. Review an approved normalized_address and pass it unchanged as customer.address or defendant.address to PATCH /api/internal/claims/{id}/details. Recheck after any manual change. Existing correction permissions and letter lifecycle rules still apply. Approval is PostGrid address validation, not a guarantee of later DocuPost/carrier acceptance or document/mailing-class validation. ZIP+4 is preserved.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -7616,10 +7736,19 @@
               "schema": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": ["name", "address"],
+                "required": [
+                  "name",
+                  "address"
+                ],
                 "properties": {
-                  "name": { "type": "string", "minLength": 2, "maxLength": 200 },
-                  "address": { "$ref": "#/components/schemas/ClaimCorrectionAddress" }
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 200
+                  },
+                  "address": {
+                    "$ref": "#/components/schemas/ClaimCorrectionAddress"
+                  }
                 }
               },
               "examples": {
@@ -7669,7 +7798,9 @@
             "description": "Completed address check, whether approved or not. verification_details always reports each completed attempt and nullable provider reason fields. Original address_errors strings are preserved, including correction warnings; recognized provider postal-address HTTP 400/422 errors instead carry error_type/error_message and null address_status. Examples are illustrative and may vary. Only approved normalized_address may be offered as a confirmed address for staff to review and save.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/MailingAddressCheckResult" },
+                "schema": {
+                  "$ref": "#/components/schemas/MailingAddressCheckResult"
+                },
                 "examples": {
                   "approved_after_postgrid_correction": {
                     "value": {
@@ -7683,13 +7814,29 @@
                         "zip": "RM10 9DR",
                         "country": "GB"
                       },
-                      "changed_fields": ["address_line2", "state", "zip"],
+                      "changed_fields": [
+                        "address_line2",
+                        "state",
+                        "zip"
+                      ],
                       "attempts": 2,
                       "reason_code": null,
                       "message": "PostGrid confirmed a corrected mailing address. Review the returned address before saving it to the claim.",
                       "verification_details": [
-                        { "attempt": 1, "address_status": "failed", "address_errors": null, "error_type": null, "error_message": null },
-                        { "attempt": 2, "address_status": "corrected", "address_errors": null, "error_type": null, "error_message": null }
+                        {
+                          "attempt": 1,
+                          "address_status": "failed",
+                          "address_errors": null,
+                          "error_type": null,
+                          "error_message": null
+                        },
+                        {
+                          "attempt": 2,
+                          "address_status": "corrected",
+                          "address_errors": null,
+                          "error_type": null,
+                          "error_message": null
+                        }
                       ]
                     }
                   },
@@ -7703,7 +7850,13 @@
                       "reason_code": "NO_USABLE_CORRECTION",
                       "message": "PostGrid could not confirm this mailing address and did not return a usable corrected address. Review the address and try again.",
                       "verification_details": [
-                        { "attempt": 1, "address_status": "failed", "address_errors": null, "error_type": null, "error_message": null }
+                        {
+                          "attempt": 1,
+                          "address_status": "failed",
+                          "address_errors": null,
+                          "error_type": null,
+                          "error_message": null
+                        }
                       ]
                     }
                   },
@@ -7717,8 +7870,20 @@
                       "reason_code": "CORRECTION_NOT_CONFIRMED",
                       "message": "PostGrid could not confirm the corrected mailing address it returned after the first check. Review the address and try again.",
                       "verification_details": [
-                        { "attempt": 1, "address_status": "failed", "address_errors": null, "error_type": null, "error_message": null },
-                        { "attempt": 2, "address_status": "failed", "address_errors": null, "error_type": null, "error_message": null }
+                        {
+                          "attempt": 1,
+                          "address_status": "failed",
+                          "address_errors": null,
+                          "error_type": null,
+                          "error_message": null
+                        },
+                        {
+                          "attempt": 2,
+                          "address_status": "failed",
+                          "address_errors": null,
+                          "error_type": null,
+                          "error_message": null
+                        }
                       ]
                     }
                   },
@@ -7733,8 +7898,20 @@
                       "reason_code": "CORRECTION_NOT_CONFIRMED",
                       "message": "PostGrid could not confirm this mailing address. PostGrid details: line1: Missing Value: Suite identifier. Provide the actual apartment/unit number in address_line2 and check again.",
                       "verification_details": [
-                        { "attempt": 1, "address_status": "failed", "address_errors": "line1: Missing Value: Suite identifier", "error_type": null, "error_message": null },
-                        { "attempt": 2, "address_status": "failed", "address_errors": "line1: Missing Value: Suite identifier", "error_type": null, "error_message": null }
+                        {
+                          "attempt": 1,
+                          "address_status": "failed",
+                          "address_errors": "line1: Missing Value: Suite identifier",
+                          "error_type": null,
+                          "error_message": null
+                        },
+                        {
+                          "attempt": 2,
+                          "address_status": "failed",
+                          "address_errors": "line1: Missing Value: Suite identifier",
+                          "error_type": null,
+                          "error_message": null
+                        }
                       ]
                     }
                   }
@@ -7742,9 +7919,15 @@
               }
             }
           },
-          "400": { "description": "VALIDATION_ERROR: missing or malformed name/address, invalid US ZIP format, or unknown fields. Provider payload overrides and verification-bypass flags are not accepted." },
-          "401": { "description": "Authentication required." },
-          "403": { "description": "Internal role required; customer tokens are not allowed." },
+          "400": {
+            "description": "VALIDATION_ERROR: missing or malformed name/address, invalid US ZIP format, or unknown fields. Provider payload overrides and verification-bypass flags are not accepted."
+          },
+          "401": {
+            "description": "Authentication required."
+          },
+          "403": {
+            "description": "Internal role required; customer tokens are not allowed."
+          },
           "502": {
             "description": "MAILING_ADDRESS_CHECK_UNAVAILABLE for provider timeout, outage, rate limit, or other service failure; MAILING_ADDRESS_CHECK_INVALID_RESPONSE for missing/unknown verification status or an untrustworthy response. These are not address-not-confirmed results.",
             "content": {
@@ -7758,7 +7941,9 @@
               }
             }
           },
-          "503": { "description": "MAILING_ADDRESS_CHECK_NOT_CONFIGURED for missing PostGrid configuration, or MAILING_ADDRESS_CHECK_LIVE_REQUIRED when the configured key produces test-mode contacts. Uses optional live POSTGRID_ADDRESS_CHECK_API_KEY, falling back to POSTGRID_API_KEY, plus existing POSTGRID_API_BASE_URL and POSTGRID_TIMEOUT_MS. In staging configure the optional live check key if mailing uses a test key; do not change the existing mailing key. The override applies only to contact checks, not letter creation or page-size preflight. No migration; production can keep its existing live key without the override." }
+          "503": {
+            "description": "MAILING_ADDRESS_CHECK_NOT_CONFIGURED for missing PostGrid configuration, or MAILING_ADDRESS_CHECK_LIVE_REQUIRED when the configured key produces test-mode contacts. Uses optional live POSTGRID_ADDRESS_CHECK_API_KEY, falling back to POSTGRID_API_KEY, plus existing POSTGRID_API_BASE_URL and POSTGRID_TIMEOUT_MS. In staging configure the optional live check key if mailing uses a test key; do not change the existing mailing key. The override applies only to contact checks, not letter creation or page-size preflight. No migration; production can keep its existing live key without the override."
+          }
         }
       }
     },
@@ -7789,9 +7974,21 @@
                 "type": "object",
                 "additionalProperties": false,
                 "anyOf": [
-                  { "required": ["customer"] },
-                  { "required": ["defendant"] },
-                  { "required": ["claim"] }
+                  {
+                    "required": [
+                      "customer"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "defendant"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "claim"
+                    ]
+                  }
                 ],
                 "properties": {
                   "customer": {
@@ -7799,9 +7996,19 @@
                     "description": "Claim customer only; does not change the account profile or email.",
                     "minProperties": 1,
                     "properties": {
-                      "name": { "type": "string", "minLength": 2, "maxLength": 200 },
-                      "phone": { "type": "string", "minLength": 8, "maxLength": 40 },
-                      "address": { "$ref": "#/components/schemas/ClaimCorrectionAddress" }
+                      "name": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 200
+                      },
+                      "phone": {
+                        "type": "string",
+                        "minLength": 8,
+                        "maxLength": 40
+                      },
+                      "address": {
+                        "$ref": "#/components/schemas/ClaimCorrectionAddress"
+                      }
                     },
                     "additionalProperties": false
                   },
@@ -7810,12 +8017,34 @@
                     "description": "Activation Hero: platform_id only. Manual Small Claims: legal_name, registered_agent, email, phone, address.",
                     "minProperties": 1,
                     "properties": {
-                      "platform_id": { "type": "string", "format": "uuid" },
-                      "legal_name": { "type": "string", "minLength": 2, "maxLength": 200 },
-                      "registered_agent": { "type": "string", "maxLength": 200, "nullable": true },
-                      "email": { "type": "string", "format": "email", "maxLength": 254, "nullable": true },
-                      "phone": { "type": "string", "maxLength": 40, "nullable": true },
-                      "address": { "$ref": "#/components/schemas/ClaimCorrectionAddress" }
+                      "platform_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "legal_name": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 200
+                      },
+                      "registered_agent": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "nullable": true
+                      },
+                      "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 254,
+                        "nullable": true
+                      },
+                      "phone": {
+                        "type": "string",
+                        "maxLength": 40,
+                        "nullable": true
+                      },
+                      "address": {
+                        "$ref": "#/components/schemas/ClaimCorrectionAddress"
+                      }
                     },
                     "additionalProperties": false
                   },
@@ -7823,13 +8052,26 @@
                     "type": "object",
                     "minProperties": 1,
                     "properties": {
-                      "amount_cents": { "type": "integer", "minimum": 1 },
-                      "incident_date": { "type": "string", "format": "date" },
-                      "description": { "type": "string", "description": "Maximum 1000 words." }
+                      "amount_cents": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "incident_date": {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      "description": {
+                        "type": "string",
+                        "description": "Maximum 1000 words."
+                      }
                     },
                     "additionalProperties": false
                   },
-                  "note": { "type": "string", "maxLength": 1000, "nullable": true }
+                  "note": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "nullable": true
+                  }
                 }
               },
               "examples": {
@@ -7848,7 +8090,9 @@
                         "country": "US"
                       }
                     },
-                    "defendant": { "platform_id": "00000000-0000-4000-8000-000000000001" },
+                    "defendant": {
+                      "platform_id": "00000000-0000-4000-8000-000000000001"
+                    },
                     "claim": {
                       "amount_cents": 250000,
                       "incident_date": "2026-10-01",
@@ -7861,7 +8105,9 @@
                   "summary": "Activation Hero: change only the platform",
                   "description": "The active platform's name, website, and address replace those stored in the claim; platform account contact remains unchanged.",
                   "value": {
-                    "defendant": { "platform_id": "00000000-0000-4000-8000-000000000001" }
+                    "defendant": {
+                      "platform_id": "00000000-0000-4000-8000-000000000001"
+                    }
                   }
                 },
                 "small_claims_manual_defendant": {
@@ -7904,7 +8150,9 @@
                   "summary": "Open revision: change one field without regenerating the letter",
                   "description": "The claim changes, but staff must manually update the existing letter before resending it for signature.",
                   "value": {
-                    "claim": { "description": "Corrected facts for the revised letter." },
+                    "claim": {
+                      "description": "Corrected facts for the revised letter."
+                    },
                     "note": "Review requested by customer"
                   }
                 }
@@ -7919,12 +8167,28 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["claim", "version", "letter_regenerated", "letter_requires_manual_update"],
+                  "required": [
+                    "claim",
+                    "version",
+                    "letter_regenerated",
+                    "letter_requires_manual_update"
+                  ],
                   "properties": {
-                    "claim": { "type": "object", "additionalProperties": true },
-                    "version": { "type": "object", "nullable": true, "additionalProperties": true },
-                    "letter_regenerated": { "type": "boolean" },
-                    "letter_requires_manual_update": { "type": "boolean" }
+                    "claim": {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    "version": {
+                      "type": "object",
+                      "nullable": true,
+                      "additionalProperties": true
+                    },
+                    "letter_regenerated": {
+                      "type": "boolean"
+                    },
+                    "letter_requires_manual_update": {
+                      "type": "boolean"
+                    }
                   }
                 },
                 "examples": {
@@ -7989,9 +8253,15 @@
               }
             }
           },
-          "401": { "description": "authentication required" },
-          "403": { "description": "internal role required" },
-          "404": { "description": "claim not found" },
+          "401": {
+            "description": "authentication required"
+          },
+          "403": {
+            "description": "internal role required"
+          },
+          "404": {
+            "description": "claim not found"
+          },
           "409": {
             "description": "CLAIM_DETAILS_UPDATE_NOT_ALLOWED_FOR_STATUS for pending signature, signed without revision, or other noneditable status; CLAIM_DETAILS_MAILING_STARTED for active/completed mailing; CLAIM_DETAILS_MANUAL_DEFENDANT_REQUIRED for a Small Claims catalog defendant; or letter/template readiness errors.",
             "content": {
@@ -8228,9 +8498,232 @@
         ]
       }
     },
+    "/api/internal/claims/{id}/revisions": {
+      "post": {
+        "summary": "Request an internal letter revision",
+        "description": "Internal admin, cx_agent, or paralegal action for a letter_signature_sent or letter_signed claim before mailing is accepted. The required reason is recorded in the revision description, with request_type=internal_request and the authenticated internal actor. For a pending signature, cancel the Firma request first; cancellation failure returns 502 SIGNATURE_CANCEL_FAILED and does not unlock editing. If cancellation partly succeeded, its outcome is uncertain, or the local commit failed, the revision reservation may remain: the same authenticated requester can explicitly repeat the same request to resume; no extra body field is required. Another requester cannot take over. For a signed letter, preserve the signed document/PDF as superseded history, ineligible for mailing. Existing letter HTML and versions are not regenerated. Both paths return letter_revision_requested and require a new signature before mailing. Use existing PATCH /api/internal/claims/{id}/details and PATCH /api/internal/claims/{id}/letter during revision: updating claim data does not automatically update letter text. A provider-accepted DocuPost/PostGrid order blocks revision even if its later status is error; an explicit pre-acceptance address rejection does not. Revision and mailing share a durable per-claim reservation; 409 LETTER_ACTION_IN_PROGRESS must not trigger automatic retries or timeout-based lock clearing. Mailing reservations never automatically resume or expire; accepted/uncertain orders need provider verification and reconciliation. Delayed Firma webhooks/completion jobs cannot restore superseded signatures. No automatic customer profile update or new letter generation occurs.",
+        "operationId": "requestInternalLetterRevision",
+        "tags": [
+          "Internal/Claims"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "reason"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 4000,
+                    "description": "Required internal reason, trimmed before validation. Stored as the revision description and in the activity history."
+                  }
+                }
+              },
+              "examples": {
+                "mailing_address_rejected": {
+                  "summary": "Reopen a signed letter after an address rejection",
+                  "description": "Only when the provider rejected the address before accepting the order. After opening revision, correct claim data and letter text manually, then obtain a new signature.",
+                  "value": {
+                    "reason": "PostGrid rejected the mailing address. Review the address and correct the letter before requesting a new signature."
+                  }
+                },
+                "pending_signature_correction": {
+                  "summary": "Cancel a pending invitation and correct the letter",
+                  "value": {
+                    "reason": "The customer contacted support about incorrect incident details. Cancel the pending signing invitation so the team can revise the letter."
+                  }
+                },
+                "signed_letter_correction": {
+                  "summary": "Preserve the old signed letter and start a new revision",
+                  "value": {
+                    "reason": "The customer confirmed a correction to the claim amount after signing. Preserve the previous signed letter and prepare a corrected version for a new signature."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Revision opened. Returns the full claim and revision_request; the example abbreviates both. Letter HTML/versions and signed historical files remain preserved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "claim",
+                    "revision_request"
+                  ],
+                  "properties": {
+                    "claim": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "letter_revision_requested"
+                          ]
+                        },
+                        "revision_rounds": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "revision_request": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "request_type": {
+                          "type": "string",
+                          "enum": [
+                            "internal_request"
+                          ]
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "open"
+                          ]
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "requested_by": {
+                          "type": "string",
+                          "format": "uuid"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "claim": {
+                    "id": "11111111-1111-4111-8111-111111111111",
+                    "status": "letter_revision_requested",
+                    "revision_rounds": 2,
+                    "current_version_number": 3
+                  },
+                  "revision_request": {
+                    "id": "22222222-2222-4222-8222-222222222222",
+                    "claim_id": "11111111-1111-4111-8111-111111111111",
+                    "round_number": 2,
+                    "request_type": "internal_request",
+                    "status": "open",
+                    "revision_type": "other",
+                    "description": "PostGrid rejected the mailing address. Review the address and correct the letter before requesting a new signature.",
+                    "requested_by": "33333333-3333-4333-8333-333333333333",
+                    "requested_by_email": "cx-agent@example.com"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: missing, blank, too short/long reason, malformed claim ID, or unknown body fields."
+          },
+          "401": {
+            "description": "Authentication required."
+          },
+          "403": {
+            "description": "Internal admin, cx_agent, or paralegal role required; customer tokens cannot initiate internal revisions."
+          },
+          "404": {
+            "description": "CLAIM_NOT_FOUND."
+          },
+          "409": {
+            "description": "REVISION_NOT_ALLOWED_FOR_STATUS when the letter is not pending signature/signed; REVISION_NOT_ALLOWED_AFTER_MAILING when the provider accepted an order; LETTER_ACTION_IN_PROGRESS when another revision/mailing action is reserved; LETTER_ACTION_LOCK_MISMATCH if an overlapping request changed the action. Refresh state and show the returned message. The same authenticated requester may explicitly resume an interrupted revision with the original body; no operation_id or private lock token belongs in the request. Never automatically clear the reservation or resend an order with unknown outcome.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "mailing_accepted": {
+                    "value": {
+                      "error": {
+                        "code": "REVISION_NOT_ALLOWED_AFTER_MAILING",
+                        "message": "Revision cannot be requested after mailing has been accepted by the provider"
+                      }
+                    }
+                  },
+                  "operation_in_progress": {
+                    "value": {
+                      "error": {
+                        "code": "LETTER_ACTION_IN_PROGRESS",
+                        "message": "Another letter action is in progress. Refresh the claim before trying again. If a mailing request had an uncertain result, the team must verify the provider before retrying."
+                      }
+                    }
+                  },
+                  "overlapping_revision_changed": {
+                    "value": {
+                      "error": {
+                        "code": "LETTER_ACTION_LOCK_MISMATCH",
+                        "message": "The letter action changed. Refresh the claim before trying again."
+                      }
+                    }
+                  },
+                  "status_not_eligible": {
+                    "value": {
+                      "error": {
+                        "code": "REVISION_NOT_ALLOWED_FOR_STATUS",
+                        "message": "Revision can only be requested while signature is pending or after signing before mailing"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "SIGNATURE_CANCEL_FAILED: pending Firma cancellation could not be confirmed. Editing remains locked; do not assume the old signing link is revoked. After partial or uncertain cancellation, the same authenticated requester can explicitly retry the same revision request to resume it; a different requester remains blocked. No extra body field or manual lock clearing is needed.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "SIGNATURE_CANCEL_FAILED",
+                    "message": "The pending signature request could not be cancelled. The letter has not been opened for revision. Please try again after checking the signature request."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "DB_LETTER_ACTION_FAILED: database/lifecycle operation failed; do not assume revision opened. After a partial cancellation or uncertain outcome, the same requester can resume the revision through the same endpoint."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/internal/claims/{id}/revisions/{revision_id}/resolve": {
       "post": {
-        "description": "",
+        "description": "Optional internal workflow control for the current revision round while the claim remains in revision. Accept, decline, or resolve for governance; this is not required before sending a revised letter for signature. The guarded operation cannot resolve an old round to reopen a pending-signature, signed, mailed, or otherwise advanced claim, and it cannot bypass an active letter-action reservation or provider-accepted mailing.",
         "summary": "POST /api/internal/claims/{id}/revisions/{revision_id}/resolve",
         "tags": [
           "Internal/Claims"
@@ -8259,11 +8752,30 @@
           "200": {
             "description": "successful"
           },
+          "400": {
+            "description": "VALIDATION_ERROR for malformed revision status or IDs."
+          },
           "401": {
             "description": "authorization failed"
           },
-          "422": {
-            "description": "validation failed"
+          "403": {
+            "description": "Internal role required."
+          },
+          "404": {
+            "description": "Claim or revision request not found."
+          },
+          "409": {
+            "description": "REVISION_NOT_CURRENT for a closed or noncurrent revision round; REVISION_NOT_ALLOWED_FOR_STATUS after the claim advanced beyond revision; LETTER_ACTION_IN_PROGRESS for a reserved letter action; REVISION_NOT_ALLOWED_AFTER_MAILING after provider acceptance. An old revision cannot reopen a signed or mailed claim.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "REVISION_NOT_CURRENT",
+                    "message": "This revision is no longer open or is not the current revision round"
+                  }
+                }
+              }
+            }
           },
           "500": {
             "description": "unknown server error"
@@ -8292,7 +8804,7 @@
     },
     "/api/internal/claims/{id}/send-mailing": {
       "post": {
-        "description": "Internal mailing of the current signed Firma letter. Sender and recipient addresses come from the claim snapshot, never request overrides or OCR. DocuPost is used only when both countries are US; otherwise PostGrid uses the signed page size and the claim's generic first_class or certified preference. Send {} or no body: document_url, docupost_payload, and postgrid_payload are rejected with 400 VALIDATION_ERROR. A PostGrid address_strictness_error returns 422 MAILING_ADDRESS_VERIFICATION_FAILED: correct the claim only before first signature send or during an open revision; a signed letter requires the customer to request revision, followed by manual letter correction and a new signature before retrying. A rejected address creates no mailing document or response window. The internal requester is recorded in the activity log and provider metadata.",
+        "description": "Internal mailing of the current signed Firma letter. Sender and recipient addresses come from the claim snapshot, never request overrides or OCR. DocuPost is used only when both countries are US; otherwise PostGrid uses the signed page size and the claim's generic first_class or certified preference. Send {} or no body: document_url, docupost_payload, and postgrid_payload are rejected with 400 VALIDATION_ERROR. A PostGrid address_strictness_error returns 422 MAILING_ADDRESS_VERIFICATION_FAILED: correct the claim only before first signature send or during an open revision; a signed letter needs customer or internal revision, manual letter correction, and a new signature before retrying. A rejected address creates no mailing document or response window and releases the reservation. Both mailing routes share a durable per-claim reservation with customer/internal revision. LETTER_ACTION_IN_PROGRESS blocks concurrent actions; an accepted or uncertain provider submission remains blocked for reconciliation after local failure or unknown timeout. Do not blindly resend or automatically clear this reservation. The internal requester is recorded in the activity log and provider metadata.",
         "summary": "POST /api/internal/claims/{id}/send-mailing",
         "operationId": "sendInternalClaimMailing",
         "tags": [
@@ -8323,7 +8835,7 @@
             "description": "internal role required"
           },
           "409": {
-            "description": "claim is not ready for mailing, mailing was already requested, or provider account cannot submit mailing (for example insufficient funds)"
+            "description": "LETTER_ACTION_IN_PROGRESS, claim not ready for mailing, MAILING_ALREADY_REQUESTED, or provider account cannot submit mailing (for example insufficient funds). Do not automatically retry an uncertain provider submission."
           },
           "422": {
             "description": "MAILING_COUNTRY_REQUIRED or MAILING_ADDRESS_VERIFICATION_FAILED. Corrections require pre-signature or revision state; signed letters require revision and a new signature. Raw provider errors and addresses are not exposed.",
@@ -8332,7 +8844,7 @@
                 "example": {
                   "error": {
                     "code": "MAILING_ADDRESS_VERIFICATION_FAILED",
-                    "message": "The mailing provider could not verify the sender or recipient address. Corrections are available before the first signature send or while the letter is in revision. If it is signed, ask the customer to request a letter revision, correct the claim and letter, and obtain a new signature before trying again."
+                    "message": "The mailing provider could not verify the sender or recipient address. Corrections are available before the first signature send or while the letter is in revision. If it is signed, request a letter revision, correct the claim and letter, and obtain a new signature before trying again."
                   }
                 }
               }
@@ -9785,7 +10297,7 @@
     },
     "/api/firma-webhook": {
       "post": {
-        "description": "Firma webhook endpoint. Uses raw JSON body and X-Firma-Signature verification when FIRMA_WEBHOOK_SECRET is configured. Synchronizes document/claim status, creates revision requests for decline/expiration, and preserves existing completed/cancelled behavior. An authenticated recipient.signed with strict data.all_complete=true persists a verification job in the existing firma_completion_notification queue before returning 200; it does not wait for Firma finalization inside the callback. Only the latest active non-terminal document with claim letter_signature_sent is queued. The job is eligible after 30 seconds and requires the existing notification worker (NOTIFICATIONS_CRON_ENABLED=true; default every 10 minutes, or authenticated process-due endpoint). The worker confirms strict status.finished=true with no cancellation/decline/expiration and rechecks document/claim/latest state after the provider call before marking signed. Pending/provider failures use persisted job retries (normally max_attempts=3), not webhook 503 FIRMA_SIGNATURE_COMPLETION_PENDING. Exhausted retries need investigation. Completion email uses existing per-document deduplication; reconciliation sends custom email only for completion_email_provider=resend. Database/queue failures still return non-2xx. No new endpoint or migration. Old events are not automatically replayed by deployment.",
+        "description": "Firma webhook endpoint. Uses raw JSON body and X-Firma-Signature verification when FIRMA_WEBHOOK_SECRET is configured. Synchronizes document/claim status, creates revision requests for decline/expiration, and preserves existing completed/cancelled behavior. An authenticated recipient.signed with strict data.all_complete=true persists a verification job in the existing firma_completion_notification queue before returning 200; it does not wait for Firma finalization inside the callback. Only the latest active non-terminal document with claim letter_signature_sent is queued. The job is eligible after 30 seconds and requires the existing notification worker (NOTIFICATIONS_CRON_ENABLED=true; default every 10 minutes, or authenticated process-due endpoint). The worker confirms strict status.finished=true with no cancellation/decline/expiration. Atomic document/claim updates coordinate with revision: superseded old events are acknowledged without restoring their signature; a callback racing an active revision cancellation may return 503 LETTER_ACTION_IN_PROGRESS for provider retry. Pending finalization/provider failures use persisted job retries (normally max_attempts=3), not webhook 503 FIRMA_SIGNATURE_COMPLETION_PENDING. Exhausted retries need investigation. Completion email uses existing per-document deduplication; reconciliation sends custom email only for completion_email_provider=resend. Database/queue failures still return non-2xx. Atomic revision protections require migration 0067_internal_letter_revision_requests.sql before deployment. Old events are not automatically replayed by deployment.",
         "summary": "POST /api/firma-webhook",
         "tags": [
           "Webhooks"
@@ -9815,6 +10327,28 @@
           },
           "401": {
             "description": "webhook signature failed"
+          },
+          "503": {
+            "description": "LETTER_ACTION_IN_PROGRESS is expected temporary contention while a revision cancels the signing request. Handled directly with an informational log, without invoking the generic API error logger. Retry-After requests another delivery in 5 seconds; the provider's actual retry schedule is not guaranteed. Real processing/database errors still follow normal error handling. Superseded historical document events are acknowledged with 200 instead.",
+            "headers": {
+              "Retry-After": {
+                "description": "Requested delay in seconds before retrying this callback.",
+                "schema": {
+                  "type": "integer",
+                  "example": 5
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "LETTER_ACTION_IN_PROGRESS",
+                    "message": "A letter revision is in progress. Retry this webhook."
+                  }
+                }
+              }
+            }
           },
           "500": {
             "description": "unknown server error"
@@ -10910,33 +11444,104 @@
       "MailingAddressCheckResult": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["approved", "status", "normalized_address", "changed_fields", "attempts", "reason_code", "message", "verification_details"],
+        "required": [
+          "approved",
+          "status",
+          "normalized_address",
+          "changed_fields",
+          "attempts",
+          "reason_code",
+          "message",
+          "verification_details"
+        ],
         "properties": {
-          "approved": { "type": "boolean", "description": "True only when a usable same-country address received live PostGrid verified or corrected status." },
-          "status": { "type": "string", "enum": ["verified", "corrected", "not_confirmed"] },
+          "approved": {
+            "type": "boolean",
+            "description": "True only when a usable same-country address received live PostGrid verified or corrected status."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "corrected",
+              "not_confirmed"
+            ]
+          },
           "normalized_address": {
             "type": "object",
             "nullable": true,
             "additionalProperties": false,
             "description": "Complete postal address to review and pass to the existing claim-details PATCH after approval. Null when not confirmed; no name or provider contact ID is included.",
-            "required": ["address_line1", "city", "state", "zip", "country"],
+            "required": [
+              "address_line1",
+              "city",
+              "state",
+              "zip",
+              "country"
+            ],
             "properties": {
-              "address_line1": { "type": "string", "minLength": 3 },
-              "address_line2": { "type": "string", "nullable": true },
-              "city": { "type": "string", "minLength": 2 },
-              "state": { "type": "string", "minLength": 1, "maxLength": 120 },
-              "zip": { "type": "string", "minLength": 2, "maxLength": 32 },
-              "country": { "type": "string", "minLength": 2, "maxLength": 2 }
+              "address_line1": {
+                "type": "string",
+                "minLength": 3
+              },
+              "address_line2": {
+                "type": "string",
+                "nullable": true
+              },
+              "city": {
+                "type": "string",
+                "minLength": 2
+              },
+              "state": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "zip": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 32
+              },
+              "country": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 2
+              }
             }
           },
           "changed_fields": {
             "type": "array",
             "uniqueItems": true,
-            "items": { "type": "string", "enum": ["address_line1", "address_line2", "city", "state", "zip", "country"] }
+            "items": {
+              "type": "string",
+              "enum": [
+                "address_line1",
+                "address_line2",
+                "city",
+                "state",
+                "zip",
+                "country"
+              ]
+            }
           },
-          "attempts": { "type": "integer", "minimum": 1, "maximum": 2 },
-          "reason_code": { "type": "string", "nullable": true, "enum": ["NO_USABLE_CORRECTION", "CORRECTION_NOT_CONFIRMED", null] },
-          "message": { "type": "string", "description": "User-facing result. Unconfirmed results include the latest available PostGrid reason and missing-unit guidance when applicable; without a provider reason, the generic message remains. Render as plain text." },
+          "attempts": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "reason_code": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "NO_USABLE_CORRECTION",
+              "CORRECTION_NOT_CONFIRMED",
+              null
+            ]
+          },
+          "message": {
+            "type": "string",
+            "description": "User-facing result. Unconfirmed results include the latest available PostGrid reason and missing-unit guidance when applicable; without a provider reason, the generic message remains. Render as plain text."
+          },
           "verification_details": {
             "type": "array",
             "minItems": 1,
@@ -10945,13 +11550,44 @@
             "items": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["attempt", "address_status", "address_errors", "error_type", "error_message"],
+              "required": [
+                "attempt",
+                "address_status",
+                "address_errors",
+                "error_type",
+                "error_message"
+              ],
               "properties": {
-                "attempt": { "type": "integer", "minimum": 1, "maximum": 2 },
-                "address_status": { "type": "string", "nullable": true, "enum": ["verified", "corrected", "failed", null] },
-                "address_errors": { "type": "string", "nullable": true, "description": "Original PostGrid addressErrors string, including postal correction warnings; null when absent." },
-                "error_type": { "type": "string", "nullable": true, "description": "Recognized PostGrid postal-address error type; null for contact verification results." },
-                "error_message": { "type": "string", "nullable": true, "description": "Original recognized PostGrid postal-address error message; null for contact verification results." }
+                "attempt": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 2
+                },
+                "address_status": {
+                  "type": "string",
+                  "nullable": true,
+                  "enum": [
+                    "verified",
+                    "corrected",
+                    "failed",
+                    null
+                  ]
+                },
+                "address_errors": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "Original PostGrid addressErrors string, including postal correction warnings; null when absent."
+                },
+                "error_type": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "Recognized PostGrid postal-address error type; null for contact verification results."
+                },
+                "error_message": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "Original recognized PostGrid postal-address error message; null for contact verification results."
+                }
               }
             }
           }
@@ -10961,14 +11597,41 @@
         "type": "object",
         "additionalProperties": false,
         "description": "Complete claim mailing address. country is a two-letter code; US ZIP must be five digits or ZIP+4. Saving checks format, not postal deliverability.",
-        "required": ["address_line1", "city", "state", "zip", "country"],
+        "required": [
+          "address_line1",
+          "city",
+          "state",
+          "zip",
+          "country"
+        ],
         "properties": {
-          "address_line1": { "type": "string", "minLength": 3 },
-          "address_line2": { "type": "string", "nullable": true },
-          "city": { "type": "string", "minLength": 2 },
-          "state": { "type": "string", "minLength": 1, "maxLength": 120 },
-          "zip": { "type": "string", "minLength": 2, "maxLength": 32 },
-          "country": { "type": "string", "minLength": 2, "maxLength": 2 }
+          "address_line1": {
+            "type": "string",
+            "minLength": 3
+          },
+          "address_line2": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "minLength": 2
+          },
+          "state": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "zip": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 32
+          },
+          "country": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2
+          }
         }
       },
       "PaymentAttempt": {
