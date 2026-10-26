@@ -6713,9 +6713,702 @@
         ]
       }
     },
+    "/api/internal/customer-access": {
+      "get": {
+        "operationId": "listInternalCustomerAccess",
+        "summary": "List customers with pending account access",
+        "description": "Internal recovery queue. Eligibility is based only on auth.users.email_confirmed_at: never infer it from profile existence, a null claim user_id, or login activity. paid_claims (default) includes contacts with claims and no Auth account or unconfirmed Auth email. intake_only requires no claims and a draft/pending_payment intake, and also includes contacts with either no Auth account or an unconfirmed Auth email. Confirmed users are excluded from both queues even when no profile exists. Contacts are grouped by normalized email; converted intakes are not duplicated. Oldest first; time is counted since first claim or first intake, not last activity. Open details by the returned anchor to keep links stable after email corrections.",
+        "tags": [
+          "Internal/Customer Access"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "description": "Paid claims by default; unpaid contacts without a claim optionally.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "paid_claims",
+                "intake_only"
+              ],
+              "default": "paid_claims"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Search email, name, phone, or claim reference.",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "service",
+            "in": "query",
+            "required": false,
+            "description": "Filter services.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "activation_hero",
+                "small_claims"
+              ]
+            }
+          },
+          {
+            "name": "min_days",
+            "in": "query",
+            "required": false,
+            "description": "Minimum completed days waiting.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 36500,
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Page size.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Page offset.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "customers",
+                    "total",
+                    "limit",
+                    "offset"
+                  ],
+                  "properties": {
+                    "customers": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/InternalCustomerAccessCustomer"
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "limit": {
+                      "type": "integer"
+                    },
+                    "offset": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "example": {
+                  "customers": [
+                    {
+                      "email": "previous-address@example.com",
+                      "name": "Test Customer",
+                      "phone": "+15550100100",
+                      "auth_user_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+                      "account_status": "unconfirmed",
+                      "email_confirmed_at": null,
+                      "can_correct_email": true,
+                      "pending_signature_count": 0,
+                      "first_claim_at": "2026-10-20T12:00:00Z",
+                      "first_intake_at": "2026-10-20T11:50:00Z",
+                      "days_waiting": 3,
+                      "anchor": {
+                        "claim_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+                      },
+                      "claims": [
+                        {
+                          "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                          "reference_code": "AH-000123",
+                          "status": "paid_pending_claim_type_selection",
+                          "service": "activation_hero",
+                          "created_at": "2026-10-20T12:00:00Z",
+                          "name": "Test Customer",
+                          "phone": "+15550100100",
+                          "address": {
+                            "address_line1": "15090 AL-20",
+                            "city": "Madison",
+                            "state": "AL",
+                            "zip": "35756",
+                            "country": "US"
+                          }
+                        }
+                      ],
+                      "intake_flows": [
+                        {
+                          "id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+                          "status": "paid",
+                          "service": "activation_hero",
+                          "created_at": "2026-10-20T11:50:00Z",
+                          "name": "Test Customer",
+                          "phone": "+15550100100",
+                          "address": {
+                            "address_line1": "15090 AL-20",
+                            "city": "Madison",
+                            "state": "AL",
+                            "zip": "35756",
+                            "country": "US"
+                          },
+                          "current_step": "payment",
+                          "claim_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+                        }
+                      ]
+                    }
+                  ],
+                  "total": 1,
+                  "limit": 50,
+                  "offset": 0
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request, unknown fields, both/neither source IDs, invalid email/UUID, or missing contact confirmation/reason."
+          },
+          "401": {
+            "description": "Bearer authentication required."
+          },
+          "403": {
+            "description": "Only admin, cx_agent, and paralegal are allowed; customer tokens are rejected."
+          },
+          "500": {
+            "description": "Customer-access database unavailable or access URL not configured."
+          }
+        }
+      }
+    },
+    "/api/internal/customer-access/details": {
+      "get": {
+        "operationId": "getInternalCustomerAccess",
+        "summary": "Open pending-access customer by claim or intake",
+        "description": "Supply exactly one claim_id or intake_flow_id. Returns related claims and intake contact variants plus the last 50 recovery activities. An account activated since the list was loaded may return account_status confirmed with can_correct_email false. Corrections recheck eligibility when saved. Use source IDs in frontend links, not emails.",
+        "tags": [
+          "Internal/Customer Access"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "query",
+            "required": false,
+            "description": "Paid claim anchor; exclusive with intake_flow_id.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "intake_flow_id",
+            "in": "query",
+            "required": false,
+            "description": "Intake anchor; exclusive with claim_id.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "customer",
+                    "history"
+                  ],
+                  "properties": {
+                    "customer": {
+                      "$ref": "#/components/schemas/InternalCustomerAccessCustomer"
+                    },
+                    "history": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/InternalCustomerAccessActivity"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "customer": {
+                    "email": "previous-address@example.com",
+                    "name": "Test Customer",
+                    "phone": "+15550100100",
+                    "auth_user_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+                    "account_status": "unconfirmed",
+                    "email_confirmed_at": null,
+                    "can_correct_email": true,
+                    "pending_signature_count": 0,
+                    "first_claim_at": "2026-10-20T12:00:00Z",
+                    "first_intake_at": "2026-10-20T11:50:00Z",
+                    "days_waiting": 3,
+                    "anchor": {
+                      "claim_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+                    },
+                    "claims": [
+                      {
+                        "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                        "reference_code": "AH-000123",
+                        "status": "paid_pending_claim_type_selection",
+                        "service": "activation_hero",
+                        "created_at": "2026-10-20T12:00:00Z",
+                        "name": "Test Customer",
+                        "phone": "+15550100100",
+                        "address": {
+                          "address_line1": "15090 AL-20",
+                          "city": "Madison",
+                          "state": "AL",
+                          "zip": "35756",
+                          "country": "US"
+                        }
+                      }
+                    ],
+                    "intake_flows": [
+                      {
+                        "id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+                        "status": "paid",
+                        "service": "activation_hero",
+                        "created_at": "2026-10-20T11:50:00Z",
+                        "name": "Test Customer",
+                        "phone": "+15550100100",
+                        "address": {
+                          "address_line1": "15090 AL-20",
+                          "city": "Madison",
+                          "state": "AL",
+                          "zip": "35756",
+                          "country": "US"
+                        },
+                        "current_step": "payment",
+                        "claim_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+                      }
+                    ]
+                  },
+                  "history": []
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request, unknown fields, both/neither source IDs, invalid email/UUID, or missing contact confirmation/reason."
+          },
+          "401": {
+            "description": "Bearer authentication required."
+          },
+          "403": {
+            "description": "Only admin, cx_agent, and paralegal are allowed; customer tokens are rejected."
+          },
+          "404": {
+            "description": "Source customer or operation not found."
+          },
+          "500": {
+            "description": "Customer-access database unavailable or access URL not configured."
+          }
+        }
+      }
+    },
+    "/api/internal/customer-access/email": {
+      "patch": {
+        "operationId": "correctInternalCustomerAccessEmail",
+        "summary": "Correct an unconfirmed customer email",
+        "description": "Confirm the replacement email with the customer first. Account confirmation in Supabase Auth is rechecked before mutation; profile presence and login activity do not establish eligibility. Preserve the Auth UUID if it exists, synchronize all related contact records and pending notifications, and audit the actor/reason. No early profile creation or automatic email confirmation. Pending Firma invitations must be canceled before correction. All letter HTML, versions, signed documents, platform-account identifiers, and payment history are preserved: the account/contact email may equal a separate platform-account email and must not be blindly replaced. Future generation uses the corrected claim snapshot; review actions.letter_review_claim_ids manually for existing text corrections. A signed letter requiring a text change follows the existing revision/new-signature process. Paid customers receive one branded change-notice/access email through Resend containing a Supabase signup-confirmation link generated with auth.admin.generateLink. The template is defined in the existing notificationTemplates module, without a standalone HTML file. The link uses existing NOTIFICATIONS_SITE_URL for its callback; no new environment variable is added. Intake-only contacts receive the existing unfinished-intake reminder/resume email, preserving its token/link and opt-out behavior. Distinguish completed corrections from failed delivery through access_delivery; sent means provider acceptance, not inbox-delivery confirmation. If a provider step fails after the operation is prepared, retain operation_id and retry the original payload with the same ID; do not create a second correction. This operation is distinct from claim-scoped PATCH details, which still rejects customer.email.",
+        "tags": [
+          "Internal/Customer Access"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InternalCustomerAccessCorrection"
+              },
+              "examples": {
+                "paidClaim": {
+                  "summary": "Recover a paid customer",
+                  "value": {
+                    "claim_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                    "expected_email": "previous-address@example.com",
+                    "email": "replacement-address@example.com",
+                    "reason": "Customer contacted support and confirmed this replacement email.",
+                    "customer_contact_confirmed": true,
+                    "operation_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc"
+                  }
+                },
+                "intakeOnly": {
+                  "summary": "Correct an unpaid no-account contact",
+                  "value": {
+                    "intake_flow_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+                    "expected_email": "previous-address@example.com",
+                    "email": "replacement-address@example.com",
+                    "reason": "Customer confirmed the corrected intake contact email by phone.",
+                    "customer_contact_confirmed": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Correction saved. access_delivery.status is independent of correction success. not_required is a completion-only retry of an already-started correction whose exact target account has since confirmed; it never permits a new correction on a confirmed account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalCustomerAccessCorrectionResult"
+                },
+                "examples": {
+                  "delivered": {
+                    "summary": "Correction completed and confirmation sent",
+                    "value": {
+                      "operation_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+                      "status": "completed",
+                      "email": "replacement-address@example.com",
+                      "previous_email": "previous-address@example.com",
+                      "actions": {
+                        "claims_updated": 1,
+                        "letters_patched": 0,
+                        "intake_flows_updated": 1,
+                        "checkout_drafts_updated": 0,
+                        "notifications_updated": 1,
+                        "claim_ids": [
+                          "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+                        ],
+                        "intake_flow_ids": [
+                          "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+                        ],
+                        "letter_review_claim_ids": []
+                      },
+                      "warnings": [],
+                      "access_delivery": {
+                        "status": "sent",
+                        "type": "account_confirmation"
+                      }
+                    }
+                  },
+                  "reviewExistingLetter": {
+                    "summary": "Existing letter preserved; review contact email manually",
+                    "value": {
+                      "operation_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+                      "status": "completed",
+                      "email": "replacement-address@example.com",
+                      "previous_email": "previous-address@example.com",
+                      "actions": {
+                        "claims_updated": 1,
+                        "letters_patched": 0,
+                        "intake_flows_updated": 1,
+                        "checkout_drafts_updated": 0,
+                        "notifications_updated": 1,
+                        "claim_ids": [
+                          "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+                        ],
+                        "intake_flow_ids": [
+                          "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+                        ],
+                        "letter_review_claim_ids": [
+                          "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+                        ]
+                      },
+                      "warnings": [
+                        {
+                          "code": "LETTER_EMAIL_REVIEW_REQUIRED",
+                          "message": "Existing letter text was preserved. Review the contact email without changing platform account identifiers. Signed letters require revision and a new signature if their text needs correction.",
+                          "claim_ids": [
+                            "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+                          ]
+                        }
+                      ],
+                      "access_delivery": {
+                        "status": "sent",
+                        "type": "account_confirmation"
+                      }
+                    }
+                  },
+                  "deliveryFailed": {
+                    "summary": "Email updated; use resend after delivery failure",
+                    "value": {
+                      "operation_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+                      "status": "completed",
+                      "email": "replacement-address@example.com",
+                      "previous_email": "previous-address@example.com",
+                      "actions": {
+                        "claims_updated": 1,
+                        "letters_patched": 0,
+                        "intake_flows_updated": 1,
+                        "checkout_drafts_updated": 0,
+                        "notifications_updated": 1,
+                        "claim_ids": [
+                          "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+                        ],
+                        "intake_flow_ids": [
+                          "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+                        ],
+                        "letter_review_claim_ids": []
+                      },
+                      "warnings": [],
+                      "access_delivery": {
+                        "status": "failed",
+                        "type": "account_confirmation",
+                        "error_code": "CUSTOMER_ACCESS_EMAIL_SEND_FAILED"
+                      }
+                    }
+                  },
+                  "confirmedDuringRecovery": {
+                    "summary": "Resume the same prepared operation; account already confirmed",
+                    "value": {
+                      "operation_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+                      "status": "completed",
+                      "email": "replacement-address@example.com",
+                      "previous_email": "previous-address@example.com",
+                      "actions": {
+                        "claims_updated": 1,
+                        "letters_patched": 0,
+                        "intake_flows_updated": 1,
+                        "checkout_drafts_updated": 0,
+                        "notifications_updated": 1,
+                        "claim_ids": [
+                          "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+                        ],
+                        "intake_flow_ids": [
+                          "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+                        ],
+                        "letter_review_claim_ids": []
+                      },
+                      "warnings": [],
+                      "access_delivery": {
+                        "status": "not_required",
+                        "type": "account_confirmation"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request, unknown fields, both/neither source IDs, invalid email/UUID, or missing contact confirmation/reason."
+          },
+          "401": {
+            "description": "Bearer authentication required."
+          },
+          "403": {
+            "description": "Only admin, cx_agent, and paralegal are allowed; customer tokens are rejected."
+          },
+          "404": {
+            "description": "Source customer or operation not found."
+          },
+          "409": {
+            "description": "Account already confirmed, stale email, conflicting account/contact/internal address, unchanged email, or conflicting/in-progress correction. Refresh details or resume the existing operation; never merge customers automatically."
+          },
+          "429": {
+            "description": "An access email was requested during the preceding minute. Wait one minute before trying resend again.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CUSTOMER_ACCESS_RESEND_COOLDOWN",
+                    "message": "An access email was requested recently. Wait one minute before requesting another."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Customer-access database unavailable or access URL not configured."
+          },
+          "502": {
+            "description": "Auth or Firma request failed. A prepared correction returns operation_id for retrying the same operation. Do not treat a partial update as a brand-new correction."
+          }
+        }
+      }
+    },
+    "/api/internal/customer-access/resend": {
+      "post": {
+        "operationId": "resendInternalCustomerAccess",
+        "summary": "Resend confirmation or intake access",
+        "description": "Supply exactly one claim_id or intake_flow_id. Eligible paid contacts receive a branded access email through Resend with a Supabase signup-confirmation link generated by auth.admin.generateLink, using existing NOTIFICATIONS_SITE_URL for its callback. Its HTML lives in the existing notificationTemplates module, without a standalone HTML asset or new environment variable. Unpaid contacts receive the existing unfinished-intake reminder with its resume token/link and opt-out behavior. Does not change the email or confirm an account; confirmed accounts cannot use recovery. Outcome is tracked in access_delivery and activity; sent is provider acceptance, not proof of inbox delivery. Disable repeated clicks and do not automatically retry a timeout because email delivery may already have succeeded. No confirmation tokens or access links are returned to staff.",
+        "tags": [
+          "Internal/Customer Access"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "claim_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Exactly one source ID is required. Stable reference for a paid customer."
+                  },
+                  "intake_flow_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Use instead of claim_id for an intake-only contact."
+                  }
+                },
+                "oneOf": [
+                  {
+                    "required": [
+                      "claim_id"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "intake_flow_id"
+                    ]
+                  }
+                ]
+              },
+              "examples": {
+                "paidClaim": {
+                  "value": {
+                    "claim_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+                  }
+                },
+                "intakeOnly": {
+                  "value": {
+                    "intake_flow_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "operation_id",
+                    "status",
+                    "email",
+                    "access_delivery"
+                  ],
+                  "properties": {
+                    "operation_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "completed"
+                      ]
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email"
+                    },
+                    "access_delivery": {
+                      "$ref": "#/components/schemas/InternalCustomerAccessDelivery"
+                    }
+                  }
+                },
+                "example": {
+                  "operation_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+                  "status": "completed",
+                  "email": "replacement-address@example.com",
+                  "access_delivery": {
+                    "status": "sent",
+                    "type": "account_confirmation"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request, unknown fields, both/neither source IDs, invalid email/UUID, or missing contact confirmation/reason."
+          },
+          "401": {
+            "description": "Bearer authentication required."
+          },
+          "403": {
+            "description": "Only admin, cx_agent, and paralegal are allowed; customer tokens are rejected."
+          },
+          "404": {
+            "description": "Source customer or operation not found."
+          },
+          "409": {
+            "description": "Account already confirmed, stale email, conflicting account/contact/internal address, unchanged email, or conflicting/in-progress correction. Refresh details or resume the existing operation; never merge customers automatically."
+          },
+          "429": {
+            "description": "An access email was requested during the preceding minute. Wait one minute before trying resend again.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "CUSTOMER_ACCESS_RESEND_COOLDOWN",
+                    "message": "An access email was requested recently. Wait one minute before requesting another."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Customer-access database unavailable or access URL not configured."
+          },
+          "502": {
+            "description": "Auth or Firma request failed. A prepared correction returns operation_id for retrying the same operation. Do not treat a partial update as a brand-new correction."
+          }
+        }
+      }
+    },
     "/api/internal/claims/{id}": {
       "get": {
-        "description": "Returns the internal claim detail, including has_evidence_to_upload.",
+        "description": "Returns the internal claim detail, including has_evidence_to_upload. Includes customer_access with account_status, email_confirmed_at, can_correct_email, anchor, first_claim_at, and days_waiting. This state is based on Supabase Auth email confirmation; profiles and login timestamps are not eligibility signals. If the lookup fails, the claim still loads with account_status unknown and can_correct_email false. Open GET /api/internal/customer-access/details using anchor for contact recovery.",
         "summary": "GET /api/internal/claims/{id}",
         "tags": [
           "Internal/Claims"
@@ -6733,7 +7426,20 @@
         ],
         "responses": {
           "200": {
-            "description": "successful"
+            "description": "successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "customer_access": {
+                      "$ref": "#/components/schemas/InternalCustomerAccessIndicator"
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "authorization failed"
@@ -9580,6 +10286,10 @@
   ],
   "tags": [
     {
+      "name": "Internal/Customer Access",
+      "description": "Recover customers with an unconfirmed email, grouped into paid claims or unpaid intakes without a claim."
+    },
+    {
       "name": "Auth",
       "description": ""
     },
@@ -9643,6 +10353,560 @@
       }
     },
     "schemas": {
+      "InternalCustomerAccessAnchor": {
+        "type": "object",
+        "properties": {
+          "claim_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Exactly one source ID is required. Stable reference for a paid customer."
+          },
+          "intake_flow_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Use instead of claim_id for an intake-only contact."
+          }
+        },
+        "oneOf": [
+          {
+            "required": [
+              "claim_id"
+            ]
+          },
+          {
+            "required": [
+              "intake_flow_id"
+            ]
+          }
+        ]
+      },
+      "InternalCustomerAccessIndicator": {
+        "type": "object",
+        "description": "Authoritative confirmation state from Supabase Auth. Profile existence and login dates are not eligibility criteria. Unknown is a fail-soft lookup failure; do not enable corrections for unknown.",
+        "required": [
+          "account_status",
+          "email_confirmed_at",
+          "can_correct_email",
+          "anchor"
+        ],
+        "properties": {
+          "account_status": {
+            "type": "string",
+            "enum": [
+              "no_auth_account",
+              "unconfirmed",
+              "confirmed",
+              "conflict",
+              "unknown"
+            ]
+          },
+          "email_confirmed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "can_correct_email": {
+            "type": "boolean"
+          },
+          "anchor": {
+            "$ref": "#/components/schemas/InternalCustomerAccessAnchor"
+          },
+          "first_claim_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "days_waiting": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0
+          }
+        }
+      },
+      "InternalCustomerAccessCustomer": {
+        "type": "object",
+        "required": [
+          "email",
+          "account_status",
+          "email_confirmed_at",
+          "can_correct_email",
+          "anchor",
+          "claims",
+          "intake_flows",
+          "days_waiting"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "auth_user_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "account_status": {
+            "type": "string",
+            "enum": [
+              "no_auth_account",
+              "unconfirmed",
+              "confirmed",
+              "conflict"
+            ],
+            "description": "Confirmed contacts are excluded from both queues. Details can show confirmed after activation; conflict is never eligible."
+          },
+          "email_confirmed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "can_correct_email": {
+            "type": "boolean"
+          },
+          "pending_signature_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "first_claim_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "first_intake_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "days_waiting": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Completed days since first claim, or first intake when there is no claim. Not last activity."
+          },
+          "anchor": {
+            "$ref": "#/components/schemas/InternalCustomerAccessAnchor"
+          },
+          "claims": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "service": {
+                  "type": "string",
+                  "enum": [
+                    "activation_hero",
+                    "small_claims"
+                  ]
+                },
+                "created_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true
+                },
+                "name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "phone": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "address": {
+                  "type": "object",
+                  "nullable": true,
+                  "properties": {
+                    "address_line1": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "address_line2": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "city": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "state": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "zip": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "country": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  }
+                },
+                "reference_code": {
+                  "type": "string",
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "intake_flows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "service": {
+                  "type": "string",
+                  "enum": [
+                    "activation_hero",
+                    "small_claims"
+                  ]
+                },
+                "created_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true
+                },
+                "name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "phone": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "address": {
+                  "type": "object",
+                  "nullable": true,
+                  "properties": {
+                    "address_line1": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "address_line2": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "city": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "state": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "zip": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "country": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  }
+                },
+                "current_step": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "claim_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "nullable": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "InternalCustomerAccessActivity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "operation_type": {
+            "type": "string",
+            "enum": [
+              "email_correction",
+              "access_resend"
+            ]
+          },
+          "actor_user_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "old_email": {
+            "type": "string",
+            "format": "email"
+          },
+          "new_email": {
+            "type": "string",
+            "format": "email"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "auth_updated",
+              "completed",
+              "failed"
+            ]
+          },
+          "email_status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "sent",
+              "failed",
+              "not_required"
+            ]
+          },
+          "error_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "InternalCustomerAccessCorrection": {
+        "type": "object",
+        "additionalProperties": false,
+        "oneOf": [
+          {
+            "required": [
+              "claim_id"
+            ]
+          },
+          {
+            "required": [
+              "intake_flow_id"
+            ]
+          }
+        ],
+        "required": [
+          "email",
+          "expected_email",
+          "reason",
+          "customer_contact_confirmed"
+        ],
+        "properties": {
+          "claim_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Exactly one source ID is required. Stable reference for a paid customer."
+          },
+          "intake_flow_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Use instead of claim_id for an intake-only contact."
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254,
+            "description": "Replacement address confirmed by the customer. Existing account/contact collisions and reserved internal addresses are rejected."
+          },
+          "expected_email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254,
+            "description": "Current email read from details; guards against stale pages."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 2000,
+            "description": "Required internal audit reason."
+          },
+          "customer_contact_confirmed": {
+            "type": "boolean",
+            "enum": [
+              true
+            ],
+            "description": "Staff must first confirm the replacement address with the customer."
+          },
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Optional client-generated idempotency key. Reuse the same ID and original body to resume after an uncertain response; do not start a different operation."
+          }
+        }
+      },
+      "InternalCustomerAccessDelivery": {
+        "type": "object",
+        "required": [
+          "status",
+          "type"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "sent",
+              "failed",
+              "not_required"
+            ],
+            "description": "sent means the provider accepted the request, not verified inbox delivery. not_required: a prepared correction finished local synchronization after the same target Auth account was already confirmed; do not send another activation email."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "account_confirmation",
+              "intake_resume"
+            ],
+            "description": "account_confirmation uses a branded Resend email defined in the existing notificationTemplates module and a Supabase signup-confirmation link generated with auth.admin.generateLink; existing NOTIFICATIONS_SITE_URL supplies its callback. After correction the email includes the change notice. intake_resume reuses the existing unfinished-intake reminder, resume token/link, and opt-out behavior. No standalone HTML asset or new environment variable is added."
+          },
+          "error_code": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "InternalCustomerAccessCorrectionResult": {
+        "type": "object",
+        "required": [
+          "operation_id",
+          "status",
+          "email",
+          "access_delivery"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "completed"
+            ]
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "previous_email": {
+            "type": "string",
+            "format": "email"
+          },
+          "actions": {
+            "type": "object",
+            "properties": {
+              "claims_updated": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "intake_flows_updated": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "checkout_drafts_updated": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "notifications_updated": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "letters_patched": {
+                "type": "integer",
+                "enum": [
+                  0
+                ],
+                "description": "No automatic letter text substitution; all HTML and versions are preserved."
+              },
+              "claim_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "intake_flow_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "letter_review_claim_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Existing letters containing the old email. Review customer contact text manually; do not change an independent platform-account email. A signed letter needs revision/new signature only when its text must change."
+              }
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "code",
+                "message",
+                "claim_ids"
+              ],
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "enum": [
+                    "LETTER_EMAIL_REVIEW_REQUIRED"
+                  ]
+                },
+                "message": {
+                  "type": "string"
+                },
+                "claim_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          },
+          "access_delivery": {
+            "$ref": "#/components/schemas/InternalCustomerAccessDelivery"
+          }
+        }
+      },
       "MailingAddressCheckResult": {
         "type": "object",
         "additionalProperties": false,
