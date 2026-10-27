@@ -2363,6 +2363,227 @@
         "security": []
       }
     },
+    "/api/auth/review-access": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Open the configured staging review account",
+        "operationId": "reviewAccess",
+        "description": "Browser entry to one configured demo customer account. Uses the existing APP_ENV setting: only APP_ENV=staging and REVIEW_ACCESS_ENABLED=true enable the entry, independently of NODE_ENV. REVIEW_ACCESS_USER_ID must identify an existing confirmed Supabase Auth customer with a matching customer profile; REVIEW_ACCESS_SECRET must contain 32–2048 characters. NOTIFICATIONS_SITE_URL must identify the HTTPS staging frontend at https://staging.casedashboard.com. Production and missing/invalid configuration return 404. Authenticate using the dedicated token query credential, not a Supabase key or Bearer JWT. No other query fields, including email, user_id, or redirect_to, are accepted. Each valid request generates a fresh Supabase magic link without sending email, validates its returned identity and verification/redirect URL, and sends an automatic 302 redirect through Supabase to the existing staging dashboard flow. The outer URL is reusable while enabled; generated magic links keep normal expiration and single-use behavior. All responses disable caching and referrer forwarding. Failures are small HTML pages, not JSON. Disabling or rotating access affects future entries, not already established sessions or previously generated magic links. No frontend or database change is required. Normal signup/login behavior is unchanged. In Insomnia, disable automatic redirects to inspect the initial 302; use a private browser window for the complete redirect flow. Never publish the complete access URL or generated Location token.",
+        "security": [
+          {
+            "reviewAccessToken": []
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to a newly generated Supabase verification link for the configured demo customer. The browser then follows the fixed staging redirect. No email is sent.",
+            "headers": {
+              "Location": {
+                "description": "Fresh, short-lived single-use Supabase verification URL. This is a credential; do not log or share it publicly.",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "example": "https://PROJECT.supabase.co/auth/v1/verify?token=REDACTED&type=magiclink&redirect_to=https%3A%2F%2Fstaging.casedashboard.com%2F"
+              },
+              "Cache-Control": {
+                "description": "Prevents storage of this credential-bearing response.",
+                "schema": {
+                  "type": "string",
+                  "example": "no-store"
+                }
+              },
+              "Pragma": {
+                "description": "Disables caching by legacy clients/proxies.",
+                "schema": {
+                  "type": "string",
+                  "example": "no-cache"
+                }
+              },
+              "Referrer-Policy": {
+                "description": "Prevents sending the credential-bearing URL as a referrer.",
+                "schema": {
+                  "type": "string",
+                  "example": "no-referrer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Additional query fields were supplied. The entry accepts only token and never accepts a user/email or caller-selected redirect.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Prevents storage of this credential-bearing response.",
+                "schema": {
+                  "type": "string",
+                  "example": "no-store"
+                }
+              },
+              "Pragma": {
+                "description": "Disables caching by legacy clients/proxies.",
+                "schema": {
+                  "type": "string",
+                  "example": "no-cache"
+                }
+              },
+              "Referrer-Policy": {
+                "description": "Prevents sending the credential-bearing URL as a referrer.",
+                "schema": {
+                  "type": "string",
+                  "example": "no-referrer"
+                }
+              }
+            },
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>Review access</title></head><body><main><h1>Review access unavailable</h1><p>Review access is unavailable.</p></main></body></html>"
+              }
+            }
+          },
+          "401": {
+            "description": "The query token is absent, incorrect, repeated, or not a string. No session link is generated.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Prevents storage of this credential-bearing response.",
+                "schema": {
+                  "type": "string",
+                  "example": "no-store"
+                }
+              },
+              "Pragma": {
+                "description": "Disables caching by legacy clients/proxies.",
+                "schema": {
+                  "type": "string",
+                  "example": "no-cache"
+                }
+              },
+              "Referrer-Policy": {
+                "description": "Prevents sending the credential-bearing URL as a referrer.",
+                "schema": {
+                  "type": "string",
+                  "example": "no-referrer"
+                }
+              }
+            },
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>Review access</title></head><body><main><h1>Review access unavailable</h1><p>Review access is unavailable.</p></main></body></html>"
+              }
+            }
+          },
+          "403": {
+            "description": "The fixed account/profile is missing or ineligible: unconfirmed, noncustomer/inactive, banned/deleted, or identity/email mismatch. No session link is generated.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Prevents storage of this credential-bearing response.",
+                "schema": {
+                  "type": "string",
+                  "example": "no-store"
+                }
+              },
+              "Pragma": {
+                "description": "Disables caching by legacy clients/proxies.",
+                "schema": {
+                  "type": "string",
+                  "example": "no-cache"
+                }
+              },
+              "Referrer-Policy": {
+                "description": "Prevents sending the credential-bearing URL as a referrer.",
+                "schema": {
+                  "type": "string",
+                  "example": "no-referrer"
+                }
+              }
+            },
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>Review access</title></head><body><main><h1>Review access unavailable</h1><p>Review access is unavailable.</p></main></body></html>"
+              }
+            }
+          },
+          "404": {
+            "description": "Review Access is disabled, APP_ENV is not staging, or required configuration is missing/invalid. This includes production even if the flag is enabled.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Prevents storage of this credential-bearing response.",
+                "schema": {
+                  "type": "string",
+                  "example": "no-store"
+                }
+              },
+              "Pragma": {
+                "description": "Disables caching by legacy clients/proxies.",
+                "schema": {
+                  "type": "string",
+                  "example": "no-cache"
+                }
+              },
+              "Referrer-Policy": {
+                "description": "Prevents sending the credential-bearing URL as a referrer.",
+                "schema": {
+                  "type": "string",
+                  "example": "no-referrer"
+                }
+              }
+            },
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>Review access</title></head><body><main><h1>Review access unavailable</h1><p>Review access is unavailable.</p></main></body></html>"
+              }
+            }
+          },
+          "503": {
+            "description": "Auth/database lookup or link generation failed, or the generated identity/verification/redirect URL did not pass validation. Provider details and credentials are not exposed.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Prevents storage of this credential-bearing response.",
+                "schema": {
+                  "type": "string",
+                  "example": "no-store"
+                }
+              },
+              "Pragma": {
+                "description": "Disables caching by legacy clients/proxies.",
+                "schema": {
+                  "type": "string",
+                  "example": "no-cache"
+                }
+              },
+              "Referrer-Policy": {
+                "description": "Prevents sending the credential-bearing URL as a referrer.",
+                "schema": {
+                  "type": "string",
+                  "example": "no-referrer"
+                }
+              }
+            },
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>Review access</title></head><body><main><h1>Review access unavailable</h1><p>Review access is unavailable.</p></main></body></html>"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/auth/magic-link/signup": {
       "post": {
         "description": "Creates customer magic links only. An optional service is stored only as Supabase Auth metadata for signup-confirmation email branding; it is not used for authorization or claim-service decisions. Emails configured as active claim-created notification recipients, and emails belonging to internal or inactive profiles, return 409 CUSTOMER_EMAIL_RESERVED_FOR_INTERNAL_USE.",
@@ -3061,7 +3282,7 @@
                           "metadata": {
                             "mailing_provider": "postgrid",
                             "destination_country": "CA",
-                        "page_size": "us_letter",
+                            "page_size": "us_letter",
                             "signed_document_id": "9eae5b32-f064-492e-acb4-79f9f2099091"
                           }
                         },
@@ -4274,11 +4495,11 @@
           "201": {
             "description": "successful"
           },
-          "401": {
-            "description": "authorization failed"
-          },
           "400": {
             "description": "VALIDATION_ERROR for malformed type, description, or claim ID."
+          },
+          "401": {
+            "description": "authorization failed"
           },
           "403": {
             "description": "Customer role and claim ownership required."
@@ -4286,11 +4507,11 @@
           "409": {
             "description": "REVISION_NOT_ALLOWED_FOR_STATUS, REVISION_NOT_ALLOWED_AFTER_MAILING, or LETTER_ACTION_IN_PROGRESS."
           },
-          "502": {
-            "description": "SIGNATURE_CANCEL_FAILED: the pending Firma cancellation could not be confirmed; editing is not unlocked."
-          },
           "500": {
             "description": "unknown server error"
+          },
+          "502": {
+            "description": "SIGNATURE_CANCEL_FAILED: the pending Firma cancellation could not be confirmed; editing is not unlocked."
           }
         },
         "requestBody": {
@@ -8697,6 +8918,9 @@
               }
             }
           },
+          "500": {
+            "description": "DB_LETTER_ACTION_FAILED: database/lifecycle operation failed; do not assume revision opened. After a partial cancellation or uncertain outcome, the same requester can resume the revision through the same endpoint."
+          },
           "502": {
             "description": "SIGNATURE_CANCEL_FAILED: pending Firma cancellation could not be confirmed. Editing remains locked; do not assume the old signing link is revoked. After partial or uncertain cancellation, the same authenticated requester can explicitly retry the same revision request to resume it; a different requester remains blocked. No extra body field or manual lock clearing is needed.",
             "content": {
@@ -8709,9 +8933,6 @@
                 }
               }
             }
-          },
-          "500": {
-            "description": "DB_LETTER_ACTION_FAILED: database/lifecycle operation failed; do not assume revision opened. After a partial cancellation or uncertain outcome, the same requester can resume the revision through the same endpoint."
           }
         },
         "security": [
@@ -10328,6 +10549,9 @@
           "401": {
             "description": "webhook signature failed"
           },
+          "500": {
+            "description": "unknown server error"
+          },
           "503": {
             "description": "LETTER_ACTION_IN_PROGRESS is expected temporary contention while a revision cancels the signing request. Handled directly with an informational log, without invoking the generic API error logger. Retry-After requests another delivery in 5 seconds; the provider's actual retry schedule is not guaranteed. Real processing/database errors still follow normal error handling. Superseded historical document events are acknowledged with 200 instead.",
             "headers": {
@@ -10349,9 +10573,6 @@
                 }
               }
             }
-          },
-          "500": {
-            "description": "unknown server error"
           }
         },
         "security": [],
@@ -10884,6 +11105,12 @@
       "bearerAuth": {
         "type": "http",
         "scheme": "bearer"
+      },
+      "reviewAccessToken": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "token",
+        "description": "Dedicated REVIEW_ACCESS_SECRET for the configured staging demo account. Not a Supabase key or customer JWT. Required only by GET /api/auth/review-access; keep the complete URL private."
       }
     },
     "schemas": {
