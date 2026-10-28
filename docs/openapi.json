@@ -3364,7 +3364,7 @@
     },
     "/api/claims/{id}/dropbox/files": {
       "get": {
-        "description": "Returns Dropbox-linked claim documents and evidence files for the authenticated customer claim.",
+        "description": "Returns Dropbox-linked claim documents and evidence files for the authenticated customer claim. On 409 DROPBOX_RECONNECT_REQUIRED, retain the selected file and show Reconnect Dropbox. Reauthorize with POST /api/claims/{id}/evidence/connect-dropbox, then verify connection status before retrying the intended action. Preserve the upload page/file during OAuth (for example in a separate authorization window); a full-page reload requires file reselection. An evidence item without saved files is not a completed upload. Failed file bodies are not queued for automatic replay.",
         "summary": "GET /api/claims/{id}/dropbox/files",
         "tags": [
           "Claims"
@@ -3391,7 +3391,7 @@
             "description": "not found"
           },
           "409": {
-            "description": "conflict"
+            "$ref": "#/components/responses/DropboxConnectionConflict"
           },
           "422": {
             "description": "validation failed"
@@ -3409,7 +3409,7 @@
     },
     "/api/claims/{id}/documents/letter/copy-to-dropbox": {
       "post": {
-        "description": "Copies the stored claim letter PDF from Supabase Storage to the customer Dropbox account. Returns existing Dropbox metadata when already copied; use force=true to create a new copy.",
+        "description": "Copies the stored claim letter PDF from Supabase Storage to the customer Dropbox account. Returns existing Dropbox metadata when already copied; use force=true to create a new copy. On 409 DROPBOX_RECONNECT_REQUIRED, retain the selected file and show Reconnect Dropbox. Reauthorize with POST /api/claims/{id}/evidence/connect-dropbox, then verify connection status before retrying the intended action. Preserve the upload page/file during OAuth (for example in a separate authorization window); a full-page reload requires file reselection. An evidence item without saved files is not a completed upload. Failed file bodies are not queued for automatic replay.",
         "summary": "POST /api/claims/{id}/documents/letter/copy-to-dropbox",
         "tags": [
           "Claims"
@@ -3448,7 +3448,7 @@
             "description": "not found"
           },
           "409": {
-            "description": "conflict"
+            "$ref": "#/components/responses/DropboxConnectionConflict"
           },
           "422": {
             "description": "validation failed"
@@ -3466,7 +3466,7 @@
     },
     "/api/claims/evidence/dropbox/callback": {
       "get": {
-        "description": "Dropbox OAuth callback configured in the Dropbox app. Usually reached by Dropbox redirect, not called manually.",
+        "description": "Dropbox OAuth callback configured in the Dropbox app. Usually reached by Dropbox redirect, not called manually. If Dropbox rejects the newly issued access token, the API does not replace the stored connection. It redirects to DROPBOX_OAUTH_ERROR_URL with dropbox=error, claim_id, code=DROPBOX_RECONNECT_REQUIRED, and message. The frontend must keep the upload pending. Without a configured error URL, the callback returns HTTP 400 JSON with these fields.",
         "summary": "GET /api/claims/evidence/dropbox/callback (Dropbox OAuth callback)",
         "tags": [
           "Claims/Evidence"
@@ -3493,6 +3493,40 @@
           "200": {
             "description": "successful"
           },
+          "302": {
+            "description": "Redirect to configured frontend success/error URL. Rejected authorization example: https://staging.casedashboard.com/dropbox/error?dropbox=error&claim_id=<claim_id>&code=DROPBOX_RECONNECT_REQUIRED&message=<message>. Handle the error without discarding the pending upload."
+          },
+          "400": {
+            "description": "OAuth callback error when no frontend error redirect is configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "dropbox": {
+                      "type": "string"
+                    },
+                    "claim_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "dropbox": "error",
+                  "claim_id": "8fdb239d-6aea-4e5d-838f-d0fc6afcfb9d",
+                  "code": "DROPBOX_RECONNECT_REQUIRED",
+                  "message": "Your Dropbox connection is no longer valid. Reconnect your Dropbox account, then try this action again."
+                }
+              }
+            }
+          },
           "401": {
             "description": "authorization failed"
           },
@@ -3508,7 +3542,7 @@
     },
     "/api/claims/{id}/evidence/connect-dropbox": {
       "post": {
-        "description": "Starts Dropbox OAuth for the customer claim evidence flow and returns authorization_url.",
+        "description": "Starts Dropbox OAuth for the customer claim evidence flow and returns authorization_url. Also use this endpoint to reconnect an invalid Dropbox authorization; disconnecting first is not required. Keep the original upload page and selected file available while the customer authorizes Dropbox.",
         "summary": "POST /api/claims/{id}/evidence/connect-dropbox",
         "tags": [
           "Claims/Evidence"
@@ -3586,7 +3620,7 @@
     },
     "/api/claims/{id}/evidence/dropbox/status": {
       "get": {
-        "description": "Returns Dropbox connection status, including dropbox_email_verified.",
+        "description": "Returns Dropbox connection status, including dropbox_email_verified. On 409 DROPBOX_RECONNECT_REQUIRED, retain the selected file and show Reconnect Dropbox. Reauthorize with POST /api/claims/{id}/evidence/connect-dropbox, then verify connection status before retrying the intended action. Preserve the upload page/file during OAuth (for example in a separate authorization window); a full-page reload requires file reselection. An evidence item without saved files is not a completed upload. Failed file bodies are not queued for automatic replay.",
         "summary": "GET /api/claims/{id}/evidence/dropbox/status",
         "tags": [
           "Claims/Evidence"
@@ -3609,6 +3643,9 @@
           "401": {
             "description": "authorization failed"
           },
+          "409": {
+            "$ref": "#/components/responses/DropboxConnectionConflict"
+          },
           "422": {
             "description": "validation failed"
           },
@@ -3625,7 +3662,7 @@
     },
     "/api/claims/{id}/evidence/files/{file_id}": {
       "delete": {
-        "description": "Deletes one evidence file from Dropbox and removes its metadata.",
+        "description": "Deletes one evidence file from Dropbox and removes its metadata. On 409 DROPBOX_RECONNECT_REQUIRED, retain the selected file and show Reconnect Dropbox. Reauthorize with POST /api/claims/{id}/evidence/connect-dropbox, then verify connection status before retrying the intended action. Preserve the upload page/file during OAuth (for example in a separate authorization window); a full-page reload requires file reselection. An evidence item without saved files is not a completed upload. Failed file bodies are not queued for automatic replay.",
         "summary": "DELETE /api/claims/{id}/evidence/files/{file_id}",
         "tags": [
           "Claims/Evidence"
@@ -3656,6 +3693,9 @@
           },
           "401": {
             "description": "authorization failed"
+          },
+          "409": {
+            "$ref": "#/components/responses/DropboxConnectionConflict"
           },
           "422": {
             "description": "validation failed"
@@ -3824,7 +3864,7 @@
         ]
       },
       "delete": {
-        "description": "Deletes an evidence item and all related Dropbox files.",
+        "description": "Deletes an evidence item and all related Dropbox files. On 409 DROPBOX_RECONNECT_REQUIRED, retain the selected file and show Reconnect Dropbox. Reauthorize with POST /api/claims/{id}/evidence/connect-dropbox, then verify connection status before retrying the intended action. Preserve the upload page/file during OAuth (for example in a separate authorization window); a full-page reload requires file reselection. An evidence item without saved files is not a completed upload. Failed file bodies are not queued for automatic replay.",
         "summary": "DELETE /api/claims/{id}/evidence/items/{item_id}",
         "tags": [
           "Claims/Evidence"
@@ -3856,6 +3896,9 @@
           "401": {
             "description": "authorization failed"
           },
+          "409": {
+            "$ref": "#/components/responses/DropboxConnectionConflict"
+          },
           "422": {
             "description": "validation failed"
           },
@@ -3872,7 +3915,7 @@
     },
     "/api/claims/{id}/evidence/items/{item_id}/files": {
       "post": {
-        "description": "Uploads one evidence file to the customer Dropbox account. Multipart field: file. Current limit: 100 MB.",
+        "description": "Uploads one evidence file to the customer Dropbox account. Multipart field: file. Current limit: 100 MB. On 409 DROPBOX_RECONNECT_REQUIRED, retain the selected file and show Reconnect Dropbox. Reauthorize with POST /api/claims/{id}/evidence/connect-dropbox, then verify connection status before retrying the intended action. Preserve the upload page/file during OAuth (for example in a separate authorization window); a full-page reload requires file reselection. An evidence item without saved files is not a completed upload. Failed file bodies are not queued for automatic replay.",
         "summary": "POST /api/claims/{id}/evidence/items/{item_id}/files (multipart)",
         "tags": [
           "Claims/Evidence"
@@ -3903,6 +3946,9 @@
           },
           "401": {
             "description": "authorization failed"
+          },
+          "409": {
+            "$ref": "#/components/responses/DropboxConnectionConflict"
           },
           "422": {
             "description": "validation failed"
@@ -12142,6 +12188,49 @@
               "total": {
                 "type": "integer",
                 "minimum": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "DropboxConnectionConflict": {
+        "description": "Dropbox authorization was rejected (DROPBOX_RECONNECT_REQUIRED). Keep uploads pending, reconnect through the existing connect-dropbox endpoint, verify connection status, and resume the intended action. Do not sign out of Case Dashboard or loop retries. Other existing Dropbox connection conflicts, such as DROPBOX_NOT_CONNECTED or DROPBOX_EMAIL_NOT_VERIFIED, retain their own error codes.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "examples": {
+              "reconnectRequired": {
+                "summary": "Dropbox must be reauthorized",
+                "value": {
+                  "error": {
+                    "code": "DROPBOX_RECONNECT_REQUIRED",
+                    "message": "Your Dropbox connection is no longer valid. Reconnect your Dropbox account, then try this action again."
+                  }
+                }
               }
             }
           }
