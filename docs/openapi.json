@@ -10754,7 +10754,7 @@
     "/api/intake/flows/{id}/payment/shift4/confirm": {
       "post": {
         "summary": "POST /api/intake/flows/{id}/payment/shift4/confirm",
-        "description": "Completes an Activation Hero Shift4 Components payment. After the frontend has securely tokenized the card with Shift4.js and completed 3D Secure when required, it sends the one-time shift4_token here. The API charges the token server-side, verifies the resulting charge against the draft, service, amount, currency, and metadata, then creates local payment records. Card data and the token are never persisted. The frontend must generate attempt_id once for each new Pay click; the API forwards it as Shift4's idempotency key. Reuse an attempt_id only when resending the exact same confirmation request, including the same token, after an unknown network outcome. A new Pay click after a decline requires a new attempt_id and token. Older clients that omit attempt_id receive a server-generated value, but cannot receive browser-side duplicate-request protection. Server-side charge failures reached by this endpoint are stored automatically; the frontend must not report the same confirmation error separately. A recognized card decline returns HTTP 402 with customer-safe guidance based on explicit provider codes: bank approval/security review, card-detail correction, insufficient funds, or a different card for no-retry declines. Unknown declines retain generic bank/card-issuer guidance. The API never retries automatically; display error.message and keep raw provider details internal.",
+        "description": "Completes an Activation Hero Shift4 Components payment. After the frontend has securely tokenized the card with Shift4.js and completed 3D Secure when required, it sends the one-time shift4_token here. The API charges the token server-side, verifies the resulting charge against the draft, service, amount, currency, and metadata, then creates local payment records. Card data and the token are never persisted. The frontend must generate attempt_id once for each new Pay click; the API forwards it as Shift4's idempotency key. Reuse an attempt_id only when resending the exact same confirmation request, including the same token, after an unknown network outcome. A new Pay click after a decline requires a new attempt_id and token. Older clients that omit attempt_id receive a server-generated value, but cannot receive browser-side duplicate-request protection. Server-side charge failures reached by this endpoint are stored automatically; the frontend must not report the same confirmation error separately. A recognized card decline returns HTTP 402 with customer-safe guidance based on explicit provider codes: bank approval/security review, specific correction of billing ZIP/postal code, CVC/CVV, expiration date, card number, or billing address, insufficient funds, or a different card for no-retry declines. Unknown declines retain generic bank/card-issuer guidance. The API never retries automatically; display error.message and keep raw provider details internal.",
         "tags": [
           "Intake"
         ],
@@ -10849,7 +10849,94 @@
             "description": "authorization failed"
           },
           "402": {
-            "description": "Shift4 declined or could not complete the card charge. Explicit provider codes return customer-safe guidance for bank approval, card-detail correction, insufficient funds, or no-retry declines; unknown declines retain generic bank/card-issuer guidance. The API never retries automatically. Display error.message."
+            "description": "Shift4 declined or could not complete the card charge. Explicit card-detail codes produce field-specific customer guidance; broader card-detail codes retain the existing general message. Bank approval, insufficient-funds, no-retry, and unknown-decline handling is unchanged. The public error.code remains SHIFT4_COMPONENTS_CHARGE_FAILED; raw provider codes stay internal. Display error.message. Payment validation and automatic-retry behavior are unchanged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "SHIFT4_COMPONENTS_CHARGE_FAILED"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "Customer-safe guidance selected by the API. Display this message directly; provider decline codes are not exposed in this response."
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "incorrect_zip": {
+                    "summary": "Billing ZIP or postal code needs correction (also incorrect_postal_code)",
+                    "value": {
+                      "error": {
+                        "code": "SHIFT4_COMPONENTS_CHARGE_FAILED",
+                        "message": "Your billing ZIP or postal code could not be verified. Enter the ZIP or postal code from your card's billing address, then try again."
+                      }
+                    }
+                  },
+                  "incorrect_cvc": {
+                    "summary": "Security code needs correction (also incorrect_security_code)",
+                    "value": {
+                      "error": {
+                        "code": "SHIFT4_COMPONENTS_CHARGE_FAILED",
+                        "message": "Your card's security code (CVC/CVV) is incorrect. Check the code on your card and try again."
+                      }
+                    }
+                  },
+                  "invalid_expiry": {
+                    "summary": "Expiration date needs correction",
+                    "value": {
+                      "error": {
+                        "code": "SHIFT4_COMPONENTS_CHARGE_FAILED",
+                        "message": "Your card's expiration date is invalid. Check the month and year and try again."
+                      }
+                    }
+                  },
+                  "invalid_card_number": {
+                    "summary": "Card number needs correction",
+                    "value": {
+                      "error": {
+                        "code": "SHIFT4_COMPONENTS_CHARGE_FAILED",
+                        "message": "Your card number is invalid. Check the number on your card and try again."
+                      }
+                    }
+                  },
+                  "incorrect_address": {
+                    "summary": "Billing address needs correction",
+                    "value": {
+                      "error": {
+                        "code": "SHIFT4_COMPONENTS_CHARGE_FAILED",
+                        "message": "Your billing address could not be verified. Enter the billing address registered with your card issuer and try again."
+                      }
+                    }
+                  },
+                  "card_details_fallback": {
+                    "summary": "Broader card-detail error without a field-specific code",
+                    "value": {
+                      "error": {
+                        "code": "SHIFT4_COMPONENTS_CHARGE_FAILED",
+                        "message": "Your card details could not be verified. Check the card number, expiration date, CVC, and billing ZIP, then try again or use a different card."
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
           "409": {
             "description": "session, charge, draft, amount, currency, or service mismatch"
