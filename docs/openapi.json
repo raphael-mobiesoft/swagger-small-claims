@@ -10273,7 +10273,7 @@
     },
     "/api/internal/intake-flows/{id}": {
       "get": {
-        "description": "",
+        "description": "Returns the existing sanitized intake_flow with step_progress and first_incomplete_step. Also includes checkout (linked draft provider/status/total/discount/currency/mailing_preference/paid_at, or null) and pricing (current base price, Certified surcharge and currency, or null) for internal manual-payment form defaults. Unfinished list behavior is unchanged. Record an already-received payment through POST /api/internal/intake-flows/{id}/mark-paid; Open/declined drafts are superseded automatically; reconcile real in-progress/unknown provider outcomes first.",
         "summary": "GET /api/internal/intake-flows/{id}",
         "tags": [
           "Internal/Intake Flows"
@@ -10291,7 +10291,91 @@
         ],
         "responses": {
           "200": {
-            "description": "successful"
+            "description": "Intake and manual-payment form defaults.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "intake_flow": {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    "checkout": {
+                      "type": "object",
+                      "nullable": true,
+                      "properties": {
+                        "draft_id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "payment_provider": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "amount_total_cents": {
+                          "type": "integer"
+                        },
+                        "amount_discount_cents": {
+                          "type": "integer"
+                        },
+                        "currency": {
+                          "type": "string"
+                        },
+                        "mailing_preference": {
+                          "type": "string",
+                          "enum": [
+                            "first_class",
+                            "certified"
+                          ]
+                        },
+                        "paid_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "pricing": {
+                      "type": "object",
+                      "nullable": true,
+                      "properties": {
+                        "demand_letter_price_cents": {
+                          "type": "integer"
+                        },
+                        "certified_mail_upsell_cents": {
+                          "type": "integer"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "intake_flow": {
+                    "id": "30000000-0000-4000-8000-000000000001",
+                    "service": "small_claims",
+                    "status": "draft",
+                    "current_step": "review",
+                    "customer_email": "customer@example.com",
+                    "claim_data": {
+                      "mailing_preference": "first_class"
+                    },
+                    "first_incomplete_step": "payment"
+                  },
+                  "checkout": null,
+                  "pricing": {
+                    "demand_letter_price_cents": 6900,
+                    "certified_mail_upsell_cents": 2000,
+                    "currency": "usd"
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "authorization failed"
@@ -11155,6 +11239,173 @@
         },
         "security": [],
         "operationId": "handleShift4Webhook"
+      }
+    },
+    "/api/internal/intake-flows/{id}/mark-paid": {
+      "post": {
+        "tags": [
+          "Internal/Intake Flows"
+        ],
+        "summary": "Record an already-received intake payment and create its claim",
+        "description": "Internal roles: admin, cx_agent, paralegal. Only complete intakes at review/payment are eligible. Creates a manual checkout/payment using the actual amount/date/mailing choice, reuses the normal SCH/AH claim creation, cancels intake reminders, and runs existing claim-created notifications. Does not charge a card. Abandoned/open forms and definitively declined checkout drafts are automatically cancelled locally and preserved in history when the manual payment is reserved. Real processing/unknown outcomes, known transaction references and open legacy Stripe sessions still require reconciliation; all drafts are checked. Local cancellation does not void/refund a provider transaction or revoke an already-loaded Authorize.Net form. Same-payload retries return the same claim/payment; preserve the original paid_at/reference/note. A changed payload after reservation returns 409. Run migration 0068_internal_intake_manual_payments.sql before deployment. Frontend must prefill amount/mailing from intake/checkout/pricing and current date/time, allow edits, and after the first confirmed success reuse POST /api/auth/magic-link/signup for customer_email (on ACCOUNT_ALREADY_EXISTS, POST /api/auth/magic-link/login). The email step is separate from payment and must preserve the internal session; failure must retry email only. See README for full behavior.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The unpaid intake flow ID."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InternalIntakeMarkPaidRequest"
+              },
+              "examples": {
+                "smallClaimsFirstClass": {
+                  "summary": "Small Claims Hero: $69 received, First Class",
+                  "description": "Illustrative amount; replace with configured pricing and actual received payment.",
+                  "value": {
+                    "amount_paid_cents": 6900,
+                    "paid_at": "2026-11-01T14:30:00-03:00",
+                    "mailing_preference": "first_class",
+                    "payment_reference": "OFFLINE-SCH-001",
+                    "note": "Payment received separately and checked by our team."
+                  }
+                },
+                "activationHeroCertified": {
+                  "summary": "Activation Hero: $89 received, Certified",
+                  "description": "Illustrative amount; the claim amount remains unchanged.",
+                  "value": {
+                    "amount_paid_cents": 8900,
+                    "paid_at": "2026-11-01T17:30:00Z",
+                    "mailing_preference": "certified",
+                    "payment_reference": "OFFLINE-AH-001"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Identical request already completed; same claim/payment, no duplicate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalIntakeMarkPaidResponse"
+                },
+                "example": {
+                  "cancelled_checkout_draft_ids": [],
+                  "provider": "manual",
+                  "status": "succeeded",
+                  "already_completed": true,
+                  "draft_id": "10000000-0000-4000-8000-000000000001",
+                  "claim_id": "20000000-0000-4000-8000-000000000001",
+                  "payment_id": "10000000-0000-4000-8000-000000000001",
+                  "amount_paid_cents": 6900,
+                  "paid_at": "2026-11-01T17:30:00Z",
+                  "currency": "usd",
+                  "mailing_preference": "first_class",
+                  "service": "small_claims",
+                  "customer_email": "customer@example.com",
+                  "intake_flow": {
+                    "id": "30000000-0000-4000-8000-000000000001",
+                    "service": "small_claims",
+                    "status": "paid",
+                    "current_step": "payment",
+                    "claim_id": "20000000-0000-4000-8000-000000000001",
+                    "paid_at": "2026-11-01T17:30:00Z"
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Payment recorded and claim created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalIntakeMarkPaidResponse"
+                },
+                "example": {
+                  "cancelled_checkout_draft_ids": [],
+                  "provider": "manual",
+                  "status": "succeeded",
+                  "already_completed": false,
+                  "draft_id": "10000000-0000-4000-8000-000000000001",
+                  "claim_id": "20000000-0000-4000-8000-000000000001",
+                  "payment_id": "10000000-0000-4000-8000-000000000001",
+                  "amount_paid_cents": 6900,
+                  "paid_at": "2026-11-01T17:30:00Z",
+                  "currency": "usd",
+                  "mailing_preference": "first_class",
+                  "service": "small_claims",
+                  "customer_email": "customer@example.com",
+                  "intake_flow": {
+                    "id": "30000000-0000-4000-8000-000000000001",
+                    "service": "small_claims",
+                    "status": "paid",
+                    "current_step": "payment",
+                    "claim_id": "20000000-0000-4000-8000-000000000001",
+                    "paid_at": "2026-11-01T17:30:00Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: missing/invalid amount, payment date/time with timezone, mailing choice or unknown fields."
+          },
+          "401": {
+            "description": "Missing or invalid Bearer token."
+          },
+          "403": {
+            "description": "Internal role required."
+          },
+          "404": {
+            "description": "INTAKE_FLOW_NOT_FOUND."
+          },
+          "409": {
+            "description": "INTAKE_FLOW_NOT_PAYABLE, INTAKE_FLOW_ALREADY_PAID, INTAKE_FLOW_CHANGED, CUSTOMER_IDENTITY_MISMATCH, INTAKE_PAYMENT_RECONCILIATION_REQUIRED or INTAKE_MANUAL_PAYMENT_CONFLICT. Refresh or reconcile actual in-progress/unknown payments. A merely open/declined draft is cancelled automatically.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "pendingExternalCheckout": {
+                    "value": {
+                      "error": {
+                        "code": "INTAKE_PAYMENT_RECONCILIATION_REQUIRED",
+                        "message": "A previous payment is processing, has an unknown result, or needs provider reconciliation. Check it before recording a manual payment."
+                      }
+                    }
+                  },
+                  "differentRetry": {
+                    "value": {
+                      "error": {
+                        "code": "INTAKE_MANUAL_PAYMENT_CONFLICT",
+                        "message": "A manual payment is already registered with different details. Refresh the intake."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Infrastructure/completion error. Retry the same request to resume a reserved manual payment; do not charge again."
+          }
+        }
       }
     }
   },
@@ -12277,6 +12528,122 @@
                 "minimum": 0
               }
             }
+          }
+        }
+      },
+      "InternalIntakeMarkPaidRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "amount_paid_cents",
+          "paid_at",
+          "mailing_preference"
+        ],
+        "properties": {
+          "amount_paid_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647,
+            "description": "Actual service payment received, in integer cents. This is not the amount claimed from the defendant. Editable internal override of the suggested price."
+          },
+          "paid_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Actual payment date/time, including Z or an explicit UTC offset; must not be in the future. Preserve this exact value when retrying."
+          },
+          "mailing_preference": {
+            "type": "string",
+            "enum": [
+              "first_class",
+              "certified"
+            ],
+            "description": "Mailing service to save in the intake, checkout and resulting claim."
+          },
+          "payment_reference": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 255,
+            "description": "Optional external payment reference, included in audit metadata and the receipt."
+          },
+          "note": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2000,
+            "description": "Optional internal context about the payment."
+          }
+        }
+      },
+      "InternalIntakeMarkPaidResponse": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "manual"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "succeeded"
+            ]
+          },
+          "already_completed": {
+            "type": "boolean"
+          },
+          "draft_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "claim_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "payment_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amount_paid_cents": {
+            "type": "integer"
+          },
+          "paid_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "currency": {
+            "type": "string",
+            "example": "usd"
+          },
+          "mailing_preference": {
+            "type": "string",
+            "enum": [
+              "first_class",
+              "certified"
+            ]
+          },
+          "service": {
+            "type": "string",
+            "enum": [
+              "small_claims",
+              "activation_hero"
+            ]
+          },
+          "customer_email": {
+            "type": "string",
+            "format": "email"
+          },
+          "intake_flow": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Updated sanitized flow; status is paid, current_step is payment, and claim_id/paid_at link the resulting claim and payment."
+          },
+          "cancelled_checkout_draft_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Older open/declined drafts cancelled locally by this manual registration. Original provider metadata/history is preserved."
           }
         }
       }
