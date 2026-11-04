@@ -9141,7 +9141,7 @@
     },
     "/api/internal/claims/{id}/send-signature": {
       "post": {
-        "description": "Sends the current internal letter snapshot to Firma for signature and tracks the provider document. The snapshot must contain exactly one {{signature_anchor}} as the only content of its own paragraph. The API resolves US Letter/A4, renders the PDF, locates the anchor's page/x/y coordinates, reserves 216 x 52 pt in the letter, and places Firma's signature field at the anchor's exact horizontal position: 140 x 30 pt for US Letter or 150 x 32 pt for A4. Firma scales the completed signature to the field and does not expose a separate signature font-size setting. Sends the Firma email invite by default and can also return an embedded signing URL with embedded_sign=true.",
+        "description": "Sends the current internal letter snapshot to Firma for signature and tracks the provider document. The snapshot must contain exactly one {{signature_anchor}} as the only content of its own paragraph. The API resolves US Letter/A4, renders the PDF, locates the anchor's page/x/y coordinates, reserves 216 x 52 pt in the letter, and places Firma's signature field at the anchor's exact horizontal position: 140 x 30 pt for US Letter or 150 x 32 pt for A4. Firma scales the completed signature to the field and does not expose a separate signature font-size setting. Sends the Firma email invite by default and can also return an embedded signing URL with embedded_sign=true. Before preflight/rendering/Firma creation, a mandatory AI plus backend comparison checks the saved letter header against the customer/defendant names and mailing addresses in the current claim snapshot. Only the text before the first RE:/Subject: or Dear salutation is analyzed; missing/oversized headers block. Cosmetic formatting/known abbreviations may match; close, different or unverified information blocks. Corrections use the existing Claim Details and letter editors; during revision, updating Claim Details does not rewrite the letter. Detailed reference inputs, extraction and conclusions are stored in private letter_information_checks, never in customer activity logs. No new frontend fields, confirmation bypass or endpoint are needed. Apply migration 0069_letter_information_checks.sql before deploying. A changed snapshot or concurrent send is rejected before Firma; definite provider rejection releases the reservation, but an uncertain Firma outcome requires provider verification before retrying.",
         "summary": "POST /api/internal/claims/{id}/send-signature",
         "tags": [
           "Internal/Claims"
@@ -9224,13 +9224,146 @@
             "description": "authorization failed"
           },
           "409": {
-            "description": "SIGNATURE_SEND_NOT_ALLOWED_FOR_STATUS, SIGNATURE_LETTER_CONTENT_REQUIRED, SIGNATURE_PENDING_DOCUMENT_EXISTS, LETTER_SIGNATURE_ANCHOR_REQUIRED, LETTER_SIGNATURE_ANCHOR_DUPLICATED, or LETTER_SIGNATURE_ANCHOR_BLOCK_REQUIRED"
+            "description": "SIGNATURE_SEND_NOT_ALLOWED_FOR_STATUS, SIGNATURE_LETTER_CONTENT_REQUIRED, SIGNATURE_PENDING_DOCUMENT_EXISTS, LETTER_SIGNATURE_ANCHOR_REQUIRED, LETTER_SIGNATURE_ANCHOR_DUPLICATED, or LETTER_SIGNATURE_ANCHOR_BLOCK_REQUIRED, LETTER_INFORMATION_CHANGED or LETTER_ACTION_IN_PROGRESS"
           },
           "422": {
-            "description": "validation failed"
+            "description": "Letter information requires correction/review. No Firma request is created. The normal error.message identifies the party/fields. Existing mailing-country validation can also return 422.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "mismatch": {
+                    "summary": "Different suite/address or identity",
+                    "value": {
+                      "error": {
+                        "code": "LETTER_INFORMATION_MISMATCH",
+                        "message": "Letter information differs from Claim Details (customer address_line2). Review and correct Claim Details or the letter before sending for signature."
+                      }
+                    }
+                  },
+                  "close": {
+                    "summary": "Meaningful unresolved difference, such as a name typo",
+                    "value": {
+                      "error": {
+                        "code": "LETTER_INFORMATION_CLOSE_MATCH",
+                        "message": "Letter information could not be confirmed against Claim Details (customer name). customer: Name typo Jordon vs Jordan. Review and correct Claim Details or the letter before sending for signature."
+                      }
+                    }
+                  },
+                  "header": {
+                    "summary": "Missing boundary; AI was not called",
+                    "value": {
+                      "error": {
+                        "code": "LETTER_INFORMATION_HEADER_NOT_IDENTIFIED",
+                        "message": "The letter header could not be identified safely. Keep both names and complete addresses before RE:, Subject:, or Dear, then try again."
+                      }
+                    }
+                  },
+                  "inconclusive": {
+                    "summary": "Header/party extraction could not be verified",
+                    "value": {
+                      "error": {
+                        "code": "LETTER_INFORMATION_CHECK_INCONCLUSIVE",
+                        "message": "The letter header could not be verified. Please review its names and addresses."
+                      }
+                    }
+                  },
+                  "reference": {
+                    "summary": "Claim Details is incomplete",
+                    "value": {
+                      "error": {
+                        "code": "LETTER_INFORMATION_REFERENCE_INCOMPLETE",
+                        "message": "Claim Details needs complete customer and defendant names and mailing addresses before signature."
+                      }
+                    }
+                  },
+                  "override": {
+                    "summary": "Unchecked document override rejected before AI",
+                    "value": {
+                      "error": {
+                        "code": "SIGNATURE_DOCUMENT_OVERRIDE_NOT_ALLOWED",
+                        "message": "The signature document must be generated from the checked letter. Document overrides are not allowed."
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
           "500": {
             "description": "LETTER_PDF_RENDER_FAILED, LETTER_SIGNATURE_ANCHOR_NOT_FOUND, or unknown server error"
+          },
+          "503": {
+            "description": "The information check or its private audit is temporarily unavailable. Signature creation is blocked; retry after the issue is resolved. This does not establish an incorrect address.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "ai_unavailable": {
+                    "summary": "Claude timeout, refusal, or invalid/incomplete extraction",
+                    "value": {
+                      "error": {
+                        "code": "LETTER_INFORMATION_CHECK_UNAVAILABLE",
+                        "message": "Letter information could not be checked. Please try again."
+                      }
+                    }
+                  },
+                  "audit_unavailable": {
+                    "summary": "Migration/database unavailable",
+                    "value": {
+                      "error": {
+                        "code": "LETTER_INFORMATION_AUDIT_UNAVAILABLE",
+                        "message": "Failed to save the private letter information check. Please try again."
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -9242,7 +9375,7 @@
                 "properties": {
                   "embedded_sign": {
                     "type": "boolean",
-                    "default": true
+                    "default": false
                   },
                   "send_signing_email": {
                     "type": "boolean",
@@ -9270,7 +9403,7 @@
                   "firma_payload": {
                     "type": "object",
                     "nullable": true,
-                    "description": "Optional Firma payload override for manual testing only."
+                    "description": "Optional invitation/settings override only. Allowed keys: name, description, expiration_hours, recipients, fields, settings, metadata. The PDF is always generated from the checked saved letter. document/document_url/template or other keys return 422 SIGNATURE_DOCUMENT_OVERRIDE_NOT_ALLOWED."
                   }
                 },
                 "example": {
@@ -9279,6 +9412,19 @@
                   "expiration_hours": 168,
                   "title": "Demand Letter",
                   "message": "Please review and sign your demand letter."
+                }
+              },
+              "examples": {
+                "normal": {
+                  "summary": "Normal invitation; mandatory check runs automatically",
+                  "value": {}
+                },
+                "embedded_test": {
+                  "summary": "Staging embedded test without a signing email",
+                  "value": {
+                    "embedded_sign": true,
+                    "send_signing_email": false
+                  }
                 }
               }
             }
