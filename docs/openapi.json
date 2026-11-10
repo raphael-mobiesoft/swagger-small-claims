@@ -3061,7 +3061,7 @@
         ]
       },
       "post": {
-        "description": "",
+        "description": " If the saved group has no regional platform, answers are saved, status becomes pending_cx_selection, questionnaire reminders stop, and version/selected_claim_type/ai_resolution are null. No AI or generation call occurs yet. CX then uses PATCH /api/internal/claims/{id}/details with defendant.platform_id to generate the first letter from saved answers/current details. If CX matched first, questionnaire submission generates normally. Pending status blocks signature and mailing.",
         "summary": "POST /api/claims/{id}/activation-hero/questionnaire",
         "tags": [
           "Claims"
@@ -3079,7 +3079,30 @@
         ],
         "responses": {
           "200": {
-            "description": "successful"
+            "description": "successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "examples": {
+                  "waiting_for_cx": {
+                    "summary": "Questionnaire completed; waiting for regional selection",
+                    "value": {
+                      "claim": {
+                        "status": "pending_cx_selection",
+                        "ah_platform_id": null,
+                        "letter_html_snapshot": ""
+                      },
+                      "selected_claim_type": null,
+                      "ai_resolution": null,
+                      "version": null,
+                      "platform_selection_required": true
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "authorization failed"
@@ -3089,6 +3112,9 @@
           },
           "500": {
             "description": "unknown server error"
+          },
+          "409": {
+            "description": "AH_CLAIM_CHANGED for concurrent changes; answers preserved, refresh and retry. Or questionnaire already completed for this status."
           }
         },
         "requestBody": {
@@ -5054,7 +5080,7 @@
     },
     "/api/intake/activation-hero/platforms": {
       "get": {
-        "description": "",
+        "description": "Active Activation Hero catalogue. With grouped=true return one common-name group option plus each ungrouped platform, in the existing platforms envelope. Groups do not expose a selected regional member. Matching occurs when saving defendant-information, using the saved customer address country. No country query filter. Without grouped=true the legacy flat list remains available; grouped pages count complete options.",
         "summary": "GET /api/intake/activation-hero/platforms",
         "tags": [
           "Intake"
@@ -5080,11 +5106,71 @@
               "maximum": 200,
               "default": 100
             }
+          },
+          {
+            "name": "grouped",
+            "in": "query",
+            "required": false,
+            "description": "Common-name options; default false.",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Grouped option offset; flat mode retains existing behavior.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "successful"
+            "description": "successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "examples": {
+                  "grouped": {
+                    "summary": "grouped=true: common names, no regional duplicates",
+                    "value": {
+                      "platforms": [
+                        {
+                          "kind": "group",
+                          "group_key": "uber",
+                          "name": "Uber"
+                        },
+                        {
+                          "kind": "platform",
+                          "platform_id": "00000000-0000-4000-8000-000000000001",
+                          "id": "00000000-0000-4000-8000-000000000001",
+                          "name": "Standalone company"
+                        }
+                      ]
+                    }
+                  },
+                  "legacy": {
+                    "summary": "Without grouped: existing flat response",
+                    "value": {
+                      "platforms": [
+                        {
+                          "id": "00000000-0000-4000-8000-000000000001",
+                          "name": "Standalone company",
+                          "is_active": true
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "authorization failed"
@@ -5101,7 +5187,7 @@
     },
     "/api/intake/assist": {
       "post": {
-        "description": "Address assist for customer + defendant. Supports Small Claims individual/business defendants and Activation Hero platform lookup by platform_id. This endpoint shares a dedicated 60 requests per IP per 15 minutes limit with GET /api/intake/counties/lookup-by-zip, in addition to the global API limit.",
+        "description": "Address assist for customer + defendant. Supports Small Claims individual/business defendants and Activation Hero platform lookup by platform_id. This endpoint shares a dedicated 60 requests per IP per 15 minutes limit with GET /api/intake/counties/lookup-by-zip, in addition to the global API limit. For Activation Hero use exactly one of group_key/platform_id. A group matches by customer_address.country. Without a match, defendant address and its county remain unavailable; lookup_context.defendant_address_source=pending_cx_selection and defendant_address_validation.reason=AH_PLATFORM_SELECTION_REQUIRED. Customer suggestions still work; no recipient jurisdiction is invented.",
         "summary": "POST /api/intake/assist (existing_business|individual|ah_platform)",
         "tags": [
           "Intake"
@@ -5256,6 +5342,22 @@
                         "zip": "M5H 2G4",
                         "country": "CA"
                       }
+                    }
+                  }
+                },
+                "activation_hero_group": {
+                  "summary": "Group lookup using the customer country",
+                  "value": {
+                    "service": "activation_hero",
+                    "customer_address": {
+                      "address_line1": "1 Market St",
+                      "city": "San Francisco",
+                      "state": "CA",
+                      "zip": "94105",
+                      "country": "US"
+                    },
+                    "defendant": {
+                      "group_key": "demo-platform"
                     }
                   }
                 }
@@ -5899,7 +6001,7 @@
     },
     "/api/intake/flows/{id}/customer-information": {
       "patch": {
-        "description": "customer.address_validation is required. Use the validation token from POST /api/addresses/validate; set confirmed=true after accepting a needs_confirmation result. An explicit manual override is also allowed with { source: 'user_provided', confirmed: true }. confirmed=false returns 409 ADDRESS_MANUAL_CONFIRMATION_REQUIRED. The first save of Customer Information normally schedules unfinished-intake reminders. Later edits call scheduling again, but do not reschedule reminders if this intake was opted out through POST /api/intake/reminders/opt-out. Reminder emails are rendered at delivery time with the current active-case count across both services (claims excluding closed/settled; matched by customer user ID and/or normalized email without double-counting), service, selected Activation Hero platform when available, and intake creation date. Resume intake still opens the same flow at its saved step. A separate Case Dashboard text link uses NOTIFICATIONS_SITE_URL so the customer can view cases or discard the unfinished intake; Remove me only opts out of its reminders.",
+        "description": "customer.address_validation is required. Use the validation token from POST /api/addresses/validate; set confirmed=true after accepting a needs_confirmation result. An explicit manual override is also allowed with { source: 'user_provided', confirmed: true }. confirmed=false returns 409 ADDRESS_MANUAL_CONFIRMATION_REQUIRED. The first save of Customer Information normally schedules unfinished-intake reminders. Later edits call scheduling again, but do not reschedule reminders if this intake was opted out through POST /api/intake/reminders/opt-out. Reminder emails are rendered at delivery time with the current active-case count across both services (claims excluding closed/settled; matched by customer user ID and/or normalized email without double-counting), service, selected Activation Hero platform when available, and intake creation date. Resume intake still opens the same flow at its saved step. A separate Case Dashboard text link uses NOTIFICATIONS_SITE_URL so the customer can view cases or discard the unfinished intake; Remove me only opts out of its reminders. For Activation Hero, changing the customer country updates or clears the regional match for a saved group and resets claim_data.mailing_preference to null. Frontend must refresh the saved selection, close any previously opened checkout and require a new mailing choice before creating a new checkout. Existing checkouts retain their original snapshot. Legacy explicit platform_id remains explicitly selected.",
         "summary": "PATCH /api/intake/flows/{id}/customer-information",
         "tags": [
           "Intake"
@@ -5976,7 +6078,7 @@
     },
     "/api/intake/flows/{id}/defendant-information": {
       "patch": {
-        "description": "Small Claims individual and manual business defendants require defendant.address_validation. Use the token from POST /api/addresses/validate, or an explicit manual override { source: 'user_provided', confirmed: true }. confirmed=false returns 409 ADDRESS_MANUAL_CONFIRMATION_REQUIRED. Existing business defendants do not require address validation. Activation Hero platform defendants use the internal platform address and require platform_id plus at least one of platform_account_email or platform_account_phone, but no address_validation token.",
+        "description": "Small Claims individual and manual business defendants require defendant.address_validation. Use the token from POST /api/addresses/validate, or an explicit manual override { source: 'user_provided', confirmed: true }. confirmed=false returns 409 ADDRESS_MANUAL_CONFIRMATION_REQUIRED. Existing business defendants do not require address validation. Activation Hero platform defendants use the internal platform address and require platform_id plus at least one of platform_account_email or platform_account_phone, but no address_validation token. Activation Hero also accepts group_key instead of platform_id, exactly one selector, with at least one platform-account identifier. Group matching uses the saved customer address country, active catalogue members and a usable mailing address. No match is accepted with platform_id/address null and the original group name saved for CX selection after payment. Changing group/platform resets claim_data.mailing_preference=null; frontend must require a new choice and restart any open checkout. A response can include both group_key and resolved platform_id; resubmit the group_key only, not both.",
         "summary": "PATCH /api/intake/flows/:id/defendant-information (activation_hero|small_claims)",
         "tags": [
           "Intake"
@@ -6027,9 +6129,31 @@
                 "type": "object",
                 "example": {
                   "defendant": {
-                    "platform_id": "{{ _.ah_platform_id }}",
-                    "platform_account_email": "driver@example.com",
-                    "platform_account_phone": "+15550100100"
+                    "group_key": "demo-platform",
+                    "platform_account_email": "driver@example.com"
+                  }
+                },
+                "properties": {
+                  "defendant": {
+                    "type": "object",
+                    "properties": {
+                      "group_key": {
+                        "type": "string",
+                        "pattern": "^[a-z0-9][a-z0-9_-]{0,79}$"
+                      },
+                      "platform_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "platform_account_email": {
+                        "type": "string",
+                        "format": "email"
+                      },
+                      "platform_account_phone": {
+                        "type": "string"
+                      }
+                    },
+                    "description": "AH: exactly one of group_key/platform_id and at least one account identifier. Small Claims payloads remain unchanged."
                   }
                 }
               },
@@ -6119,6 +6243,15 @@
                       }
                     }
                   }
+                },
+                "activation_hero_group": {
+                  "summary": "Common company name; backend chooses regional entry or leaves it pending",
+                  "value": {
+                    "defendant": {
+                      "group_key": "demo-platform",
+                      "platform_account_email": "driver@example.com"
+                    }
+                  }
                 }
               }
             }
@@ -6188,7 +6321,7 @@
     },
     "/api/internal/activation-hero/platforms": {
       "get": {
-        "description": "",
+        "description": "Internal flat catalogue by default. grouped=true returns groups with their complete platforms arrays and standalone options. Apply group_key to list a group or its members. Pagination counts complete groups/options in grouped mode. A platform has zero or one group; at most one member per country, including inactive entries.",
         "summary": "GET /api/internal/activation-hero/platforms",
         "tags": [
           "Internal/Activation Hero Platforms"
@@ -6235,11 +6368,64 @@
               "minimum": 0,
               "default": 0
             }
+          },
+          {
+            "name": "grouped",
+            "in": "query",
+            "required": false,
+            "description": "Return groups and their members.",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "group_key",
+            "in": "query",
+            "required": false,
+            "description": "Stable group key, e.g. uber.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,79}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "successful"
+            "description": "successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "examples": {
+                  "grouped": {
+                    "summary": "Complete group members; address abbreviated in this example",
+                    "value": {
+                      "platforms": [
+                        {
+                          "kind": "group",
+                          "group_key": "uber",
+                          "name": "Uber",
+                          "platforms": [
+                            {
+                              "id": "00000000-0000-4000-8000-000000000001",
+                              "name": "Uber US",
+                              "group_key": "uber",
+                              "group_name": "Uber",
+                              "address": {
+                                "country": "US"
+                              },
+                              "is_active": true
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "authorization failed"
@@ -6258,7 +6444,7 @@
         ]
       },
       "post": {
-        "description": "",
+        "description": "Existing catalogue fields plus group_key/group_name. To create a group, assign its first member with both fields. Existing groups supply the current group name. group_key=null removes membership; another key moves the member. Explicit two-letter address.country is required in a group. Duplicate country/group (even inactive) returns 409 AH_PLATFORM_CONFLICT. Use the group rename endpoint for labels; no paid claims are rematched automatically.",
         "summary": "POST /api/internal/activation-hero/platforms",
         "tags": [
           "Internal/Activation Hero Platforms"
@@ -6272,10 +6458,13 @@
             "description": "authorization failed"
           },
           "422": {
-            "description": "validation failed"
+            "description": "AH_PLATFORM_GROUP_INVALID: missing group name/key/country."
           },
           "500": {
             "description": "unknown server error"
+          },
+          "409": {
+            "description": "AH_PLATFORM_CONFLICT: duplicate platform name or country in group."
           }
         },
         "requestBody": {
@@ -6296,6 +6485,19 @@
                     "country": "US"
                   },
                   "is_active": true
+                },
+                "properties": {
+                  "group_key": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^[a-z0-9][a-z0-9_-]{0,79}$"
+                  },
+                  "group_name": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 2,
+                    "maxLength": 200
+                  }
                 }
               },
               "examples": {
@@ -6330,6 +6532,22 @@
                     },
                     "is_active": true
                   }
+                },
+                "group_membership": {
+                  "summary": "Create group with first member / add or move member",
+                  "value": {
+                    "group_key": "demo-platform",
+                    "group_name": "Demo Platform",
+                    "name": "Demo Platform US",
+                    "address": {
+                      "address_line1": "1 Market St",
+                      "city": "San Francisco",
+                      "state": "CA",
+                      "zip": "94105",
+                      "country": "US"
+                    },
+                    "is_active": true
+                  }
                 }
               }
             }
@@ -6344,7 +6562,7 @@
     },
     "/api/internal/activation-hero/platforms/{id}": {
       "patch": {
-        "description": "",
+        "description": "Existing catalogue fields plus group_key/group_name. To create a group, assign its first member with both fields. Existing groups supply the current group name. group_key=null removes membership; another key moves the member. Explicit two-letter address.country is required in a group. Duplicate country/group (even inactive) returns 409 AH_PLATFORM_CONFLICT. Use the group rename endpoint for labels; no paid claims are rematched automatically.",
         "summary": "PATCH /api/internal/activation-hero/platforms/{id}",
         "tags": [
           "Internal/Activation Hero Platforms"
@@ -6368,10 +6586,13 @@
             "description": "authorization failed"
           },
           "422": {
-            "description": "validation failed"
+            "description": "AH_PLATFORM_GROUP_INVALID: missing group name/key/country."
           },
           "500": {
             "description": "unknown server error"
+          },
+          "409": {
+            "description": "AH_PLATFORM_CONFLICT: duplicate platform name or country in group."
           }
         },
         "requestBody": {
@@ -6385,6 +6606,34 @@
                   "website": "https://example.com",
                   "support_email": "support@example.com",
                   "is_active": true
+                },
+                "properties": {
+                  "group_key": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^[a-z0-9][a-z0-9_-]{0,79}$"
+                  },
+                  "group_name": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 2,
+                    "maxLength": 200
+                  }
+                }
+              },
+              "examples": {
+                "group_membership": {
+                  "summary": "Create group with first member / add or move member",
+                  "value": {
+                    "group_key": "demo-platform",
+                    "group_name": "Demo Platform"
+                  }
+                },
+                "remove_group": {
+                  "summary": "Remove platform from its group",
+                  "value": {
+                    "group_key": null
+                  }
                 }
               }
             }
@@ -6899,7 +7148,7 @@
     },
     "/api/internal/claims": {
       "get": {
-        "description": "",
+        "description": " Each returned claim includes platform_selection_required. status=pending_cx_selection means questionnaire submitted, waiting for CX selection.",
         "summary": "GET /api/internal/claims",
         "tags": [
           "Internal/Claims"
@@ -6957,6 +7206,18 @@
               "minimum": 0,
               "default": 0
             }
+          },
+          {
+            "name": "platform_selection_required",
+            "in": "query",
+            "required": false,
+            "description": "Use true to list unresolved grouped AH claims, including before questionnaire submission.",
+            "schema": {
+              "type": "boolean",
+              "enum": [
+                true
+              ]
+            }
           }
         ],
         "responses": {
@@ -7001,7 +7262,8 @@
                 "letter_ready_for_signature",
                 "letter_revision_requested",
                 "letter_signature_declined",
-                "letter_revision_declined"
+                "letter_revision_declined",
+                "pending_cx_selection"
               ]
             }
           },
@@ -7789,7 +8051,7 @@
     },
     "/api/internal/claims/{id}": {
       "get": {
-        "description": "Returns the internal claim detail, including has_evidence_to_upload. Includes customer_access with account_status, email_confirmed_at, can_correct_email, anchor, first_claim_at, and days_waiting. This state is based on Supabase Auth email confirmation; profiles and login timestamps are not eligibility signals. If the lookup fails, the claim still loads with account_status unknown and can_correct_email false. Open GET /api/internal/customer-access/details using anchor for contact recovery.",
+        "description": "Returns the internal claim detail, including has_evidence_to_upload. Includes customer_access with account_status, email_confirmed_at, can_correct_email, anchor, first_claim_at, and days_waiting. This state is based on Supabase Auth email confirmation; profiles and login timestamps are not eligibility signals. If the lookup fails, the claim still loads with account_status unknown and can_correct_email false. Open GET /api/internal/customer-access/details using anchor for contact recovery. Adds top-level platform_selection_required: true when a grouped AH claim has no resolved platform, even before questionnaire submission. Read original group/customer country from claim.intake_snapshot.",
         "summary": "GET /api/internal/claims/{id}",
         "tags": [
           "Internal/Claims"
@@ -8216,7 +8478,7 @@
     },
     "/api/internal/claims/{id}/details": {
       "patch": {
-        "description": "Internal-only partial corrections to the claim snapshot, not the customer's account profile or email. Send at least one nonempty customer, defendant, or claim object; note alone is insufficient. Activation Hero accepts only defendant.platform_id (an active platform with a usable address); Small Claims accepts defendant details only when the defendant was manually entered. An Activation Hero claim awaiting its questionnaire is updated without a letter/version; the questionnaire later generates the first letter from the corrected claim. An existing letter without Firma signature history is regenerated, replacing prior manual edits. With an open revision after a Firma request, the claim changes but the letter HTML/version do not; staff must edit the letter manually before resending. Pending signature, signed without revision, and active/completed mailing block corrections. Address saving validates format, not postal deliverability. Before correcting customer or manually entered Small Claims defendant addresses, call POST /api/internal/mailing-addresses/check, review an approved normalized_address, and send it unchanged to this PATCH; recheck if edited. Do this before letter edits and the first signature to reduce mailing failures for both customer and internal send requests, and avoid reopening a signed letter for revision and another signature. The helper does not bypass these lifecycle or permission rules. See the README for frontend guidance.",
+        "description": "Internal-only partial corrections to the claim snapshot, not the customer's account profile or email. Send at least one nonempty customer, defendant, or claim object; note alone is insufficient. Activation Hero accepts only defendant.platform_id (an active platform with a usable address); Small Claims accepts defendant details only when the defendant was manually entered. An Activation Hero claim awaiting its questionnaire is updated without a letter/version; the questionnaire later generates the first letter from the corrected claim. An existing letter without Firma signature history is regenerated, replacing prior manual edits. With an open revision after a Firma request, the claim changes but the letter HTML/version do not; staff must edit the letter manually before resending. Pending signature, signed without revision, and active/completed mailing block corrections. Address saving validates format, not postal deliverability. Before correcting customer or manually entered Small Claims defendant addresses, call POST /api/internal/mailing-addresses/check, review an approved normalized_address, and send it unchanged to this PATCH; recheck if edited. Do this before letter edits and the first signature to reduce mailing failures for both customer and internal send requests, and avoid reopening a signed letter for revision and another signature. The helper does not bypass these lifecycle or permission rules. See the README for frontend guidance. For grouped AH claims, regional selection is also allowed in pending_cx_selection. Copies selected platform into Claim Details, preserving the chosen group and account identifiers. If questionnaire is already submitted, generates the first letter (letter_generated=true, letter_regenerated=false) and enters paid_pending_letter_review; otherwise waits for questionnaire. If generation fails, selection and answers remain saved; refresh and repeat correction. Existing revision/manual-letter-update behavior remains unchanged.",
         "summary": "PATCH /api/internal/claims/{id}/details",
         "operationId": "updateInternalClaimDetails",
         "tags": [
@@ -8421,6 +8683,15 @@
                       "description": "Corrected facts for the revised letter."
                     },
                     "note": "Review requested by customer"
+                  }
+                },
+                "match_pending_platform": {
+                  "summary": "Resolve regional selection; generate only after questionnaire",
+                  "value": {
+                    "defendant": {
+                      "platform_id": "{{ _.ah_platform_id }}"
+                    },
+                    "note": "Regional company verified and selected by CX."
                   }
                 }
               }
@@ -11615,6 +11886,76 @@
           },
           "500": {
             "description": "Infrastructure/completion error. Retry the same request to resume a reserved manual payment; do not charge again."
+          }
+        }
+      }
+    },
+    "/api/internal/activation-hero/platform-groups/{group_key}": {
+      "patch": {
+        "tags": [
+          "Internal/Activation Hero Platforms"
+        ],
+        "summary": "Rename an Activation Hero company group",
+        "description": "Rename all current members atomically; the stable group_key does not change. Internal roles only. No claim, intake or rendered letter snapshots are rewritten.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "group_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,79}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 200
+                  }
+                }
+              },
+              "examples": {
+                "rename": {
+                  "summary": "Common name shown in intake",
+                  "value": {
+                    "name": "Demo Platform"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Group renamed; group_key, name and platforms returned."
+          },
+          "400": {
+            "description": "Invalid key/name."
+          },
+          "401": {
+            "description": "Authentication required."
+          },
+          "403": {
+            "description": "Internal role required."
+          },
+          "404": {
+            "description": "AH_PLATFORM_GROUP_NOT_FOUND."
           }
         }
       }
