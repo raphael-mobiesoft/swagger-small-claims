@@ -4183,7 +4183,7 @@
     },
     "/api/claims/{id}/signature-session": {
       "get": {
-        "description": "Returns the pending Firma in-app signing session URL for the authenticated customer. The same signing request may also be completed or declined through the Firma email link. Final signed/declined state must be read after Firma webhook synchronization.",
+        "description": "Returns the pending Firma in-app signing session URL for the authenticated customer. The same signing request may also be completed or declined through the Firma email link. Final signed/declined state must be read after Firma webhook synchronization. If the pending request has no saved signing URL, the API retrieves the signer from that same Firma request and saves the recovered session fields. Existing pending requests can be recovered by calling this endpoint again; it does not create or resend a signing invitation. Keep the email-signing alternative available while retrying a failed session load.",
         "summary": "GET /api/claims/{id}/signature-session",
         "tags": [
           "Claims"
