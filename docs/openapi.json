@@ -5474,7 +5474,7 @@
     },
     "/api/intake/flows": {
       "post": {
-        "description": "Creates a resumable intake flow only after validating a fresh Cloudflare Turnstile Managed token. Validation occurs before customer identity checks and before any flow or resume-token record is created. The token is not stored or reused. This first-step token is independent from the fresh Turnstile token still required for paid checkout.",
+        "description": "Creates a resumable intake flow only after validating a fresh Cloudflare Turnstile Managed token. Validation occurs before customer identity checks and before any flow or resume-token record is created. The token is not stored or reused. This first-step token is independent from the fresh Turnstile token still required for paid checkout. Optional affiliate_tid captures the first marketing-site visitor identifier. Existing customers do not get a new affiliate/window through this field; the backend determines attribution only after a confirmed payment.",
         "summary": "POST /api/intake/flows",
         "tags": [
           "Intake"
@@ -5556,14 +5556,36 @@
                     "minLength": 1,
                     "maxLength": 2048,
                     "description": "Fresh first-step Managed Turnstile token. Never reuse the checkout token."
+                  },
+                  "affiliate_tid": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256,
+                    "pattern": "^[a-zA-Z0-9_-]+$",
+                    "description": "Optional FirstPromoter visitor tid from _fprom_tid on the marketing site, passed into Case Dashboard. Not a referral code or coupon. First nonempty tid on the intake wins and cannot be replaced. Omit for organic customers. No FirstPromoter JS on card-entry page."
                   }
                 }
               },
-              "example": {
-                "service": "activation_hero",
-                "customer_user_id": "8e4e1f34-a5fd-4a6c-bf59-0096f1540dce",
-                "customer_email": "{{ _.customer_email }}",
-                "turnstile_token": "token_from_cloudflare_turnstile"
+              "examples": {
+                "organic": {
+                  "summary": "Existing intake request without affiliate attribution",
+                  "value": {
+                    "service": "activation_hero",
+                    "customer_user_id": "8e4e1f34-a5fd-4a6c-bf59-0096f1540dce",
+                    "customer_email": "{{ _.customer_email }}",
+                    "turnstile_token": "token_from_cloudflare_turnstile"
+                  }
+                },
+                "affiliate": {
+                  "summary": "Capture an actual FirstPromoter visitor (replace example tid)",
+                  "value": {
+                    "service": "activation_hero",
+                    "customer_user_id": "8e4e1f34-a5fd-4a6c-bf59-0096f1540dce",
+                    "customer_email": "{{ _.customer_email }}",
+                    "turnstile_token": "token_from_cloudflare_turnstile",
+                    "affiliate_tid": "actual_visitor_tid"
+                  }
+                }
               }
             }
           }
@@ -6001,7 +6023,7 @@
     },
     "/api/intake/flows/{id}/customer-information": {
       "patch": {
-        "description": "customer.address_validation is required. Use the validation token from POST /api/addresses/validate; set confirmed=true after accepting a needs_confirmation result. An explicit manual override is also allowed with { source: 'user_provided', confirmed: true }. confirmed=false returns 409 ADDRESS_MANUAL_CONFIRMATION_REQUIRED. The first save of Customer Information normally schedules unfinished-intake reminders. Later edits call scheduling again, but do not reschedule reminders if this intake was opted out through POST /api/intake/reminders/opt-out. Reminder emails are rendered at delivery time with the current active-case count across both services (claims excluding closed/settled; matched by customer user ID and/or normalized email without double-counting), service, selected Activation Hero platform when available, and intake creation date. Resume intake still opens the same flow at its saved step. A separate Case Dashboard text link uses NOTIFICATIONS_SITE_URL so the customer can view cases or discard the unfinished intake; Remove me only opts out of its reminders. For Activation Hero, changing the customer country updates or clears the regional match for a saved group and resets claim_data.mailing_preference to null. Frontend must refresh the saved selection, close any previously opened checkout and require a new mailing choice before creating a new checkout. Existing checkouts retain their original snapshot. Legacy explicit platform_id remains explicitly selected.",
+        "description": "customer.address_validation is required. Use the validation token from POST /api/addresses/validate; set confirmed=true after accepting a needs_confirmation result. An explicit manual override is also allowed with { source: 'user_provided', confirmed: true }. confirmed=false returns 409 ADDRESS_MANUAL_CONFIRMATION_REQUIRED. The first save of Customer Information normally schedules unfinished-intake reminders. Later edits call scheduling again, but do not reschedule reminders if this intake was opted out through POST /api/intake/reminders/opt-out. Reminder emails are rendered at delivery time with the current active-case count across both services (claims excluding closed/settled; matched by customer user ID and/or normalized email without double-counting), service, selected Activation Hero platform when available, and intake creation date. Resume intake still opens the same flow at its saved step. A separate Case Dashboard text link uses NOTIFICATIONS_SITE_URL so the customer can view cases or discard the unfinished intake; Remove me only opts out of its reminders. For Activation Hero, changing the customer country updates or clears the regional match for a saved group and resets claim_data.mailing_preference to null. Frontend must refresh the saved selection, close any previously opened checkout and require a new mailing choice before creating a new checkout. Existing checkouts retain their original snapshot. Legacy explicit platform_id remains explicitly selected. Optional affiliate_tid captures the first marketing-site visitor identifier. Existing customers do not get a new affiliate/window through this field; the backend determines attribution only after a confirmed payment. An isolated affiliate tracking-write failure is logged without blocking Customer Information; normal validation and customer-data save errors remain unchanged. Retain the original visitor tid and resend it on subsequent customer-step saves.",
         "summary": "PATCH /api/intake/flows/{id}/customer-information",
         "tags": [
           "Intake"
@@ -6050,23 +6072,60 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "example": {
-                  "customer_user_id": null,
-                  "customer": {
-                    "name": "Test Customer",
-                    "email": "{{ _.customer_email }}",
-                    "phone": "15551112222",
-                    "address": {
-                      "address_line1": "1600 Amphitheatre Parkway",
-                      "city": "Mountain View",
-                      "state": "CA",
-                      "zip": "94043",
-                      "country": "US"
-                    },
-                    "address_validation": {
-                      "token": "{{ _.address_validation_token }}",
-                      "confirmed": false
+                "properties": {
+                  "affiliate_tid": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256,
+                    "pattern": "^[a-zA-Z0-9_-]+$",
+                    "description": "Optional FirstPromoter visitor tid from _fprom_tid on the marketing site, passed into Case Dashboard. Not a referral code or coupon. First nonempty tid on the intake wins and cannot be replaced. Omit for organic customers. No FirstPromoter JS on card-entry page."
+                  }
+                }
+              },
+              "examples": {
+                "organic": {
+                  "summary": "Existing intake request without affiliate attribution",
+                  "value": {
+                    "customer_user_id": null,
+                    "customer": {
+                      "name": "Test Customer",
+                      "email": "{{ _.customer_email }}",
+                      "phone": "15551112222",
+                      "address": {
+                        "address_line1": "1600 Amphitheatre Parkway",
+                        "city": "Mountain View",
+                        "state": "CA",
+                        "zip": "94043",
+                        "country": "US"
+                      },
+                      "address_validation": {
+                        "token": "{{ _.address_validation_token }}",
+                        "confirmed": false
+                      }
                     }
+                  }
+                },
+                "affiliate": {
+                  "summary": "Capture an actual FirstPromoter visitor (replace example tid)",
+                  "value": {
+                    "customer_user_id": null,
+                    "customer": {
+                      "name": "Test Customer",
+                      "email": "{{ _.customer_email }}",
+                      "phone": "15551112222",
+                      "address": {
+                        "address_line1": "1600 Amphitheatre Parkway",
+                        "city": "Mountain View",
+                        "state": "CA",
+                        "zip": "94043",
+                        "country": "US"
+                      },
+                      "address_validation": {
+                        "token": "{{ _.address_validation_token }}",
+                        "confirmed": false
+                      }
+                    },
+                    "affiliate_tid": "actual_visitor_tid"
                   }
                 }
               }
@@ -11959,6 +12018,615 @@
           }
         }
       }
+    },
+    "/api/admin/affiliate-settings": {
+      "get": {
+        "summary": "Get affiliate commission settings",
+        "description": "Returns the latest synchronized active settings version. Initially configured=false and settings=null. FIRSTPROMOTER_ENABLED is a server-side flag; this endpoint does not enable the integration.",
+        "tags": [
+          "Admin/Affiliates"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Only admins may use this endpoint"
+          },
+          "500": {
+            "description": "Database operation failed"
+          },
+          "200": {
+            "description": "Current configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "settings": {
+                      "type": "object",
+                      "nullable": true,
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "activation_hero_percent": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100,
+                          "multipleOf": 0.0001,
+                          "example": 10
+                        },
+                        "small_claims_percent": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100,
+                          "multipleOf": 0.0001,
+                          "example": 15
+                        },
+                        "commission_window_days": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 3650,
+                          "example": 30
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "active"
+                          ]
+                        },
+                        "resources": {
+                          "type": "object",
+                          "description": "Versioned FirstPromoter reward/product identifiers per service. No secret key is returned."
+                        },
+                        "created_by": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "activated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "enabled": true,
+                  "configured": true,
+                  "settings": {
+                    "id": "c52798ca-bfd2-4f85-8e6c-ef51afcc0522",
+                    "activation_hero_percent": 10,
+                    "small_claims_percent": 15,
+                    "commission_window_days": 30,
+                    "status": "active",
+                    "resources": {
+                      "activation_hero": {
+                        "reward_id": 123,
+                        "product_id": 456,
+                        "plan": "casedashboard:<version>:activation_hero"
+                      },
+                      "small_claims": {
+                        "reward_id": 124,
+                        "product_id": 457,
+                        "plan": "casedashboard:<version>:small_claims"
+                      }
+                    },
+                    "created_by": "318f8112-0619-46c2-901a-ae838273f670",
+                    "created_at": "2026-11-16T15:00:00Z",
+                    "activated_at": "2026-11-16T15:00:03Z"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Configure affiliate percentages and attribution duration",
+        "description": "Initial setup requires both service percentages. Later PATCH requests can contain only changed values. Initial duration defaults to 30 days. The API creates versioned FirstPromoter sale rewards/products and activates the version only after synchronization. Existing customers retain their original version and duration; new attributions use the new version. Test percentages in examples are not approved production rates. Use a dedicated integration-managed FirstPromoter campaign; this operation creates real remote configuration records in the configured account.",
+        "tags": [
+          "Admin/Affiliates"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Only admins may use this endpoint"
+          },
+          "500": {
+            "description": "Database operation failed"
+          },
+          "200": {
+            "description": "Fully synchronized active version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "settings": {
+                      "type": "object",
+                      "nullable": true,
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "activation_hero_percent": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100,
+                          "multipleOf": 0.0001,
+                          "example": 10
+                        },
+                        "small_claims_percent": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100,
+                          "multipleOf": 0.0001,
+                          "example": 15
+                        },
+                        "commission_window_days": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 3650,
+                          "example": 30
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "active"
+                          ]
+                        },
+                        "resources": {
+                          "type": "object",
+                          "description": "Versioned FirstPromoter reward/product identifiers per service. No secret key is returned."
+                        },
+                        "created_by": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "activated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "enabled": true,
+                  "configured": true,
+                  "settings": {
+                    "id": "c52798ca-bfd2-4f85-8e6c-ef51afcc0522",
+                    "activation_hero_percent": 10,
+                    "small_claims_percent": 15,
+                    "commission_window_days": 30,
+                    "status": "active",
+                    "resources": {
+                      "activation_hero": {
+                        "reward_id": 123,
+                        "product_id": 456,
+                        "plan": "casedashboard:<version>:activation_hero"
+                      },
+                      "small_claims": {
+                        "reward_id": 124,
+                        "product_id": 457,
+                        "plan": "casedashboard:<version>:small_claims"
+                      }
+                    },
+                    "created_by": "318f8112-0619-46c2-901a-ae838273f670",
+                    "created_at": "2026-11-16T15:00:00Z",
+                    "activated_at": "2026-11-16T15:00:03Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid fields or first update missing a service percentage",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "AFFILIATE_PERCENT_REQUIRED",
+                    "message": "Configure the percentage for both services on the first update"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Another settings update/worker holds the lease",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "AFFILIATE_ACTION_IN_PROGRESS",
+                    "message": "Another affiliate operation is running. Try again shortly."
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "FirstPromoter configuration failed; prior active version is preserved"
+          },
+          "503": {
+            "description": "Integration disabled or incomplete credentials/campaign configuration"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "activation_hero_percent": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "multipleOf": 0.0001,
+                    "example": 10
+                  },
+                  "small_claims_percent": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "multipleOf": 0.0001,
+                    "example": 15
+                  },
+                  "commission_window_days": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 3650,
+                    "example": 30
+                  }
+                }
+              },
+              "examples": {
+                "initialSetup": {
+                  "summary": "Initial setup (example percentages only)",
+                  "value": {
+                    "activation_hero_percent": 10,
+                    "small_claims_percent": 15,
+                    "commission_window_days": 30
+                  }
+                },
+                "changeAH": {
+                  "summary": "New AH percentage for new attributions",
+                  "value": {
+                    "activation_hero_percent": 12.5
+                  }
+                },
+                "changeWindow": {
+                  "summary": "New window for new attributions",
+                  "value": {
+                    "commission_window_days": 45
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/affiliate-events": {
+      "get": {
+        "summary": "Inspect recent affiliate events",
+        "description": "Admin operational view of pending, sent, skipped and review events. Returns sanitized provider references, without the visitor tid, email payload or credentials. Skips include NO_REFERRAL, EXISTING_CUSTOMER, WINDOW_EXPIRED, ZERO_PERCENT and ZERO_COMMISSION_BASE. Review includes identity conflicts, invalid referrals, configuration errors and commission discrepancies. Inspect FirstPromoter before retrying a discrepancy; a sale may already exist. The latest sanitized request failure is stored in provider_result.last_error, including after recovery. It includes method, path with numeric IDs and UUIDs replaced by :id, duration_ms, technical code, HTTP status or null, attempt number and UTC at. No request diagnostics are printed to Railway. Query parameters, bodies, customer data and credentials are excluded.",
+        "tags": [
+          "Admin/Affiliates"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Only admins may use this endpoint"
+          },
+          "500": {
+            "description": "Database operation failed"
+          },
+          "200": {
+            "description": "Recent events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "events": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "payment_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "claim_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "customer_id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "nullable": true
+                          },
+                          "settings_id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "nullable": true
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "pending",
+                              "sent",
+                              "skipped",
+                              "review"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "attempts": {
+                            "type": "integer"
+                          },
+                          "next_attempt_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "provider_result": {
+                            "type": "object",
+                            "nullable": true,
+                            "description": "Sanitized sale/commission references and the latest request failure, when available. last_error is retained after recovery and does not mean a sent event is still failing.",
+                            "properties": {
+                              "event_id": {
+                                "type": "string"
+                              },
+                              "sale_id": {
+                                "type": "integer",
+                                "nullable": true
+                              },
+                              "commission_ids": {
+                                "type": "array",
+                                "items": {
+                                  "type": "integer"
+                                }
+                              },
+                              "commission_amount_cents": {
+                                "type": "integer"
+                              },
+                              "last_error": {
+                                "type": "object",
+                                "description": "Latest failed provider call during event processing; absent until a failure is captured.",
+                                "properties": {
+                                  "method": {
+                                    "type": "string",
+                                    "example": "GET"
+                                  },
+                                  "path": {
+                                    "type": "string",
+                                    "example": "/company/referrals/:id"
+                                  },
+                                  "duration_ms": {
+                                    "type": "integer",
+                                    "example": 10004
+                                  },
+                                  "code": {
+                                    "type": "string",
+                                    "example": "ECONNABORTED"
+                                  },
+                                  "status": {
+                                    "type": "integer",
+                                    "nullable": true,
+                                    "description": "HTTP response status, or null for transport failures."
+                                  },
+                                  "attempt": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                  },
+                                  "at": {
+                                    "type": "string",
+                                    "format": "date-time"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "created_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "sent_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "nullable": true
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "events": [
+                    {
+                      "payment_id": "4b7fe060-d95d-40db-9cba-2754ad310101",
+                      "claim_id": "7036a744-43fd-452d-a663-50c9bc6ac97a",
+                      "customer_id": "f8c41a94-e0af-4f8d-8f30-c29d71eca560",
+                      "settings_id": "c52798ca-bfd2-4f85-8e6c-ef51afcc0522",
+                      "status": "sent",
+                      "reason": null,
+                      "attempts": 2,
+                      "provider_result": {
+                        "event_id": "casedashboard:4b7fe060-d95d-40db-9cba-2754ad310101",
+                        "sale_id": 123,
+                        "commission_ids": [
+                          456
+                        ],
+                        "commission_amount_cents": 552,
+                        "last_error": {
+                          "method": "GET",
+                          "path": "/company/referrals/:id",
+                          "duration_ms": 10004,
+                          "code": "ECONNABORTED",
+                          "status": null,
+                          "attempt": 1,
+                          "at": "2026-11-16T16:00:10Z"
+                        }
+                      },
+                      "created_at": "2026-11-16T16:00:00Z",
+                      "next_attempt_at": "2026-11-16T16:00:00Z",
+                      "sent_at": "2026-11-16T16:01:00Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid status or limit"
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "sent",
+                "skipped",
+                "review"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          }
+        ]
+      }
+    },
+    "/api/admin/affiliate-events/process": {
+      "post": {
+        "summary": "Process due affiliate events",
+        "description": "Runs the same worker scheduled every minute when enabled. Empty body. Processes up to five due events; respects next_attempt_at and serializes with other workers/settings updates. Enqueues successful, nonzero completed checkouts after first settings activation; never takes an amount or customer identity from this request. Temporary provider errors remain queued with backoff and do not affect payment/claim completion. Duplicate event IDs are reconciled without generating another sale.",
+        "tags": [
+          "Admin/Affiliates"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Only admins may use this endpoint"
+          },
+          "500": {
+            "description": "Database operation failed"
+          },
+          "200": {
+            "description": "Processing counts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "processed": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "sent": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "skipped": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "review": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "pending": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "example": {
+                  "processed": 2,
+                  "sent": 1,
+                  "skipped": 1,
+                  "review": 0,
+                  "pending": 0
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Another affiliate action is in progress"
+          },
+          "503": {
+            "description": "Integration disabled or incomplete configuration"
+          }
+        }
+      }
     }
   },
   "servers": [
@@ -12034,6 +12702,10 @@
     {
       "name": "Internal/Activation Hero Platforms",
       "description": ""
+    },
+    {
+      "name": "Admin/Affiliates",
+      "description": "Admin-only FirstPromoter settings and asynchronous sale processing."
     }
   ],
   "components": {
