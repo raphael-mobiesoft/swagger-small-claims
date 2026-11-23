@@ -3115,6 +3115,19 @@
           },
           "409": {
             "description": "AH_CLAIM_CHANGED for concurrent changes; answers preserved, refresh and retry. Or questionnaire already completed for this status."
+          },
+          "503": {
+            "description": "AI selection failed after answers were saved. Retry the questionnaire submission or reload saved answers with GET.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "AH_QUESTIONNAIRE_AI_UNAVAILABLE",
+                    "message": "Your answers were saved, but we could not complete your questionnaire. Please try again."
+                  }
+                }
+              }
+            }
           }
         },
         "requestBody": {
