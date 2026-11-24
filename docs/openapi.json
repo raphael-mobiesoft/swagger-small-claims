@@ -2911,6 +2911,99 @@
         "security": []
       }
     },
+    "/api/claims/{id}/payment-receipt": {
+      "get": {
+        "operationId": "downloadClaimPaymentReceipt",
+        "summary": "Download a claim payment receipt PDF",
+        "description": "Shared Download payment receipt action for customer and CX claim pages. Requires bearer authentication. Customers may download only claims authorized by the existing ownership rules (matching user_id or authenticated email). Admin, cx_agent and paralegal may download any claim receipt; other roles are rejected. Generates the PDF on demand from the same DOCX template and successful-payment lookup used by existing emailed receipt links. Uses the latest succeeded payment and supports both services, manual payments and zero-amount coupon payments. No PDF is stored, email sent, payment initiated, or claim state changed. Request a binary/blob with the authenticated API client and save it using the Content-Disposition filename. The receipt uses current data, not an archived original attachment. Existing emailed receipt links and customer attachments remain unchanged. No separate internal receipt-download route is provided.",
+        "tags": [
+          "Claims"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Claim UUID, as returned by GET /api/internal/claims. No payment ID or email-link token is required.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment receipt PDF ready to download.",
+            "headers": {
+              "Content-Disposition": {
+                "description": "Attachment filename based on the claim reference code, falling back to its UUID. Exposed through CORS.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "attachment; filename=\"payment-receipt-AH-000450.pdf\""
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "private, no-store"
+              }
+            },
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid claim UUID (VALIDATION_ERROR)."
+          },
+          "401": {
+            "description": "Missing, invalid, or expired bearer token."
+          },
+          "403": {
+            "description": "The customer does not own this claim, or the account role is unsupported or inactive."
+          },
+          "404": {
+            "description": "CLAIM_NOT_FOUND when the claim does not exist; CLAIM_RECEIPT_NOT_FOUND when it has no succeeded payment.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "missingClaim": {
+                    "value": {
+                      "error": {
+                        "code": "CLAIM_NOT_FOUND",
+                        "message": "Claim not found"
+                      }
+                    }
+                  },
+                  "missingReceipt": {
+                    "value": {
+                      "error": {
+                        "code": "CLAIM_RECEIPT_NOT_FOUND",
+                        "message": "Payment receipt not found"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Database read or receipt rendering/conversion failure. Uses the existing receipt error codes."
+          }
+        }
+      }
+    },
     "/api/claims/payment-receipt": {
       "get": {
         "summary": "Open payment receipt from internal claim-created email",
