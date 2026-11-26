@@ -12127,8 +12127,8 @@
     },
     "/api/admin/affiliate-settings": {
       "get": {
-        "summary": "Get affiliate commission settings",
-        "description": "Returns the latest synchronized active settings version. Initially configured=false and settings=null. FIRSTPROMOTER_ENABLED is a server-side flag; this endpoint does not enable the integration.",
+        "summary": "Get FirstPromoter integration status",
+        "description": "Admin only. Read-only configuration; campaign rewards, rates and overrides are managed in FirstPromoter. The retired PATCH operation and settings-version response were removed. automatic_payouts=false describes API behavior, not the live provider account configuration.",
         "tags": [
           "Admin/Affiliates"
         ],
@@ -12148,7 +12148,7 @@
             "description": "Database operation failed"
           },
           "200": {
-            "description": "Current configuration",
+            "description": "Read-only integration status",
             "content": {
               "application/json": {
                 "schema": {
@@ -12160,292 +12160,57 @@
                     "configured": {
                       "type": "boolean"
                     },
-                    "settings": {
-                      "type": "object",
-                      "nullable": true,
-                      "properties": {
-                        "id": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "activation_hero_percent": {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 100,
-                          "multipleOf": 0.0001,
-                          "example": 10
-                        },
-                        "small_claims_percent": {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 100,
-                          "multipleOf": 0.0001,
-                          "example": 15
-                        },
-                        "commission_window_days": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "maximum": 3650,
-                          "example": 30
-                        },
-                        "status": {
-                          "type": "string",
-                          "enum": [
-                            "active"
-                          ]
-                        },
-                        "resources": {
-                          "type": "object",
-                          "description": "Versioned FirstPromoter reward/product identifiers per service. No secret key is returned."
-                        },
-                        "created_by": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "created_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        "activated_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
+                    "environment": {
+                      "type": "string",
+                      "enum": [
+                        "staging",
+                        "production"
+                      ]
+                    },
+                    "managed_by": {
+                      "type": "string",
+                      "enum": [
+                        "firstpromoter"
+                      ]
+                    },
+                    "staging_campaign_ids": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
                       }
+                    },
+                    "reporting_started_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true
+                    },
+                    "approval_delay_days": {
+                      "type": "integer",
+                      "enum": [
+                        30
+                      ]
+                    },
+                    "automatic_payouts": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
                     }
                   }
                 },
                 "example": {
                   "enabled": true,
                   "configured": true,
-                  "settings": {
-                    "id": "c52798ca-bfd2-4f85-8e6c-ef51afcc0522",
-                    "activation_hero_percent": 10,
-                    "small_claims_percent": 15,
-                    "commission_window_days": 30,
-                    "status": "active",
-                    "resources": {
-                      "activation_hero": {
-                        "reward_id": 123,
-                        "product_id": 456,
-                        "plan": "casedashboard:<version>:activation_hero"
-                      },
-                      "small_claims": {
-                        "reward_id": 124,
-                        "product_id": 457,
-                        "plan": "casedashboard:<version>:small_claims"
-                      }
-                    },
-                    "created_by": "318f8112-0619-46c2-901a-ae838273f670",
-                    "created_at": "2026-11-16T15:00:00Z",
-                    "activated_at": "2026-11-16T15:00:03Z"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "patch": {
-        "summary": "Configure affiliate percentages and attribution duration",
-        "description": "Initial setup requires both service percentages. Later PATCH requests can contain only changed values. Initial duration defaults to 30 days. The API creates versioned FirstPromoter sale rewards/products and activates the version only after synchronization. Existing customers retain their original version and duration; new attributions use the new version. Test percentages in examples are not approved production rates. Use a dedicated integration-managed FirstPromoter campaign; this operation creates real remote configuration records in the configured account.",
-        "tags": [
-          "Admin/Affiliates"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "401": {
-            "description": "Authentication required"
-          },
-          "403": {
-            "description": "Only admins may use this endpoint"
-          },
-          "500": {
-            "description": "Database operation failed"
-          },
-          "200": {
-            "description": "Fully synchronized active version",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "enabled": {
-                      "type": "boolean"
-                    },
-                    "configured": {
-                      "type": "boolean"
-                    },
-                    "settings": {
-                      "type": "object",
-                      "nullable": true,
-                      "properties": {
-                        "id": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "activation_hero_percent": {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 100,
-                          "multipleOf": 0.0001,
-                          "example": 10
-                        },
-                        "small_claims_percent": {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 100,
-                          "multipleOf": 0.0001,
-                          "example": 15
-                        },
-                        "commission_window_days": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "maximum": 3650,
-                          "example": 30
-                        },
-                        "status": {
-                          "type": "string",
-                          "enum": [
-                            "active"
-                          ]
-                        },
-                        "resources": {
-                          "type": "object",
-                          "description": "Versioned FirstPromoter reward/product identifiers per service. No secret key is returned."
-                        },
-                        "created_by": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "created_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        "activated_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      }
-                    }
-                  }
-                },
-                "example": {
-                  "enabled": true,
-                  "configured": true,
-                  "settings": {
-                    "id": "c52798ca-bfd2-4f85-8e6c-ef51afcc0522",
-                    "activation_hero_percent": 10,
-                    "small_claims_percent": 15,
-                    "commission_window_days": 30,
-                    "status": "active",
-                    "resources": {
-                      "activation_hero": {
-                        "reward_id": 123,
-                        "product_id": 456,
-                        "plan": "casedashboard:<version>:activation_hero"
-                      },
-                      "small_claims": {
-                        "reward_id": 124,
-                        "product_id": 457,
-                        "plan": "casedashboard:<version>:small_claims"
-                      }
-                    },
-                    "created_by": "318f8112-0619-46c2-901a-ae838273f670",
-                    "created_at": "2026-11-16T15:00:00Z",
-                    "activated_at": "2026-11-16T15:00:03Z"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid fields or first update missing a service percentage",
-            "content": {
-              "application/json": {
-                "example": {
-                  "error": {
-                    "code": "AFFILIATE_PERCENT_REQUIRED",
-                    "message": "Configure the percentage for both services on the first update"
-                  }
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Another settings update/worker holds the lease",
-            "content": {
-              "application/json": {
-                "example": {
-                  "error": {
-                    "code": "AFFILIATE_ACTION_IN_PROGRESS",
-                    "message": "Another affiliate operation is running. Try again shortly."
-                  }
-                }
-              }
-            }
-          },
-          "502": {
-            "description": "FirstPromoter configuration failed; prior active version is preserved"
-          },
-          "503": {
-            "description": "Integration disabled or incomplete credentials/campaign configuration"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": false,
-                "minProperties": 1,
-                "properties": {
-                  "activation_hero_percent": {
-                    "type": "number",
-                    "minimum": 0,
-                    "maximum": 100,
-                    "multipleOf": 0.0001,
-                    "example": 10
-                  },
-                  "small_claims_percent": {
-                    "type": "number",
-                    "minimum": 0,
-                    "maximum": 100,
-                    "multipleOf": 0.0001,
-                    "example": 15
-                  },
-                  "commission_window_days": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 3650,
-                    "example": 30
-                  }
-                }
-              },
-              "examples": {
-                "initialSetup": {
-                  "summary": "Initial setup (example percentages only)",
-                  "value": {
-                    "activation_hero_percent": 10,
-                    "small_claims_percent": 15,
-                    "commission_window_days": 30
-                  }
-                },
-                "changeAH": {
-                  "summary": "New AH percentage for new attributions",
-                  "value": {
-                    "activation_hero_percent": 12.5
-                  }
-                },
-                "changeWindow": {
-                  "summary": "New window for new attributions",
-                  "value": {
-                    "commission_window_days": 45
-                  }
+                  "environment": "staging",
+                  "managed_by": "firstpromoter",
+                  "staging_campaign_ids": [
+                    45719,
+                    46297,
+                    46298
+                  ],
+                  "reporting_started_at": "2026-11-26T14:00:00Z",
+                  "approval_delay_days": 30,
+                  "automatic_payouts": false
                 }
               }
             }
@@ -12456,7 +12221,7 @@
     "/api/admin/affiliate-events": {
       "get": {
         "summary": "Inspect recent affiliate events",
-        "description": "Admin operational view of pending, sent, skipped and review events. Returns sanitized provider references, without the visitor tid, email payload or credentials. Skips include NO_REFERRAL, EXISTING_CUSTOMER, WINDOW_EXPIRED, ZERO_PERCENT and ZERO_COMMISSION_BASE. Review includes identity conflicts, invalid referrals, configuration errors and commission discrepancies. Inspect FirstPromoter before retrying a discrepancy; a sale may already exist. The latest sanitized request failure is stored in provider_result.last_error, including after recovery. It includes method, path with numeric IDs and UUIDs replaced by :id, duration_ms, technical code, HTTP status or null, attempt number and UTC at. No request diagnostics are printed to Railway. Query parameters, bodies, customer data and credentials are excluded.",
+        "description": "Admin only. Reporting statuses pending/sent/skipped/review are distinct from commission approval/payment states. Sent means the sale was reported, even if reward rules generated zero commissions. Review can already have a provider sale; never create another event ID to retry. Use commissions[].snapshot for synchronized commission status/amount, not the initial provider_result snapshot. Refresh is hourly in bounded batches; last_synced_at exposes staleness. No secret or customer email payload is returned.",
         "tags": [
           "Admin/Affiliates"
         ],
@@ -12496,11 +12261,6 @@
                             "format": "uuid"
                           },
                           "customer_id": {
-                            "type": "string",
-                            "format": "uuid",
-                            "nullable": true
-                          },
-                          "settings_id": {
                             "type": "string",
                             "format": "uuid",
                             "nullable": true
@@ -12580,6 +12340,57 @@
                                     "format": "date-time"
                                   }
                                 }
+                              },
+                              "commissions": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "integer"
+                                    },
+                                    "status": {
+                                      "type": "string",
+                                      "enum": [
+                                        "pending",
+                                        "approved",
+                                        "denied"
+                                      ]
+                                    },
+                                    "amount_cents": {
+                                      "type": "integer",
+                                      "minimum": 0
+                                    },
+                                    "is_paid": {
+                                      "type": "boolean"
+                                    },
+                                    "campaign_id": {
+                                      "type": "integer"
+                                    },
+                                    "promoter_campaign_id": {
+                                      "type": "integer"
+                                    },
+                                    "fraud_check": {
+                                      "type": "string"
+                                    },
+                                    "status_updated_at": {
+                                      "type": "string",
+                                      "format": "date-time",
+                                      "nullable": true
+                                    },
+                                    "has_manual_note": {
+                                      "type": "boolean"
+                                    },
+                                    "created_at": {
+                                      "type": "string",
+                                      "format": "date-time"
+                                    }
+                                  }
+                                }
+                              },
+                              "commission_note": {
+                                "type": "string",
+                                "example": "NO_COMMISSION_GENERATED"
                               }
                             }
                           },
@@ -12591,6 +12402,78 @@
                             "type": "string",
                             "format": "date-time",
                             "nullable": true
+                          },
+                          "commissions": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "integer"
+                                },
+                                "snapshot": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "integer"
+                                    },
+                                    "status": {
+                                      "type": "string",
+                                      "enum": [
+                                        "pending",
+                                        "approved",
+                                        "denied"
+                                      ]
+                                    },
+                                    "amount_cents": {
+                                      "type": "integer",
+                                      "minimum": 0
+                                    },
+                                    "is_paid": {
+                                      "type": "boolean"
+                                    },
+                                    "campaign_id": {
+                                      "type": "integer"
+                                    },
+                                    "promoter_campaign_id": {
+                                      "type": "integer"
+                                    },
+                                    "fraud_check": {
+                                      "type": "string"
+                                    },
+                                    "status_updated_at": {
+                                      "type": "string",
+                                      "format": "date-time",
+                                      "nullable": true
+                                    },
+                                    "has_manual_note": {
+                                      "type": "boolean"
+                                    },
+                                    "created_at": {
+                                      "type": "string",
+                                      "format": "date-time"
+                                    }
+                                  }
+                                },
+                                "approval_due_at": {
+                                  "type": "string",
+                                  "format": "date-time"
+                                },
+                                "hold_reason": {
+                                  "type": "string",
+                                  "nullable": true
+                                },
+                                "last_synced_at": {
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "nullable": true
+                                },
+                                "last_error": {
+                                  "type": "string",
+                                  "nullable": true
+                                }
+                              }
+                            }
                           }
                         }
                       }
@@ -12603,7 +12486,6 @@
                       "payment_id": "4b7fe060-d95d-40db-9cba-2754ad310101",
                       "claim_id": "7036a744-43fd-452d-a663-50c9bc6ac97a",
                       "customer_id": "f8c41a94-e0af-4f8d-8f30-c29d71eca560",
-                      "settings_id": "c52798ca-bfd2-4f85-8e6c-ef51afcc0522",
                       "status": "sent",
                       "reason": null,
                       "attempts": 2,
@@ -12626,7 +12508,28 @@
                       },
                       "created_at": "2026-11-16T16:00:00Z",
                       "next_attempt_at": "2026-11-16T16:00:00Z",
-                      "sent_at": "2026-11-16T16:01:00Z"
+                      "sent_at": "2026-11-16T16:01:00Z",
+                      "commissions": [
+                        {
+                          "id": 456,
+                          "snapshot": {
+                            "id": 456,
+                            "status": "pending",
+                            "amount_cents": 552,
+                            "is_paid": false,
+                            "campaign_id": 45719,
+                            "promoter_campaign_id": 28594716,
+                            "fraud_check": "no_suspicion",
+                            "status_updated_at": null,
+                            "has_manual_note": false,
+                            "created_at": "2026-11-26T15:00:00Z"
+                          },
+                          "approval_due_at": "2026-12-26T15:00:00Z",
+                          "hold_reason": null,
+                          "last_synced_at": null,
+                          "last_error": null
+                        }
+                      ]
                     }
                   ]
                 }
@@ -12666,8 +12569,8 @@
     },
     "/api/admin/affiliate-events/process": {
       "post": {
-        "summary": "Process due affiliate events",
-        "description": "Runs the same worker scheduled every minute when enabled. Empty body. Processes up to five due events; respects next_attempt_at and serializes with other workers/settings updates. Enqueues successful, nonzero completed checkouts after first settings activation; never takes an amount or customer identity from this request. Temporary provider errors remain queued with backoff and do not affect payment/claim completion. Duplicate event IDs are reconciled without generating another sale.",
+        "summary": "Sync pending affiliate sales and due commissions",
+        "description": "Admin only; empty body. Runs the same leased worker as the minute cron: up to five due sales and five due commission synchronizations. Does not approve all commissions or execute payouts. Can approve integration-owned commissions when their 30-day payment hold elapsed and payment/referral/campaign/fraud/manual-hold checks pass. Existing approved/denied commissions and manual notes are respected. New sales must start pending in FirstPromoter account configuration; unexpected approved commissions go to review. FirstPromoter controls percentages, overrides and reward eligibility. Wrong-environment/archived campaigns never receive a sale.",
         "tags": [
           "Admin/Affiliates"
         ],
@@ -12712,6 +12615,27 @@
                     "pending": {
                       "type": "integer",
                       "minimum": 0
+                    },
+                    "commissions": {
+                      "type": "object",
+                      "properties": {
+                        "synced": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "approved": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "held": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "deferred": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      }
                     }
                   }
                 },
@@ -12720,7 +12644,13 @@
                   "sent": 1,
                   "skipped": 1,
                   "review": 0,
-                  "pending": 0
+                  "pending": 0,
+                  "commissions": {
+                    "synced": 1,
+                    "approved": 0,
+                    "held": 0,
+                    "deferred": 0
+                  }
                 }
               }
             }
